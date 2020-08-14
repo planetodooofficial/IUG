@@ -1,0 +1,860 @@
+# -*- coding: utf-8 -*-
+##############################################################################
+#
+#    OpenERP, Open Source Business Applications
+#    Copyright (C) 2004-2012 OpenERP S.A. (<http://openerp.com>).
+#
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU Affero General Public License as
+#    published by the Free Software Foundation, either version 3 of the
+#    License, or (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU Affero General Public License for more details.
+#
+#    You should have received a copy of the GNU Affero General Public License
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+##############################################################################
+import time
+import re
+import odoo
+
+from odoo import models, fields,api
+from odoo.tools.translate import _
+from odoo.tools import flatten
+from bss_phonumbers_fields import bss_phonenumbers_converter as phonumbers_converter
+from odoo.tools import DEFAULT_SERVER_DATE_FORMAT, DEFAULT_SERVER_DATETIME_FORMAT
+from odoo import SUPERUSER_ID, tools
+import phonenumbers
+from odoo.exceptions import UserError, RedirectWarning, ValidationError
+from odoo.addons.base.res.res_partner import FormatAddress
+import urllib
+import datetime
+import requests
+#import random
+#try:
+#    import simplejson as json
+#except ImportError:
+#    import json     # noqa
+
+#from geopy.geocoders import Nominatim
+
+#def geo_find2(addr):
+#    geolocator = Nominatim()
+#    location = geolocator.geocode(addr)
+#    print "location....",location
+#    #print(location.address)
+#    print(location.latitude, location.longitude)
+#    return True
+import logging
+logger = logging.getLogger('IUG')
+_logger = logging.getLogger(__name__)
+from lxml import etree
+from pygeocoder import Geocoder
+_timezone_event = {-11: 'US/Samoa', -10: 'US/Hawaii',
+                        -9: 'US/Alaska', -8: 'US/Pacific',
+                        -7: 'US/Mountain', -6: 'US/Central',
+                        -5: 'US/Eastern'}
+
+ADDRESS_FIELDS = ('street', 'street2', 'zip', 'city', 'state_id', 'country_id')
+POSTAL_ADDRESS_FIELDS = ADDRESS_FIELDS # deprecated, to remove after 7.0
+
+def geo_find(addr , api_key=False):
+#    link = 'https://maps.googleapis.com/maps/api/geocode/json?address=1600+Amphitheatre+Parkway,+Mountain+View,+CA&key=API_KEY'
+#    url = 'https://maps.googleapis.com/maps/api/geocode/json?sensor=false&address='
+#    url += urllib.quote(addr.encode('utf8'))
+    res = []
+    api_key='AIzaSyDAPZqsalpxu0T5SPRBXSG8K2ZVnngmmUo'
+    try:
+        gcoder = Geocoder(api_key)
+        results = gcoder.geocode(addr)
+        print results[0].latitude
+        print results[0].longitude
+        res.append(results[0].latitude)
+        res.append(results[0].longitude)
+    except Exception, e:
+        logger.info(' Error : %s',e.args)
+        pass
+    try:
+        if res:
+            return res
+    except (KeyError, ValueError):
+        return None
+
+def geo_query_address(street=None, zip=None, city=None, state=None, country=None):
+    if country and ',' in country and (country.endswith(' of') or country.endswith(' of the')):
+        # put country qualifier in front, otherwise GMap gives wrong results,
+        # e.g. 'Congo, Democratic Republic of the' => 'Democratic Republic of the Congo'
+        country = '{1} {0}'.format(*country.split(',',1))
+    try:
+        if street:
+            street = street.encode('utf-8', 'ignore')
+            try:
+                street = unicode(street, "ascii",'ignore')
+            except UnicodeError:
+                street = unicode(street, "utf-8", 'ignore').decode('ascii')
+        if zip:
+            zip = zip.encode('utf-8', 'ignore')
+            try:
+                zip = unicode(zip, "ascii",'ignore')
+            except UnicodeError:
+                zip = unicode(zip, "utf-8", 'ignore').decode('ascii')
+        if city:
+            city = city.encode('utf-8', 'ignore')
+            try:
+                city = unicode(city, "ascii",'ignore')
+            except UnicodeError:
+                city = unicode(city, "utf-8", 'ignore').decode('ascii')
+        if state:
+            state = state.encode('utf-8', 'ignore')
+        if country:
+            country = country.encode('utf-8', 'ignore')
+    except Exception:
+        pass
+    return tools.ustr(', '.join(filter(None, [street, ("%s %s" % (zip or '', city or '')).strip(), state, country])))
+# fields copy if 'use_parent_address' is checked 
+ADDRESS_FIELDS = ('street', 'street2', 'zip', 'city', 'state_id', 'country_id')
+POSTAL_ADDRESS_FIELDS = ADDRESS_FIELDS # deprecated, to remove after 7.0
+ADDRESS_FORMAT_CLASSES = {
+    '%(city)s %(state_code)s\n%(zip)s': 'o_city_state',
+    '%(zip)s %(city)s': 'o_zip_city'
+}
+
+# class FormatAddress(object):
+#     @api.model
+#     def fields_view_get_address(self, arch):
+#         address_format = self.env.user.company_id.country_id.address_format or ''
+#         for format_pattern, format_class in ADDRESS_FORMAT_CLASSES.iteritems():
+#             if format_pattern in address_format:
+#                 doc = etree.fromstring(arch)
+#                 for address_node in doc.xpath("//div[@class='o_address_format']"):
+#                     # add address format class to address block
+#                     address_node.attrib['class'] += ' ' + format_class
+#                     if format_class.startswith('o_zip'):
+#                         zip_fields = address_node.xpath("//field[@name='zip']")
+#                         city_fields = address_node.xpath("//field[@name='city']")
+#                         if zip_fields and city_fields:
+#                             # move zip field before city field
+#                             city_fields[0].addprevious(zip_fields[0])
+#                 arch = etree.tostring(doc)
+#                 break
+#         return arch
+
+class speciality(models.Model):
+    _description = 'Record Different speciality for Doctors'
+    _name = "speciality"
+
+    name=fields.Char("Name", size=64 ,required=True ,index=True)
+    doctor_id=fields.Integer("IU Doctor ID")
+    company_id=fields.Many2one('res.company', 'Company', index=1,default=lambda self: self.env['res.company']._company_default_get('speciality'))
+
+
+class location(models.Model, FormatAddress):
+    _description = 'Location'
+    _name = "location"
+    _order = "last_update_date  desc"
+    _inherit = ['mail.thread', 'ir.needaction_mixin']
+
+    # @
+    # def geo_localize_all(self, cr, uid, ids, context=None):
+    #     ''' This function Brings Langitude and Longitude for all Partners '''
+    #     count, res, api_key = 0, [], False
+    #     api_key_list = ['AIzaSyDN16TAIFWQGAS06tDflAA3BbjSnrcYm40','AIzaSyD_EIqYodP161OcXIRhfd-949wPn8Yk8QY',
+    #                     'AIzaSyCLqA8mKoXAEYyGMUBbiO2JjSx_KSwvdI8','AIzaSyDgYJl6EqQk3ou07TKcxXN2TAFzyAJTrzY',
+    #                     'AIzaSyATAqHzxn53tdnzHtneCIi03nSo3Wlq5O4','AIzaSyBqv-QIdWOc9vcW3aGsANRmoDXAjHJEHCA',
+    #                     'AIzaSyAb7OP4Apz1i9cwoh4gdtaofomlnBgeuOg']
+    #     partner_ids = self.pool.get('res.partner').search(cr ,uid ,[('is_geo','=',False),('cust_type','in',('interpreter','interp_and_transl')),('is_interpretation_active','=',True)] )
+    #     logger.info(' partner_ids : %d',len(partner_ids))
+    #     for partner_id in partner_ids:
+    #         count += 1
+    #         if count <= 2500:
+    #             api_key = api_key_list[0]
+    #         elif count > 2500 and count <= 5000:
+    #             api_key = api_key_list[1]
+    #         elif count > 5000 and count <= 7500:
+    #             api_key = api_key_list[2]
+    #         elif count > 7500 and count <= 10000:
+    #             api_key = api_key_list[3]
+    #         elif count > 10000 and count <= 12500:
+    #             api_key = api_key_list[4]
+    #         elif count > 12500 and count <= 15000:
+    #             api_key = api_key_list[5]
+    #         elif count > 15000 and count <= 17500:
+    #             api_key = api_key_list[6]
+    #         else:
+    #             api_key = False
+    #         res = self.geo_localize( cr, uid, [loc_id], api_key, context=context)
+    #
+    #         if count % 500 == 0:
+    #             print "count.....",count
+    #             cr.commit()
+    #     return res
+
+    @api.multi
+    def geo_localize(self):
+        # Don't pass context to browse()! We need country names in english below
+        for location in self:
+            api_key = self.env['api.keys'].search([],limit=1).name
+            result = geo_find(geo_query_address(street=location.street, zip=location.zip,
+                                                city=location.city, state=location.state_id.name,
+                                                country=location.country_id.name), api_key)
+            if result:
+                self.sudo().write({
+                    'latitude': result[0],
+                    'longitude': result[1],
+                    'is_geo': True,
+                    'date_localization': fields.Date.context_today(self)
+                })
+        return True
+
+    @api.multi
+    def get_timezone(self):
+        time_zone=False
+        for location in self:
+            lat = location.latitude
+            long = location.longitude
+            if not (lat and long):
+                self.sudo().geo_localize()
+                loc = self.sudo().browse(location.id)
+                lat = loc.latitude
+                long = loc.longitude
+            zip_ids, time_zone = False, False
+            zip_time_zone = self.env['zip.time.zone']
+            if location.zip:
+                zip_ids = zip_time_zone.search([('name','=',location.zip)])
+            if zip_ids:
+                for zip_id in zip_ids:
+                    time_zone = zip_id.time_zone
+            if time_zone:
+                time_zone = _timezone_event.get(int(time_zone),False)
+            if not time_zone:
+                timestamp = int(time.mktime(datetime.datetime.now().timetuple()))
+                payload = {'location': str(lat)+','+str(long), 'key': 'AIzaSyDAPZqsalpxu0T5SPRBXSG8K2ZVnngmmUo','timestamp':timestamp}
+                try:
+                    r = requests.get('https://maps.googleapis.com/maps/api/timezone/json',params = payload)
+                    req = eval(r.text)
+                    time_zone = req.get('timeZoneId') if req.get('status')=='OK' else False
+                except:
+                    time_zone = False
+            if time_zone:
+                location.sudo().write({'timezone': time_zone})
+        return time_zone
+
+    @api.model
+    def create(self,vals):
+        '''Function Overridden to geo localize location on creation '''
+        loc = super(location, self).create(vals)
+        if not loc.timezone:
+            loc.sudo().get_timezone()
+        else:
+            loc.sudo().geo_localize()
+        exist = False
+        if loc.zone_id and loc.zip:
+            for zip in loc.zone_id.zip_code_ids:
+                if zip.name == loc.zip:
+                    exist = True
+                    break
+            if not exist:
+                loc.zone_id.sudo().write({'zip_code_ids':[(0, 0, {'name': loc.zip ,'city': loc.city or '' ,
+                    'state_id': loc.state_id and loc.state_id.id or False ,'company_id': loc.company_id and loc.company_id.id or False,
+                    'time_zone': loc.timezone or '', 'latitude': loc.latitude, 'longitude': loc.longitude})]})
+        return loc
+
+    @api.multi
+    def write(self,vals):
+        '''Function Over ridden to geo localise location onchange of address '''
+        cur_obj = self
+        if 'street' in vals or 'street2' in vals or 'city' in vals or 'state_id' in vals or 'country_id' in vals or 'zip' in vals :
+            street, street2, city, state_id, country_id, zip = False, False, False, False, False, False
+            if 'street' in vals and vals['street']:
+                street = vals.get('street',False)
+            else:
+                street = cur_obj.street
+            if 'street2' in vals and vals['street2']:
+                street2 = vals.get('street2',False)
+            else:
+                street2 = cur_obj.street2
+            if 'city' in vals and vals['city']:
+                city = vals.get('city',False)
+            else:
+                city = cur_obj.city
+            if 'state_id' in vals and vals['state_id']:
+                state_id = vals.get('state_id',False)
+            else:
+                state_id = cur_obj.state_id and cur_obj.state_id.id or False
+            if 'country_id' in vals and vals['country_id']:
+                country_id = vals.get('country_id',False)
+            else:
+                country_id = cur_obj.country_id and cur_obj.country_id.id or False
+            if 'zip' in vals and vals['zip']:
+                zip = vals.get('zip',False)
+            else:
+                zip = cur_obj.zip
+            state = False
+            if state_id:
+                state = self.env['res.country.state'].sudo().browse(state_id)
+            country = False
+            if country_id:
+                country = self.env['res.country'].sudo().browse(country_id)
+            if street2:
+                if street:
+                    street +=  ' ' + unicode(street2)
+                else:
+                    street = street2
+            result = geo_find(geo_query_address(street or False, zip or False, city or False, state and state.name or False, country and country.name or False))
+            if result:
+                vals['latitude'] = result[0]
+                vals['longitude'] = result[1]
+                vals['is_geo'] = True
+                vals['date_localization'] = fields.Date.context_today(self)
+        res = super(location , self).write(vals)
+        loc = self
+        exist = False
+        if loc.zone_id and loc.zip:
+            for zip in loc.zone_id.zip_code_ids:
+                if zip.name == loc.zip:
+                    exist = True
+                    break
+            if not exist:
+                loc.zone_id.sudo().write({'zip_code_ids':[(0, 0, {'name': loc.zip ,'city': loc.city or '' ,
+                    'state_id': loc.state_id and loc.state_id.id or False ,'company_id': loc.company_id and loc.company_id.id or False,
+                    'time_zone': loc.timezone or '', 'latitude': loc.latitude, 'longitude': loc.longitude})]})
+        return res
+
+    @api.model
+    def default_get(self, fields):
+        ''' This function auto fill company_id related to Patient Or Doctor in location'''
+        res = super(location, self).default_get(fields)
+        if self._context.get('company_id',False):
+            if 'company_id' in fields:
+                res.update({'company_id': self._context.get('company_id',False)})
+        if self._context.get('ordering_partner_id',False):
+            if 'ordering_partner_id' in fields:
+                res.update({'ordering_partner_id': self._context.get('ordering_partner_id',False)})
+        return res
+
+    @api.depends('name','street','street2','city','zip')
+    def _name_get_fnc(self):
+        res = {}
+        for line in self:
+            complete_name = ''
+            if line.name:
+                complete_name += line.name or ''
+            if line.street:
+                complete_name += ' ' + ( line.street or '' )
+            if line.street2:
+                complete_name += ' ' + unicode( line.street2 or '' )
+            if line.city:
+                complete_name += ' ' + unicode( line.city or '' )
+#            if line.country_id:
+#                complete_name += ' ' + ( line.country_id and line.country_id.name or '' )
+            if line.zip:
+                complete_name += ' ' + unicode( line.zip or '' )
+            line.complete_name=complete_name
+
+    doctor_id=fields.Many2one('doctor','Related Doctor',)
+    patient_id=fields.Many2one('patient','Related Patient',)
+    name=fields.Char('Name', size=128, required=True, index=True)
+    actual_name=fields.Char('Actual Name', size=100, index=True)
+    date=fields.Date('Date', index=1)
+    ref=fields.Char('Reference', size=64, index=1)
+    user_id=fields.Many2one('res.users', 'Salesperson', help='The internal user that is in charge of communicating with this contact if any.')
+    location_type=fields.Selection([('home','Home'),('office','Office'),('other','Other')],'Location Type')
+    comment=fields.Text('Notes', track_visibility='onchange')
+    active=fields.Boolean('Active',default=True)
+    street=fields.Char('Street', size=128)
+    street2=fields.Char('Street2', size=128)
+    zip=fields.Char('Zip', change_default=True, size=24)
+    city=fields.Char('City', size=128)
+    state_id=fields.Many2one("res.country.state", 'State',)
+    country_id=fields.Many2one('res.country', 'Country',)
+    email=fields.Char('Email', size=240)
+    phone=fields.Char('Phone', size=64)
+    fax=fields.Char('Fax', size=64)
+    mobile=fields.Char('Mobile', size=64)
+    company_id=fields.Many2one('res.company', 'Company', index=1, required="1",default=lambda self: self.env['res.company']._company_default_get('location'))
+    phone2=fields.Char('Phone 2', size=64)
+    is_alert=fields.Boolean('Alert', help="Select if on alert")
+    is_sdhhs=fields.Boolean('Is SDHHS', )
+    location_id=fields.Integer("IU Location ID")
+    location_id2=fields.Integer('IU Location Id',)
+    zone_id=fields.Many2one('zone', 'Zone ID', index=1,)
+    latitude=fields.Float('Geo Latitude' , digits = (16,6))
+    longitude=fields.Float('Geo Longitude' , digits = (16,6))
+    date_localization=fields.Date('Geo Localization Date')
+    is_geo=fields.Boolean("Is Geo",default=False)
+    last_update_date=fields.Date("Last Update Date",default=lambda *a: time.strftime(DEFAULT_SERVER_DATE_FORMAT))
+    land_mark=fields.Char('Land Mark', size=100)
+    complete_name=fields.Char(compute='_name_get_fnc', string='Complete Name',store=True)
+    is_pat_loc=fields.Boolean("IS Patient Loc")
+    address_type_id=fields.Many2one('address.type','Address Type')
+    ordering_partner_id=fields.Many2one('res.partner',"Related Customer", domain="[('cust_type','=','customer')]")
+    timezone=fields.Char('Timezone', size=32)
+
+    @api.onchange('email')
+    def onchange_validate_email(self):
+        '''Function to validate email and email2 on onchange '''
+        res,res['value'],res['warning']={},{},{}
+        if self.email:
+            if not re.match("^.+\\@(\\[?)[a-zA-Z0-9\\-\\.]+\\.([a-zA-Z]{2,3}|[0-9]{1,3})(\\]?)$", self.email):
+                warning = {
+                    'title': _('Invalid Email'),
+                    'message' : _('Please enter a valid email address')
+                    }
+                res['warning'] = warning
+                res['value']['email'] =''
+        return res
+
+    @api.onchange('zip')
+    def onchange_zip(self):
+        '''Function to auto Fill Zone '''
+        zip_code = self.env['zip.code']
+        zip_ids, time_zone, tz, zone = [], False, False, False
+        zip_time_zone = self.env['zip.time.zone']
+        if self.zip:
+            zip = self.zip.strip()
+#            query = "select id from zip_code where name = %s and company_id = %s "%( str(zip),company_id )
+#            cr.execute(query)
+#            zip_ids = map(lambda x: x[0], cr.fetchall())
+            zip_ids = zip_code.sudo().search([('name', '=', zip), ('company_id', '=', self.company_id.id)])
+            if zip_ids:
+                query = "select zone_id from zipcode_to_zone_rel where zip_code_id = %s"%(zip_ids[0].id)
+                self._cr.execute(query)
+                zone_ids = map(lambda x: x[0], self._cr.fetchall())
+                if zone_ids:
+                    zone = zone_ids[0]
+                else:
+                    out_of_state_ids = []
+                    if self.company_id:
+                        out_of_state_ids = self.env['zone'].sudo().search([('name','=','Out of state'),('company_id','=',self.company_id.id)])
+                    else:
+                        out_of_state_ids = self.env['zone'].sudo().search([('name','=','Out of state')])
+                    if out_of_state_ids:
+                        return {'value':{'zone_id': out_of_state_ids and out_of_state_ids[0].id}}
+                time_zone = zip_ids[0].time_zone
+                if time_zone:
+                    time_zone = _timezone_event.get(int(time_zone),False)
+                else:
+                    zip_ids = zip_time_zone.search([('name','=',zip)])
+                    if zip_ids:
+                        time_zone = zip_ids[0].time_zone
+                    if time_zone:
+                        time_zone = _timezone_event.get(int(time_zone),False)
+#            else:
+#                out_of_state_ids = []
+#                if company_id:
+#                    out_of_state_ids = self.pool.get('zone').search(cr, uid, [('name','=','Out of state'),('company_id','=',company_id)])
+#                else:
+#                    out_of_state_ids = self.pool.get('zone').search(cr, uid, [('name','=','Out of state')])
+#                if out_of_state_ids:
+#                    return {'value':{'zone_id': out_of_state_ids and out_of_state_ids[0]}}
+        return {'value':{'zone_id': zone, 'timezone': time_zone}}
+
+    @api.model
+    def get_default_country(self):
+        """Return the Default Country """
+        proxy = self.env['ir.config_parameter']
+        default_country = proxy.sudo().get_param('default_country')
+        if not default_country:
+            raise UserError('Please use Default Country as US in config parameters.')
+        return default_country.strip()
+
+    @api.onchange('phone')
+    def onchange_phone(self):
+        ''' function to change in the format of selected default country '''
+        result = {}
+        result['value'] = {}
+        def_country = self.sudo().get_default_country()
+        new_phone = False
+        if self.phone:
+            try:
+                pn = phonumbers_converter._parse(self.phone, def_country)
+                if pn:
+                    new_phone = phonenumbers.format_number(pn, phonenumbers.PhoneNumberFormat.E164)
+                else:
+                    new_phone = False
+            except phonenumbers.NumberParseException:
+                new_phone = False
+                pass
+            result['value']['phone'] = new_phone
+        new_phone = False
+        if self.phone2:
+            try:
+                pn = phonumbers_converter._parse(self.phone2, def_country)
+                if  pn:
+                    new_phone = phonenumbers.format_number(pn, phonenumbers.PhoneNumberFormat.E164)
+                else:
+                    new_phone = False
+            except phonenumbers.NumberParseException:
+                new_phone = False
+                pass
+            result['value']['phone2'] = new_phone
+
+        return result
+
+################### Default Functions copied from res.partner ####################
+    @api.multi
+    def copy(self, default=None):
+        if default is None:
+            default = {}
+        if 'name' not in default:
+            default['name'] = _("%s (copy)") % (self.name)
+        return super(location, self).copy(default)
+
+    # def onchange_type(self, cr, uid, ids, is_company, context=None):
+    #     value = {}
+    #     value['title'] = False
+    #     if is_company:
+    #         domain = {'title': [('domain', '=', 'partner')]}
+    #     else:
+    #         domain = {'title': [('domain', '=', 'contact')]}
+    #     return {'value': value, 'domain': domain}
+
+    @api.onchange('state_id')
+    def onchange_state(self):
+        if self.state_id:
+            return {'value':{'country_id':self.state_id.country_id.id}}
+        return {}
+
+    @api.multi
+    def name_get(self):
+        res = []
+        for record in self:
+#            name = record.name
+#            if not name:
+            name = record.complete_name or ''
+            if not name:
+                if record.street:
+                    name = record.street or ''
+                if record.street2:
+                     name += ' ' + record.street2
+                if record.city:
+                    name += ' ' + record.city
+                if record.state_id:
+                    name += ' ' + record.state_id.name
+                if record.zip:
+                    name += ' ' + record.zip
+            if self._context.get('show_address'):
+                name = name + "\n" + self.sudo()._display_address(record, without_company=True)
+                name = name.replace('\n\n','\n')
+            if self._context.get('show_email') and record.email:
+                name = "%s <%s>" % (name, record.email)
+            res.append((record.id, name))
+        return res
+
+    @api.model
+    def name_search(self, name, args=None, operator='ilike', limit=100):
+        if not args:
+            args = []
+        if name:
+            ids = self.search([('complete_name','ilike',name)]+ args, order='last_update_date desc' , limit=limit)
+            if not ids:
+                ids = self.search([('street','ilike',name)]+ args, order='last_update_date desc' , limit=limit)
+            if not ids:
+                ids = self.search([('street2','ilike',name)]+ args, order='last_update_date desc' , limit=limit)
+            if not ids:
+                ids = self.search([('city','ilike',name)]+ args, order='last_update_date desc' , limit=limit)
+            if not ids:
+                ids = self.search([('zip','ilike',name)]+ args, order='last_update_date desc' , limit=limit)
+            if not ids:
+                ids = set()
+                ids.update(self.search(args + [('street',operator,name)], order='last_update_date desc' , limit=limit))
+                ids.update(self.search(args + [('city',operator,name)], order='last_update_date desc' , limit=limit))
+                ids.update(self.search(args + [('zip',operator,name)], order='last_update_date desc' , limit=limit))
+
+                if not limit or len(ids) < limit:
+                    # we may underrun the limit because of dupes in the results, that's fine
+                    ids.update(self.search(args + [('name',operator,name)], limit=(limit and (limit-len(ids)) or False)))
+                ids = list(ids)
+            if not ids:
+                ptrn = re.compile('(\[(.*?)\])')
+                res = ptrn.search(name)
+                if res:
+                    ids = self.search([('name','=', res.group(2))] + args, limit=limit)
+        else:
+            ids = self.search([] + args, limit=limit)
+        result = ids.name_get()
+        return result
+
+    @api.model
+    def _address_fields(self):
+        """ Returns the list of address fields that are synced from the parent
+        when the `use_parent_address` flag is set. """
+        return list(ADDRESS_FIELDS)
+
+    @api.model
+    def _display_address(self, address, without_company=False):
+        ''' The purpose of this function is to build and return an address formatted accordingly to the
+        standards of the country where it belongs.
+        
+        :param address: browse record of the res.partner to format
+        :returns: the address formatted in a display that fit its country habits (or the default ones
+            if not country is specified)
+        :rtype: string
+        '''
+
+        # get the information that will be injected into the display format
+        # get the address format
+        address_format = address.country_id and address.country_id.address_format or \
+              "%(street)s\n%(street2)s\n%(city)s %(state_code)s %(zip)s\n%(country_name)s"
+        args = {
+            'state_code': address.state_id and address.state_id.code or '',
+            'state_name': address.state_id and address.state_id.name or '',
+            'country_code': address.country_id and address.country_id.code or '',
+            'country_name': address.country_id and address.country_id.name or '',
+            
+        }
+        for field in self.sudo()._address_fields():
+            args[field] = getattr(address, field) or ''
+        if without_company:
+            args['company_name'] = ''
+        
+        return address_format % args
+
+    @api.model
+    def _generate_order_by(self, order_spec, query):
+        '''correctly orders Location field in many2one'''
+        order_by = super(location, self)._generate_order_by(order_spec, query)
+        #print "order_by..........",order_by
+#        if order_by:
+#            order_by = str(order_by) + ' desc'
+        if order_by:
+            temp = order_by.upper()
+            count = temp.count('DESC')
+            count2 = temp.count('ASC')
+            if count >= 1 or count2 >= 1:
+                return order_by
+            else:
+                order_by = str(order_by) + ' desc'
+#            count = 0
+#            count = temp.count('ASC')
+#            if count >= 1:
+#                order_by = order_by.replace("desc", " ", 1)
+#            count = 0
+#            count = temp.count('DESC')
+#            count2 = temp.count('ASC')
+#            if count >= 1 and count2 >= 1:
+#                order_by = order_by.replace("ASC", " ", 1)
+        #order_by = ''' ORDER BY "res_partner"."last_update_date" desc '''
+        #print "order_by..........",order_by
+        return order_by
+
+class doctor(models.Model, FormatAddress):
+    _description = 'Doctor'
+    _name = "doctor"
+    _inherit = ['mail.thread', 'ir.needaction_mixin']
+    _order = "last_update_date  desc"
+    #
+    # def _get_image(self, cr, uid, ids, name, args, context=None):
+    #     result = dict.fromkeys(ids, False)
+    #     for obj in self.browse(cr, SUPERUSER_ID, ids, context=context):
+    #         result[obj.id] = tools.image_get_resized_images(obj.image)
+    #     return result
+    #
+    # def _set_image(self, cr, uid, id, name, value, args, context=None):
+    #     return self.write(cr, SUPERUSER_ID, [id], {'image': tools.image_resize_image_big(value)}, context=context)
+    #
+    # def _has_image(self, cr, uid, ids, name, args, context=None):
+    #     result = {}
+    #     for obj in self.browse(cr, SUPERUSER_ID, ids, context=context):
+    #         result[obj.id] = obj.image != False
+    #     return result
+
+    @api.depends('name','last_name')
+    def _name_get_fnc(self):
+        ''' Function to store complete Doctor name to be used in search '''
+        res={}
+        for line in self:
+            complete_name = ""
+            if line.last_name:
+                complete_name = line.name.encode('utf-8', 'ignore').strip() + " " + line.last_name.encode('utf-8', 'ignore').strip()
+            else:
+                complete_name = line.name.encode('utf-8', 'ignore').strip()
+            line.complete_name =complete_name.replace('  ',' ')
+
+
+    name=fields.Char('Name', size=128, required=True, index=True)
+    date=fields.Date('Date', index=1)
+    title=fields.Many2one('res.partner.title', 'Title',)
+    ref=fields.Char('Reference', size=64, index=1)
+    user_id=fields.Many2one('res.users', 'Salesperson', help='The internal user that is in charge of communicating with this contact if any.')
+    website=fields.Char('Website', size=64, help="Website of Partner or Company")
+    comment=fields.Text('Notes')
+    active=fields.Boolean('Active',default=True)
+    function=fields.Char('Job Position', size=128)
+    email=fields.Char('Email', size=240)
+    phone=fields.Char('Phone', size=64)
+    fax=fields.Char('Fax', size=64)
+    mobile=fields.Char('Mobile', size=64)
+    birthdate=fields.Char('Birthdate', size=64)
+    company_id=fields.Many2one('res.company', 'Company', index=1, required="1",default=lambda self: self.env['res.company']._company_default_get('doctor'))
+    phone2=fields.Char('Phone 2', size=64)
+    email2=fields.Char('Email 2', size=240)
+    is_alert=fields.Boolean('Alert', help="Select if on alert")
+    middle_name=fields.Char('Middle Name', size=128, index=True)
+    last_name=fields.Char('Last Name', size=128, index=True)
+    complete_name=fields.Char(compute='_name_get_fnc', string='Complete Name')
+    speciality=fields.Many2one('speciality', 'Speciality', index=1,)
+    gender=fields.Selection([('male','Male'),('female','Female')],"Gender")
+    doctor_id=fields.Integer("IU Doctor ID")
+    location_ids=fields.Many2many('location','doctor_location_rel','doctor_id','location_id','Locations')
+    city=fields.Char(related='location_ids.city', string="City")
+    state=fields.Char(related='location_ids.state_id.name', string="State")
+    last_update_date=fields.Date("Last Update Date",default=lambda *a: time.strftime(DEFAULT_SERVER_DATE_FORMAT))
+    company_name=fields.Char('Company Name', size=70)
+    contact=fields.Char('Contact Name', size=64)
+
+
+
+
+    @api.onchange('email','email2')
+    def onchange_validate_email(self):
+        '''Function to validate email and email2 on onchange '''
+        res, res['value'], res['warning'] = {}, {}, {}
+        if self.email:
+            if not re.match("^.+\\@(\\[?)[a-zA-Z0-9\\-\\.]+\\.([a-zA-Z]{2,3}|[0-9]{1,3})(\\]?)$", self.email):
+                warning = {
+                    'title': _('Invalid Email'),
+                    'message': _('Please enter a valid email address')
+                }
+                res['warning'] = warning
+                res['value']['email'] = ''
+        if self.email2:
+            if not re.match("^.+\\@(\\[?)[a-zA-Z0-9\\-\\.]+\\.([a-zA-Z]{2,3}|[0-9]{1,3})(\\]?)$", self.email2):
+                warning = {
+                    'title': _('Invalid Email2'),
+                    'message' : _('Please enter a valid email address')
+                    }
+                res['warning'] = warning
+                res['value']['email2'] =''
+        return res
+
+    @api.model
+    def get_default_country(self):
+        """Return the Default Country """
+        proxy = self.env['ir.config_parameter']
+        default_country = proxy.sudo().get_param('default_country')
+        if not default_country:
+            raise UserError('Please use Default Country as US in config parameters.')
+        return default_country.strip()
+
+    @api.onchange('phone')
+    def onchange_phone(self):
+        ''' function to change in the format of selected default country '''
+        result = {}
+        result['value'] = {}
+        def_country = self.sudo().get_default_country()
+        new_phone = False
+        if self.phone:
+            try:
+                pn = phonumbers_converter._parse(self.phone, def_country)
+                if pn:
+                    new_phone = phonenumbers.format_number(pn, phonenumbers.PhoneNumberFormat.E164)
+                else:
+                    new_phone = False
+            except phonenumbers.NumberParseException:
+                new_phone = False
+                pass
+            result['value']['phone'] = new_phone
+        new_phone = False
+        if self.phone2:
+            try:
+                pn = phonumbers_converter._parse(self.phone2, def_country)
+                if pn:
+                    new_phone = phonenumbers.format_number(pn, phonenumbers.PhoneNumberFormat.E164)
+                else:
+                    new_phone = False
+            except phonenumbers.NumberParseException:
+                new_phone = False
+                pass
+            result['value']['phone2'] = new_phone
+
+        return result
+    
+################### Default Functions copied from res.partner ####################
+    @api.multi
+    def copy(self, default=None):
+        if default is None:
+            default = {}
+        if 'name' not in default:
+            default['name'] = _("%s (copy)") % (self.name)
+        return super(location, self).copy(default)
+
+    # def onchange_type(self, cr, uid, ids, is_company, context=None):
+    #     value = {}
+    #     value['title'] = False
+    #     if is_company:
+    #         domain = {'title': [('domain', '=', 'partner')]}
+    #     else:
+    #         domain = {'title': [('domain', '=', 'contact')]}
+    #     return {'value': value, 'domain': domain}
+
+    @api.model
+    def _generate_order_by(self, order_spec, query):
+        '''correctly orders Doctor field in many2one'''
+        order_by = super(doctor, self)._generate_order_by(order_spec, query)
+        #print "order_by..........",order_by
+#        if order_by:
+#            order_by = str(order_by) + ' desc'
+        if order_by:
+            temp = order_by.upper()
+            count = temp.count('DESC')
+            count2 = temp.count('ASC')
+            if count >= 1 or count2 >= 1:
+                return order_by
+            else:
+                order_by = str(order_by) + ' desc'
+        return order_by
+
+    @api.multi
+    def name_get(self):
+        res = []
+        for record in self:
+            name = ''
+            if record.name:
+                name = record.name
+            if record.middle_name:
+                name = name + ' ' + (record.middle_name or '')
+            if record.last_name:
+                name = name + ' ' + (record.last_name or '')
+            res.append((record.id, name))
+        return res
+
+    @api.model
+    def name_search(self, name, args=None, operator='ilike', limit=100):
+        if not args:
+            args = []
+        if name:
+            ids = self.search([('complete_name','ilike',name)]+ args, order='last_update_date desc' ,limit=limit)
+            if not ids:
+                ids = self.search([('name','ilike',name)]+ args, order='last_update_date desc', limit=limit)
+            if not ids:
+                ids = self.search([('middle_name','ilike',name)]+ args,order='last_update_date desc' , limit=limit)
+            if not ids:
+                ids = self.search([('last_name','ilike',name)]+ args, order='last_update_date desc',limit=limit)
+            if not ids:
+                ptrn = re.compile('(\[(.*?)\])')
+                res = ptrn.search(name)
+                if res:
+                    ids = self.search([('name','=', res.group(2))] + args, limit=limit)
+        else:
+            ids = self.search(args, order='last_update_date' , limit=limit)
+        #print "ids..last........",ids
+        result = ids.name_get()
+        return result
+
+#class doctor_location_rel(models.Model):
+ #   _description = 'Many2many Relation , Added company_id field'
+  #  _name = "doctor.location.rel"
+
+   # doctor_id=fields.Many2one('doctor', 'Doctor')
+    #location_id=fields.Many2one('location', 'Location')
+   # company_id=fields.Many2one(related='doctor_id.company_id',store=True, string="Company",readonly=True,)
+
+    #_sql_constraints = [
+     #   ('doctor_id_location_id_company_id_uniq', 'unique (doctor_id,location_id,company_id)', 'The Doctor and Location must be unique per company !')
+#    ]
+    

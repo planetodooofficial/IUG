@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- wizard view -->
+        <record id="attach_documents_wizard_view" model="ir.ui.view">
+            <field name="name">attach.documents.wizard</field>
+            <field name="model">attach.documents.wizard</field>
+            <field name="arch" type="xml">
+                <form string="Attach Documents">
+                    <group colspan="4" cols="4">
+                        <group>
+                            <field name="company_id" groups="base.group_multi_company" widget="selection"/>
+                        </group>
+                        <group>
+                            <field name="attach_to" required="1" invisible="1"/>
+                            <field name="event_id" attrs="{'invisible':[('attach_to','=','partner')]}" context="{'form_view_ref':'bista_iugroup.view_event_form'}"
+                                   domain="[('company_id','=',company_id)]"/>
+                            <field name="partner_id" attrs="{'invisible':[('attach_to','=','event')]}" context="{'form_view_ref':'bista_iugroup.view_partner_form_inherit_iu'}"
+                                   domain="[('cust_type','!=','other'),('company_id','=',company_id)]" string="Contact"/>
+                        </group>
+                    </group>
+                    <footer>
+                        <button string="Attach Documents" name="attach_documents" type="object" class="oe_highlight"
+                                groups="bista_iugroup.group_record_manager,bista_iugroup.group_iu_cust_service,bista_iugroup.group_iu_recruiter"/>
+                        <button string="Cancel" special="cancel" class="oe_highlight"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+        
+        <record model="ir.actions.act_window" id="action_attach_documents_wizard">
+            <field name="name">Attach Document</field>
+            <field name="res_model">attach.documents.wizard</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="attach_documents_wizard_view"/>
+            <field name="target">new</field>
+        </record>
+    </data>
+</odoo>

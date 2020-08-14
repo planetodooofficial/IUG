@@ -1,0 +1,45 @@
+<?xml version ="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="view_invoice_import_excel_sheet" model="ir.ui.view">
+            <field name="name">Account.Invoice</field>
+            <field name="model">invoice.import.excel</field>
+            <field name="type">form</field>
+            <field name="arch" type="xml">
+                <form string="Import Invoices">
+                    <group colspan="4" cols="4">
+                        <group>
+                            <field name="company_id" groups="base.group_multi_company" widget="selection"/>
+                            <field name="amount" />
+                            <field name="date_checkprint" />
+                        </group>
+                        <group>
+                            <field name="journal_id" domain="[('type','in',('bank','cash')),('company_id','=',company_id)]"
+                                   required="1" options="{'limit': 7, 'create': false, 'create_edit': false, 'no_open': True}"/>
+                            <field name="check_number" />
+                            <field name="reference" />
+                        </group>
+                    </group>
+                    <group>
+                        <separator string="Search for the File" colspan="4"/>
+                        <field name="excel_file" />
+                        <field name="state" invisible="1"/>
+                    </group>
+                    <footer>
+                        <button name="import_excel" string="Pay Invoices" type="object" class="oe_highlight"/>
+                        or
+                        <button string="Cancel" class="oe_link" special="cancel" />
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <act_window name="Pay Invoices through xls"
+            res_model="invoice.import.excel"
+            src_model="account.invoice"
+            view_mode="form"
+            target="new"
+            key2="client_action_multi"
+            id="action_view_invoice_import_excel_list"/>
+</data>
+</odoo>

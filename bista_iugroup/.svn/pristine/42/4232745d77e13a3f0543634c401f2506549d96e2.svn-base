@@ -1,0 +1,70 @@
+from odoo import fields,api,models
+from odoo.tools.translate import _
+from odoo import SUPERUSER_ID, tools
+import time
+from odoo.exceptions import UserError
+
+class assign_multi_event_wizard(models.TransientModel):
+    """ A wizard to assign interpreter to multiple events from interpreter form """
+    _name = 'assign.multi.event.wizard'
+
+    @api.multi
+    def assign_to_multi_events(self):
+        event_obj = self.env['event']
+        mod_obj = self.env['ir.model.data']
+        for cur in self:
+            if cur.event_ids:
+                for event in cur.event_ids:
+                    #print event
+                    query = "select name from interpreter_language where name = %s and interpreter_id = %s and company_id = %s"%( event.language_id.id, cur.interpreter_id.id, event.company_id.id)
+                    self._cr.execute(query)
+                    lang_ids = map(lambda x: x[0], self._cr.fetchall())
+                    if not lang_ids:
+                        raise UserError(_("Interpreter- ' %s ' Does not interprete ' %s ' language.")%(cur.interpreter_id.complete_name, event.language_id.name))
+                    event.write({'interpreter_id':cur.interpreter_id and cur.interpreter_id.id or False,
+                                    'state':'allocated', 'schedule_event_time':time.strftime('%Y-%m-%d %H:%M:%S')})
+                    history_id = event.history_id
+    #                print"assign_history_id",assign_history_id
+                    if history_id:
+                        history_id.write({'state':'cancel','cancel_date':time.strftime('%Y-%m-%d %H:%M:%S')})
+                    history_id=self.env['interpreter.alloc.history'].create({'partner_id': event.partner_id and event.partner_id.id or False,'name': cur.interpreter_id and cur.interpreter_id.id or False,
+                        'event_id': event.id,'event_date': event.event_date ,'event_start': event.event_start,'event_end': event.event_end,'state':'allocated','company_id': event.company_id and event.company_id.id or False,
+                        'allocate_date':time.strftime('%Y-%m-%d %H:%M:%S')})
+                    event.write({'history_id':history_id.id})
+                    
+#                    if not (event.suppress_email or (event.ordering_partner_id and event.ordering_partner_id.suppress_email) or \
+#                        (event.ordering_contact_id and event.ordering_contact_id.suppress_email)):
+#                        template_id = mod_obj.get_object_reference(cr, SUPERUSER_ID, 'bista_iugroup', 'event_allocation_customer')[1]
+#                        if template_id:
+#                            self.pool.get('email.template').send_mail(cr, uid, template_id, event.id)
+                    template_id1 = mod_obj.sudo().get_object_reference('bista_iugroup', 'event_allocation_interpreter')[1]
+                    if template_id1:
+                        self.env['mail.template'].sudo().browse(template_id1).send_mail(event.id,force_send=True)
+#                    res = self.pool.get('event').action_mail_send( cr, uid, ids , event, 'event', template_id1, context=context)
+#                    event_obj.confirm_event(cr ,uid ,[event.id] , context=context)
+                    
+            else:
+                raise UserError(_('Please Select Atleast one Event.'))
+
+        return True
+
+    @api.model
+    def default_get(self, fields):
+        res = super(assign_multi_event_wizard , self).default_get(fields)
+        interpreter_ids = self._context.get('active_ids', [])
+        if not interpreter_ids or len(interpreter_ids) != 1:
+            return res
+        interpreter_id, = interpreter_ids
+        company_id = False
+        if 'interpreter_id' in fields:
+            res.update(interpreter_id = interpreter_id)
+        if interpreter_id:
+            company_id = self.env['res.partner'].browse(interpreter_id).company_id.id
+            if 'company_id' in fields:
+                res.update(company_id = company_id)
+        return res
+
+
+    company_id=fields.Many2one("res.company", "Company" )
+    interpreter_id=fields.Many2one("res.partner", "Interpreter" )
+    event_ids=fields.Many2many("event",'multi_event_alloc_rel','wiz_id','event_id',"Events")

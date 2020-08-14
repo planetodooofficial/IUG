@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+         <record id="view_kml_map_form" model="ir.ui.view">
+             <field name="name">kml.map.form</field>
+             <field name="model">kml.map</field>
+             <field eval="8" name="priority"/>
+             <field name="arch" type="xml">
+                 <form string="kml Map">
+                     <header>
+                         <button string="kml Map" name="kml_map"  type="object" class="oe_highlight" />
+                         <button string="Write File" name="update_file"  type="object" class="oe_highlight" />
+                     </header>
+                     <sheet>
+                         <field name="name" />
+                     </sheet>
+                </form>
+            </field>
+         </record>
+
+         <record id="action_kml_map_form" model="ir.actions.act_window">
+             <field name="name">kml Map</field>
+             <field name="type">ir.actions.act_window</field>
+             <field name="res_model">kml.map</field>
+             <field name="view_type">form</field>
+             <field name="view_mode">tree,form</field>
+             <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Click to add a Map .
+                </p><p>
+                    OpenERP helps you easily track all activities related to
+                    a Default Country; discussions, history of Default Country, etc.
+                </p>
+             </field>
+         </record>
+         <menuitem id="menu_kmlmap" parent="menu_event_lang_config" action="action_kml_map_form" sequence="2"/>
+    </data>
+</odoo>

@@ -1,0 +1,329 @@
+# -*- coding: utf-8 -*-
+##############################################################################
+#
+#    OpenERP, Open Source Business Applications
+#    Copyright (C) 2004-2012 OpenERP S.A. (<http://openerp.com>).
+#
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU Affero General Public License as
+#    published by the Free Software Foundation, either version 3 of the
+#    License, or (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU Affero General Public License for more details.
+#
+#    You should have received a copy of the GNU Affero General Public License
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+##############################################################################
+import os
+from odoo import fields,models,api
+from odoo import SUPERUSER_ID, tools,_
+import pygmaps
+import webbrowser
+import urllib, random
+from odoo.exceptions import UserError, RedirectWarning, ValidationError
+#import googlemaps
+#from googlemaps import GoogleMaps
+try:
+    from pygeocoder import Geocoder
+except Exception , e:
+     raise UserError(_('Please install pygeocoder - pip install pygeocoder'))
+
+def geo_query_address(street=None, zip=None, city=None, state=None, country=None):
+    if country and ',' in country and (country.endswith(' of') or country.endswith(' of the')):
+        # put country qualifier in front, otherwise GMap gives wrong results,
+        # e.g. 'Congo, Democratic Republic of the' => 'Democratic Republic of the Congo'
+        country = '{1} {0}'.format(*country.split(',',1))
+    return tools.ustr(' '.join(filter(None, [street,
+                                              ("%s %s" % (zip or '', city or '')).strip(),
+                                              state,
+                                              country])))
+
+class open_map(models.TransientModel):
+    _name = "open.map"
+
+    @api.model
+    def get_doc_dir_path(self):
+        """Return the Document Directory path"""
+        proxy = self.env['ir.config_parameter']
+        file_path = proxy.sudo().get_param('doc_dir_path')
+        if not file_path:
+            raise UserError('Please configure doc_dir_path as "file:///filestore" in config parameters.')
+        if not file_path.endswith('/'):
+            file_path += '/'
+        return file_path
+
+#     @api.model
+#     def rename_files(self):
+#         ''' Function to rename all files of a folder , so that documents can be transferred '''
+#         #path =  os.getcwd()
+#         #path = """/home/openerp/test_folder"""
+#         path = self.get_doc_dir_path()
+#         filenames = os.listdir(path)
+# #        print "filenames......",filenames
+#         for filename in filenames:
+# #            print "filename...........",filename
+#             new_filename = filename.split('.', 1)[0];
+# #            print "new_filename.........",new_filename
+#             os.rename(os.path.join(path,filename), os.path.join(path, new_filename))
+#         return True
+
+    # def open_map_mine2(self , cr ,uid ,ids , context= None):
+    #     ''' Not Used Now '''
+    #     # Charting function
+    #     def lineChart(data, size = '250x100'):
+    #         baseURL = 'http://chart.apis.google.com/chart?cht=lc&chs='
+    #         baseData = '&chd=t:'
+    #         newData = ','.join(data)
+    #         baseData = baseData + newData
+    #         URL = baseURL + size + baseData
+    #         return URL
+    #
+    #     # Reading test data: connecting to server and extracting lines
+    #     f = urllib.urlopen('http://gis.someserver.com/TestData.csv')
+    #     stations = f.readlines()
+    #     kmlBody = ('')
+    #
+    #     for s in stations:
+    #         data = s.split(',')
+    #         # Generate random data
+    #         a = []
+    #         for r in range(60):
+    #             a.append(str(round(random.gauss(50,10), 1)))
+    #
+    #         chart = lineChart(a)
+    #
+    #         # data is csv as station name (0), long (1), lat (2), y (3)
+    #         kml = (
+    #             '<Placemark>\n'
+    #             '<name>%s</name>\n'
+    #             '<description>\n'
+    #             '<![CDATA[\n'
+    #             '<p>Value: %s</p>\n'
+    #             '<p><img src="%s" width="250" height="100" /></p>\n'
+    #             ']]>\n'
+    #             '</description>\n'
+    #             '<Point>\n'
+    #             '<coordinates>%f,%f</coordinates>\n'
+    #             '</Point>\n'
+    #             '</Placemark>\n'
+    #             ) %(data[0], data[3], chart, float(data[1]), float(data[2]))
+    #
+    #         kmlBody = kmlBody + kml
+    #
+    #     # Bits and pieces of the KML file
+    #     contentType = ('Content-Type: application/vnd.google-earth.kml+xml\n')
+    #
+    #     kmlHeader = ('<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n'
+    #                  '<kml xmlns=\"http://earth.google.com/kml/2.1\">\n'
+    #                  '<Document>\n')
+    #
+    #     kmlFooter = ('</Document>\n'
+    #                  '</kml>\n')
+    #     print contentType
+    #     print kmlHeader
+    #     print kmlBody
+    #     print kmlFooter
+
+    @api.model
+    def get_server_ip(self):
+        """Return the Server IP"""
+        proxy = self.env['ir.config_parameter']
+        server_ip = proxy.sudo().get_param('server_ip')
+        if not server_ip:
+            raise UserError(_('Please configure server_ip as "72.11.224.244" in config parameters.'))
+        return server_ip.strip()
+
+    @api.model
+    def get_apache_path(self):
+        """Return the Apache path"""
+        proxy = self.env['ir.config_parameter']
+        apache_path = proxy.sudo().get_param('apache_path')
+        if not apache_path:
+            raise UserError(_('Please configure apache_path as "/var/www/html/" in config parameters.'))
+        apache_path = apache_path.strip()
+        if not apache_path.endswith('/'):
+            apache_path += '/'
+        return apache_path
+
+    @api.multi
+    def transporter_lookup(self):
+        ''' Function to search Transporters for a city or zip and show them on Google Map 
+            along with their information '''
+        city = self.city
+        zip = self.zip
+
+        transporter_obj = self.env['res.partner']
+        transporter_ids = transporter_obj.search(['|',('city','ilike',city),('zip','ilike',zip),('cust_type','=','transporter')])
+        #print "transporter_ids.........",transporter_ids
+        if not transporter_ids:
+            raise UserError(_("No Transporters found for this region"))
+        path = self.get_apache_path()
+        server_ip = self.get_server_ip()
+        keyword = city or '' + ',' + zip or ''
+        try:
+            results1 = Geocoder.geocode(keyword)
+        except Exception , e:
+            #print "Exception ...........",e.args
+            raise UserError(_(' Please Check the Error %s ') % (e.args,))
+        cord1 = results1[0].coordinates
+        #print "cord1........",cord1
+        if len(cord1) > 1 and cord1[0] and cord1[1]:
+            lat1 = cord1[0]
+            lon1 = cord1[1]
+        try:
+            mymap = pygmaps.maps(lat1, lon1, 7)
+        except Exception , e:
+            #print "Exception ...........",e.args
+            raise UserError(_(' Please Check the Error %s ') % (e.args,))
+        for transporter_id in transporter_ids:
+            lat = lon = False
+            transporter_address = geo_query_address(transporter_id.street or False , transporter_id.zip or False ,transporter_id.city or False,transporter_id.state_id and transporter_id.state_id.name or False, transporter_id.country_id and \
+                                                    transporter_id.country_id.name or False)
+            try:
+                results = Geocoder.geocode(transporter_address)
+            except Exception , e:
+                #print "Exception ...........",e.args
+                raise UserError(_(' Please Check the Error %s ') % (e.args,))
+            cord = results[0].coordinates
+            #print "cord........",cord
+            if len(cord) > 1 and cord[0] and cord[1]:
+                lat = cord[0]
+                lon = cord[1]
+            #print "lat...lon.......",lat,lon
+            trans_name= ''
+            if transporter_id.name:
+                trans_name += transporter_id.name
+            if transporter_id.middle_name:
+                trans_name += ' ' + transporter_id.middle_name
+            if transporter_id.last_name:
+                trans_name += ' ' + transporter_id.last_name
+            #print "trans_name........",trans_name
+            trans_address = ''
+            if transporter_id.email:
+                trans_address+=transporter_id.email
+            if transporter_id.phone:
+                trans_address+=' , '+transporter_id.phone
+            if transporter_id.rate:
+                trans_address+=' , '+ str(transporter_id.rate)
+
+            #print "trans_address.........",trans_address
+            try:
+                mymap.addpoint(lat, lon, "#0000FF" , trans_name , trans_address)
+            except Exception , e:
+                #print "Exception ...........",e.args
+                raise UserError(_(' Please Check the Error %s ') % (e.args,))
+#        mymap.draw('/home/openerp/workspace/openerp/openerp-7.0/openerp/addons/bista_iugroup/mymap3.html')
+#        filename = '/home/openerp/workspace/openerp/openerp-7.0/openerp/addons/bista_iugroup/mymap3.html'
+#        webbrowser.open_new_tab(filename)
+        try:
+            mymap.draw(str(path).strip() + 'mymap.html')#'/home/openerp/public_html/mymap3.html')
+            
+        except Exception , e:
+            #print "Exception .......", e.args
+            raise UserError(_(' Please Check the Error in apache path %s ') % (e.args,))
+        url = 'http://' + str(server_ip).strip() + '/mymap.html'
+        #print "url...........",url
+        return {
+            'type': 'ir.actions.act_url',
+            'url':url , #'http://72.11.224.244/mymap.html'
+            'nodestroy': True,
+            'target': 'new'
+            }
+    
+#     def open_map_mine(self , cr ,uid ,ids , context = None):
+#         '''Not Used Now '''
+#         keyword = self.browse(cr ,uid ,ids[0], ).name
+#         print "keyword..........",keyword
+#         #gmaps = GoogleMaps('AIzaSyBoZc-_7KabQcUo9nHTL-xCED6k2_Gj9BM')
+#
+#         customer_obj = self.pool.get('res.partner')
+#         customer_ids = customer_obj.search(cr ,uid , ['|',('city','ilike',keyword),('zip','ilike',keyword)])
+#         print "customer_ids.........",customer_ids
+#         results1 = Geocoder.geocode(keyword)
+#         cord1 = results1[0].coordinates
+#         print "cord1........",cord1
+#         if len(cord1) > 1 and cord1[0] and cord1[1]:
+#             lat1 = cord1[0]
+#             lon1 = cord1[1]
+#         mymap = pygmaps.maps(lat1, lon1, 7)
+#         for customer_id in customer_ids:
+#             customer = customer_obj.browse(cr ,uid ,customer_id)
+#             print "customer......",customer
+#             lat = lon = False
+#             customer_address = ''
+#             if customer.street:
+#                 customer_address+=customer.street
+#             if customer.city:
+#                 customer_address+=' '+customer.city
+#             if customer.state_id:
+#                 customer_address+=' '+customer.state_id.name
+#             if customer.country_id:
+#                 customer_address+=' '+customer.country_id.name
+#             if customer.zip:
+#                 customer_address+=' '+customer.zip
+#             print "customer_address.........",customer_address
+# #            try:
+# #                lat, lon = gmaps.address_to_latlng('United states')
+# #            except googlemaps.GoogleMapsError, e:
+# #                print "Oh, no! Couldn't geocode", addr
+# #                print e
+#             results = Geocoder.geocode(customer_address)
+#             cord = results[0].coordinates
+#             print "cord........",cord
+#             if len(cord) > 1 and cord[0] and cord[1]:
+#                 lat = cord[0]
+#                 lon = cord[1]
+#             print "lat...lon.......",lat,lon
+#             cust_name= ''
+#             if customer.name:
+#                 cust_name += customer.name
+#             if customer.middle_name:
+#                 cust_name += ' ' + customer.middle_name
+#             if customer.last_name:
+#                 cust_name += ' ' + customer.last_name
+#             print "cust_name........",cust_name
+#             cust_address = ''
+#             if customer.email:
+#                 cust_address+=customer.email
+#             if customer.phone:
+#                 cust_address+=','+customer.phone
+#
+#             print "cust_address.........",cust_address
+#             #mymap = pygmaps.maps(lat, lon, 16)
+#             mymap.addpoint(lat, lon, "#0000FF" , cust_name , cust_address)
+#         #mymap = pygmaps.maps(37.428, -122.145, 16)
+#         #mymap.setgrids(37.42, 37.43, 0.001, -122.15, -122.14, 0.001)
+#         #mymap.addpoint(37.427, -122.145, "#0000FF" ,'title')
+#         #mymap.addradpoint(37.429, -122.145, 95, "#FF0000")
+#         #path = [(37.429, -122.145),(37.428, -122.145),(37.427, -122.145),(37.427, -122.146),(37.427, -122.146)]
+# 	#mymap.addpath(path,"#00FF00")
+#
+# #        mymap = pygmaps.maps(37.428, -122.145, 16 )
+# #        mymap.setgrids(37.42, 37.43, 0.001, -122.15, -122.14, 0.001)
+# #        mymap.addpoint(37.427, -122.145, "#0000FF",'Title')
+# #        mymap.addradpoint(37.429, -122.145, 95, "#FF0000")
+# #        path = [(37.429, -122.145),(37.428, -122.145),(37.427, -122.145),(37.427, -122.146),(37.427, -122.146)]
+# #        mymap.addpath(path,"#00FF00")
+#
+# #       Validate address
+# #        Geocoder.geocode("1600 amphitheater parkway, mountain view").valid_address
+#         mymap.draw('/home/openerp/workspace/openerp/openerp-7.0/openerp/addons/bista_iugroup/mymap3.html')
+#         filename = '/home/openerp/workspace/openerp/openerp-7.0/openerp/addons/bista_iugroup/mymap3.html'
+#         webbrowser.open_new_tab(filename)
+#         return True
+
+    city=fields.Char('City', size=32,  index=True)
+    zip=fields.Char('Zip Code', size=32,  index=True)
+
+#from googlemaps import GoogleMaps
+#
+#gmaps = GoogleMaps('YOUR GOOGLE MAPS API KEY HERE')
+#try:
+#    lat, lon = gmaps.address_to_latlng(addr)
+#except googlemaps.GoogleMapsError, e:
+#    print "Oh, no! Couldn't geocode", addr
+#    print e

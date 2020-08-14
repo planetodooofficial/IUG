@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- wizard view -->
+        <record id="invoice_payment_wizard_view" model="ir.ui.view">
+            <field name="name">Payment Form</field>
+            <field name="model">invoice.payment.wizard</field>
+            <field name="arch" type="xml">
+                <form string="Payment Form">
+                    <group>
+                        <group>
+                            <field name="journal_id" required="1" domain="[('company_id','=',company_id),('type','in',('cash','bank'))]"
+                                   options="{'limit': 7, 'create': false, 'create_edit': false ,'always_reload': True}"/>
+                            <field name="check_no"/>
+                        </group>
+                        <group>
+                            <field name="amount" required="1"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="event_id"  readonly="1" invisible="1"/>
+                        <field name="invoice_id" readonly="1" invisible="1"/>
+                        <field name="company_id" readonly="1" invisible="1"/>
+                    </group>
+                    <footer>
+                        <button string="Pay Invoice" name="pay_invoice" type="object" class="oe_highlight"/>
+                        or
+                        <button string="Cancel" class="oe_link" special="cancel" />
+                    </footer>
+                </form>
+            </field>
+        </record>
+        
+        <record model="ir.actions.act_window" id="action_invoice_payment_wizard">
+            <field name="name">Payment Form</field>
+            <field name="res_model">invoice.payment.wizard</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="invoice_payment_wizard_view"/>
+            <field name="target">new</field>
+        </record>
+    </data>
+</odoo>

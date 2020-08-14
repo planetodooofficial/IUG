@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- wizard view -->
+        <record id="assign_transporter_wizard_view1" model="ir.ui.view">
+            <field name="name">Assign Transporter</field>
+            <field name="model">assign.transp.wizard</field>
+            <field name="arch" type="xml">
+                <form string="Assign Transporter">
+                    <group>
+                        <field name="event_id"  readonly="1" invisible="1"/>
+                        <field name="transporter_id" readonly="1" invisible="1"/>
+                        <field name="history_id" readonly="1" invisible="1"/>
+                        <separator/>
+                        <field name="transporter_ids" nolabel="1" context="{'event_ids':event_id,}" colspan="4" readonly="1">
+                            <tree editable="top" decoration-info="state == 'confirm'" decoration-success="state == 'allocated'">
+                                <field name="name" readonly="1" context="{ 'form_view_ref':'bista_iugroup.view_transporter_form'}"/>
+                                <field name="partner_id" readonly="1" context="{'form_view_ref':'bista_iugroup.view_partner_form_inherit_iu'}"/>
+                                <field name="event_date" invisible="1" readonly="1"/>
+                                <field name="rate" readonly="1"/>
+                                <field name="city" readonly="1"/>
+                                <field name="event_start" readonly="1"/>
+                                <field name="event_end" readonly="1"/>
+                                <field name="event_id" string="Event" readonly="1"/>
+                                <field name="task_id" readonly="1"/>
+                                <field name="state" readonly="1"/>
+                                <button name="reset_event" type="object" icon="gtk-cancel" invisible="1"/>
+                            </tree>
+                        </field>
+                    </group>
+                    <footer>
+                        <button string="Assign Transporter" name="update_transporter" type="object" class="oe_highlight" context="{'event_id': event_id ,'history_id': history_id}" />
+                        or
+                        <button string="Cancel" class="oe_link" special="cancel" />
+                    </footer>
+                </form>
+            </field>
+        </record>
+        
+        <record model="ir.actions.act_window" id="action_assign_transp_wizard1">
+            <field name="name">Assign Transporter</field>
+            <field name="res_model">assign.transp.wizard</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="assign_transporter_wizard_view1"/>
+            <field name="target">new</field>
+        </record>
+
+        <record id="view_select_transporter_line_form" model="ir.ui.view">
+            <field name="name">select.transporter.line.form</field>
+            <field name="model">select.transporter.line</field>
+            <field eval="8" name="priority"/>
+            <field name="arch" type="xml">
+                <form string="Select Transporter Line">
+                    <sheet>
+                        <group colspan="2" col="2">
+                            <group>
+                                <field name="transporter_id" readonly="1" context="{'form_view_ref':'bista_iugroup.view_transporter_form'}"/>
+                                <field name="visited" readonly="1"/>
+                                <field name="visited_date" readonly="1" string="Visit Date"/>
+                            </group>
+                            <group>
+                                <field name="middle_name" readonly="1" />
+                                <field name="zip" readonly="1" />
+                                <field name="rate" readonly="1" />
+                                <field name="duration" readonly="1"/>
+                                <field name="distance" readonly="1"/>
+
+                                <field name="voicemail_msg" invisible="1"/>
+
+                                <field name="state"  invisible="1"/>
+                            </group>
+                        </group>
+                        <footer invisible="1">
+                            <button  name="leave_voicemail" type="object" string="Leave Voicemail"
+                            class="oe_highlight" attrs="{'invisible': [('state','in',('cancel','voicemailsent'))]}"/>
+                            or
+                            <button string="Assign Transporter" type="action" name="%(bista_iugroup.action_assign_wizard1)d"
+                            class="oe_highlight" attrs="{'invisible': [('state','in',('cancel'))]}"/>
+                            or
+                            <button  name="cancel_appointment" type="object" class="oe_highlight" string="Cancel Transporter"
+                                attrs="{'invisible': [('state','in',('cancel'))]}" />
+                            or
+                            <button string="Cancel" class="oe_link" special="cancel" />
+                        </footer>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+    </data>
+</odoo>

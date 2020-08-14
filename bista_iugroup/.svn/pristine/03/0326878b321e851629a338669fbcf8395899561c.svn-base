@@ -1,0 +1,619 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <menuitem id="base.menu_module_tree" parent="base.menu_management" name="Installed Modules" sequence="5" action="base.open_module_tree" />
+        <menuitem id="main_menu_lang_event_custom"  name="Search" sequence="15" groups="bista_iugroup.group_record_manager,bista_iugroup.group_iu_cust_service,bista_iugroup.group_iu_recruiter"/>
+        <menuitem id="menu_operations"  name="Operations" sequence="15" groups="bista_iugroup.group_record_manager,bista_iugroup.group_iu_cust_service,bista_iugroup.group_iu_recruiter"/>
+        <menuitem id="menu_contacts" parent="menu_operations" name="Contacts" sequence="1" groups="bista_iugroup.group_record_manager,bista_iugroup.group_iu_cust_service,bista_iugroup.group_iu_recruiter"/>
+        <menuitem id="menu_configurtion_operations" parent="menu_operations" name="Configuration" sequence="5"
+                  groups="bista_iugroup.group_record_manager,bista_iugroup.group_iu_cust_service,bista_iugroup.group_iu_recruiter"/>
+
+        <menuitem id="main_menu_lang_event"  name="Onsite Interpretation" sequence="10" groups="bista_iugroup.group_record_manager,bista_iugroup.group_iu_cust_service,bista_iugroup.group_iu_recruiter"/>
+        <menuitem id="menu_event_lang_config" parent="main_menu_lang_event" name="Configuration" sequence="5"
+                  groups="bista_iugroup.group_record_manager" />
+
+        <menuitem id="main_menu_translation_event"  name="Document Translation" sequence="11" groups="bista_iugroup.group_record_manager,bista_iugroup.group_iu_cust_service,bista_iugroup.group_iu_recruiter"/>
+        <menuitem id="sub_menu_translation_event" parent="main_menu_translation_event" name="Events" sequence="1"
+                  groups="bista_iugroup.group_record_manager,bista_iugroup.group_iu_cust_service,bista_iugroup.group_iu_recruiter"/>
+
+        <menuitem id="main_menu_trans_event"  name="Transportation" sequence="12" groups="bista_iugroup.group_record_manager,bista_iugroup.group_iu_cust_service,bista_iugroup.group_iu_recruiter"/>
+        <menuitem id="sub_menu_trans_event" parent="main_menu_trans_event" name="Events" sequence="1"
+                  groups="bista_iugroup.group_record_manager,bista_iugroup.group_iu_cust_service,bista_iugroup.group_iu_recruiter"/>
+        <menuitem id="menu_event_trans_config" parent="main_menu_trans_event" name="Configuration" sequence="5"
+                  groups="bista_iugroup.group_record_manager" />
+
+
+        <menuitem id="main_menu_trans_lang_event" name="T&amp;T" sequence="12" groups="bista_iugroup.group_record_manager,bista_iugroup.group_iu_cust_service,bista_iugroup.group_iu_recruiter"/>
+        <menuitem id="sub_menu_trans_lang_event" parent="main_menu_trans_lang_event" name="Events" sequence="1"
+                  groups="bista_iugroup.group_record_manager,bista_iugroup.group_iu_cust_service,bista_iugroup.group_iu_recruiter"/>
+
+        ####################################################################################
+
+        ##################Customer Group view##############
+        <record id="view_customer_group_form" model="ir.ui.view">
+            <field name="name">Customer Group</field>
+            <field name="model">customer.group</field>
+            <field name="arch" type="xml">
+                <form string="Customer Group" >
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="name" required="1"/>
+                            </group>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="action_customer_group" model="ir.actions.act_window">
+            <field name="name">Customer Group</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">customer.group</field>
+            <field name="view_mode">tree,form</field>
+            <field name="target">current</field>
+        </record>
+
+        ##############Google Keys############
+
+        <record id="view_api_keys_config_tree" model="ir.ui.view">
+            <field name="name">api.keys.setting.tree</field>
+            <field name="model">api.keys</field>
+            <field eval="8" name="priority"/>
+            <field name="arch" type="xml">
+                <tree string="Google Keys Configuration" >
+                    <field name="name"/>
+                    <field name="email"/>
+                    <field name="used"/>
+                    <field name="active_run"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="view_api_keys_config_settings" model="ir.ui.view">
+            <field name="name">Google Keys</field>
+            <field name="model">api.keys</field>
+            <field name="arch" type="xml">
+                <form string="Google Keys Configuration" class="oe_form_configuration">
+                    <group>
+                        <field name="name"/>
+                        <field name="email"/>
+                        <field name="used"/>
+                        <field name="active_run"/>
+                    </group>
+                </form>
+            </field>
+        </record>
+
+        <record id="action_api_keys_config_settings" model="ir.actions.act_window">
+            <field name="name">Google Keys</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">api.keys</field>
+            <field name="view_mode">tree,form</field>
+            <field name="target">current</field>
+        </record>
+        <menuitem id="menu_api_keys_settings" name="Google Keys" parent="base_setup.menu_config" sequence="11" action="action_api_keys_config_settings"/>
+
+        ##############Sync Server Config############
+
+        <record id="view_server_config_config_tree" model="ir.ui.view">
+            <field name="name">server.config.setting.tree</field>
+            <field name="model">server.config</field>
+            <field eval="8" name="priority"/>
+            <field name="arch" type="xml">
+                <tree string="Server Config Configuration" >
+                    <field name="name"/>
+                    <field name="host"/>
+                    <field name="port"/>
+                    <field name="dbname"/>
+                    <field name="active"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="view_server_config_config_settings" model="ir.ui.view">
+            <field name="name">Server Config</field>
+            <field name="model">server.config</field>
+            <field name="arch" type="xml">
+                <form string="Server Configuration" class="oe_form_configuration">
+                    <sheet>
+                        <group colspan="4" cols="4">
+                            <group>
+                                <field name="name"/>
+                                <field name="host"/>
+                                <field name="username"/>
+                                <field name="dbname"/>
+                            </group>
+                            <group>
+                                <field name="active"/>
+                                <field name="port"/>
+                                <field name="password" password="1"/>
+                            </group>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="action_server_config_config_settings" model="ir.actions.act_window">
+            <field name="name">Server Config</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">server.config</field>
+            <field name="view_mode">tree,form</field>
+            <field name="target">current</field>
+        </record>
+        <menuitem id="menu_server_config_settings" name="Server Sync Config" parent="base_setup.menu_config" sequence="11" action="action_server_config_config_settings"/>
+
+        ################################################################################
+
+        <!--   ++++++ Config Menu -->
+        <menuitem name="Configuration" id="menu_config" sequence="16" groups="bista_iugroup.group_record_manager"/>
+        <menuitem name="Configuration" id="sub_menu_config" parent="menu_config" groups="bista_iugroup.group_record_manager" sequence="1"/>
+        <menuitem id="menu_customer_group_settings" name="Customer Group" parent="bista_iugroup.sub_menu_config"
+                  sequence="12" action="action_customer_group" groups="bista_iugroup.group_record_manager"/>
+        <!-- Default Country -->
+        <record id="view_default_country_tree" model="ir.ui.view">
+            <field name="name">default.country.tree</field>
+            <field name="model">default.country</field>
+            <field eval="8" name="priority"/>
+            <field name="arch" type="xml">
+                <tree string="Default Country">
+                    <field name="name"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="view_default_country_form" model="ir.ui.view">
+            <field name="name">default.country.form</field>
+            <field name="model">default.country</field>
+            <field eval="8" name="priority"/>
+            <field name="arch" type="xml">
+                <form string="Default Country">
+                    <label for="name" string="Country:"/>
+                    <field name="name" />
+                </form>
+            </field>
+        </record>
+
+        <record id="action_default_country_form" model="ir.actions.act_window">
+            <field name="name">Default Country</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">default.country</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Click to add a Default Country .
+                </p><p>
+                OpenERP helps you easily track all activities related to
+                a Default Country; discussions, history of Default Country, etc.
+            </p>
+            </field>
+        </record>
+        <menuitem id="menu_default_country_form" parent="menu_configurtion_operations" action="action_default_country_form" sequence="2"
+                  groups="bista_iugroup.group_record_manager" />
+        <!-- meta.zone -->
+        <record id="view_meta_zone_tree" model="ir.ui.view">
+            <field name="name">meta.zone.tree</field>
+            <field name="model">meta.zone</field>
+            <field eval="8" name="priority"/>
+            <field name="arch" type="xml">
+                <tree string="Meta Zone">
+                    <field name="name"/>
+                    <field name="company_id" groups="base.group_multi_company"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="view_meta_zone_form" model="ir.ui.view">
+            <field name="name">meta.zone.form</field>
+            <field name="model">meta.zone</field>
+            <field eval="8" name="priority"/>
+            <field name="arch" type="xml">
+                <form string="Default Country">
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="company_id" groups="base.group_multi_company" widget="selection" />
+                        </group>
+                    </group>
+                    <newline/>
+                    <field name="zone_lines" nolabel="1">
+                        <tree string="Zone" editable="top">
+                            <field name="name" />
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </tree>
+                    </field>
+                </form>
+            </field>
+        </record>
+
+        <record id="action_meta_zone_form" model="ir.actions.act_window">
+            <field name="name">Meta Zone</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">meta.zone</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Click to add a Meta Zone .
+                </p><p>
+                OpenERP helps you easily track all activities related to
+                a Meta Zone; discussions, history of Meta Zone, etc.
+            </p>
+            </field>
+        </record>
+        <menuitem id="menu_meta_zone_form" parent="sub_menu_config" action="action_meta_zone_form" sequence="2"
+                  groups="bista_iugroup.group_record_manager" />
+
+        <!-- zone -->
+        <record id="view_zone_tree" model="ir.ui.view">
+            <field name="name">zone.tree</field>
+            <field name="model">zone</field>
+            <field eval="8" name="priority"/>
+            <field name="arch" type="xml">
+                <tree string="Zone">
+                    <field name="name"/>
+                    <field name="meta_zone_id" />
+                    <field name="company_id" groups="base.group_multi_company"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="view_zone_form" model="ir.ui.view">
+            <field name="name">zone.form</field>
+            <field name="model">zone</field>
+            <field eval="8" name="priority"/>
+            <field name="arch" type="xml">
+                <form string="Zone">
+                    <sheet>
+                        <group colspan="4" cols="4">
+                            <group>
+                                <field name="name"/>
+                                <field name="company_id" groups="base.group_multi_company" widget="selection" required="1"/>
+                            </group>
+                            <group>
+                                <field name="meta_zone_id" options="{'limit': 7, 'create': false, 'create_edit': false ,'always_reload': True}"
+                                       required="1" domain="[('company_id','=',company_id)]"/>
+                            </group>
+                        </group>
+                        <newline/>
+                        <field name="zip_code_ids" nolabel="1" context="{'company_id': company_id}" domain="[('company_id','=', company_id)]">
+                        </field>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="action_zone_form" model="ir.actions.act_window">
+            <field name="name">Zone</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">zone</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Click to add a Meta Zone .
+                </p><p>
+                OpenERP helps you easily track all activities related to
+                a Zone, Zip Codes, etc.
+            </p>
+            </field>
+        </record>
+
+        <menuitem id="menu_zone_form" parent="sub_menu_config" action="action_zone_form" sequence="3" groups="bista_iugroup.group_record_manager"/>
+
+        <record id="view_language_group_form" model="ir.ui.view">
+            <field name="name">language.group.form</field>
+            <field name="model">language.group</field>
+            <field eval="8" name="priority"/>
+            <field name="arch" type="xml">
+                <form string="Language Group">
+                    <field name="name"/>
+                    <field name="company_id" groups="base.group_multi_company" widget="selection" />
+                </form>
+            </field>
+        </record>
+
+        <!-- Language -->
+        <record id="view_language_tree" model="ir.ui.view">
+            <field name="name">language.tree</field>
+            <field name="model">language</field>
+            <field eval="8" name="priority"/>
+            <field name="arch" type="xml">
+                <tree string="Language">
+                    <field name="name"/>
+                    <field name="lang_group" />
+                    <field name="is_certified_lang" />
+                    <field name="active_custom"/>
+                    <field name="iscourt_certified_lang" />
+                    <field name="company_id" groups="base.group_multi_company" widget="selection"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="view_language_form" model="ir.ui.view">
+            <field name="name">language.form</field>
+            <field name="model">language</field>
+            <field eval="8" name="priority"/>
+            <field name="arch" type="xml">
+                <form string="Language">
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="lang_group" required="1"/>
+                            <field name="is_certified_lang" />
+                            <field name="active_custom"/>
+                            <field name="iscourt_certified_lang" />
+                            <field name="company_id" groups="base.group_multi_company" widget="selection"/>
+                        </group>
+                    </group>
+                </form>
+            </field>
+        </record>
+
+        <record id="action_language_form" model="ir.actions.act_window">
+            <field name="name">Language</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">language</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Click to add a language .
+                </p><p>
+                OpenERP helps you easily track all activities related to
+                a language; discussions, history of business language, etc.
+            </p>
+            </field>
+        </record>
+
+        <menuitem id="menu_language_form" parent="menu_event_lang_config" action="action_language_form" sequence="1" groups="bista_iugroup.group_record_manager" />
+
+        <record id="view_interpreter_history_tree" model="ir.ui.view">
+            <field name="name">interpreter.alloc.history.tree</field>
+            <field name="model">interpreter.alloc.history</field>
+            <field eval="8" name="priority"/>
+            <field name="arch" type="xml">
+                <tree string="Interpreter Alloc History" create="false">
+                    <field name="name" context="{ 'form_view_ref':'bista_iugroup.view_interpreter_form'}"/>
+                    <field name="partner_id" />
+                    <field name="city" />
+                    <field name="language_id" />
+                    <field name="patient_id" />
+                    <field name="event_id1" string="Event"/>
+                    <field name="rate" />
+                    <field name="event_date" />
+                    <field name="event_id" />
+                    <field name="task_id" />
+                </tree>
+            </field>
+        </record>
+
+        <record id="view_interpreter_history_form" model="ir.ui.view">
+            <field name="name">interpreter.alloc.history.form</field>
+            <field name="model">interpreter.alloc.history</field>
+            <field eval="8" name="priority"/>
+            <field name="arch" type="xml">
+                <form string="Interpreter Alloc History"  create="false" edit="false">
+                    <sheet>
+                        <group colspan="4" col="4" readonly="1">
+                            <group>
+                                <field name="name" context="{ 'form_view_ref':'bista_iugroup.view_interpreter_form'}"/>
+                                <field name="partner_id" context="{'form_view_ref':'bista_iugroup.view_partner_form_inherit_iu'}"/>
+                                <field name="city" />
+                                <field name="event_date" />
+                                <field name="task_id" />
+                                <field name="event_start" />
+                            </group>
+                            <group>
+                                <field name="rate" />
+                                <field name="event_id1" />
+                                <field name="event_end" />
+                                <field name="patient_id" />
+                                <field name="event_id" string="Event"/>
+                            </group>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="action_interpreter_history_form" model="ir.actions.act_window">
+            <field name="name">Interpreter Alloc History</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">interpreter.alloc.history</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Click to add a language .
+                </p><p>
+                OpenERP helps you easily track all activities related to
+                a Interpreter Allocation History ; discussions, history of business language, etc.
+            </p>
+            </field>
+        </record>
+        <menuitem id="menu_interpreter_history_form" parent="menu_event_lang_config" action="action_interpreter_history_form" sequence="2"
+                  groups="bista_iugroup.group_record_manager" />
+
+        <record id="view_interpreter_service_provider_form" model="ir.ui.view">
+            <field name="name">interpreter.service.provider.form</field>
+            <field name="model">interpreter.service.provider</field>
+            <field eval="8" name="priority"/>
+            <field name="arch" type="xml">
+                <form string="Interpreter Service Provider" version="7.0">
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="name"/>
+                                <field name="type"/>
+                            </group>
+                            <group>
+                                <field name="company_id"/>
+                                <field name="dba"/>
+                                <field name="gender"/>
+                            </group>
+                        </group>
+                        <div>
+                            <separator string="Name"/>
+                            <!--<group>-->
+                            <field name="first_name" style="padding-right:10px" class="oe_inline" nolabel="1" placeholder="First Name"/>
+                            <field name="middle_name"  style="padding-right:10px" class="oe_inline" nolabel="1" placeholder="Middle Name"/>
+                            <field name="last_name"  style="padding-right:10px" class="oe_inline" nolabel="1" placeholder="Last Name"/>
+                            <!--</group>-->
+                        </div>
+                        <newline/>
+                        <notebook>
+                            <page string="Address Info">
+                                <group colspan="6" col="2">
+                                    <group String="Address">
+                                        <field name="street"/>
+                                        <field name="city1"/>
+                                        <field name="country_id"/>
+                                        <!--</group>-->
+                                        <!--<group>-->
+                                        <field name="street2"/>
+                                        <field name="state_id"/>
+                                        <field name="zip"/>
+                                    </group>
+                                    <group String="Geo-Info">
+                                        <field name="latitude"/>
+                                        <field name="longitude"/>
+                                        <field name="is_internation"/>
+                                        <button string="Get Geo"/>
+                                        <button string="See Map"/>
+                                    </group>
+                                </group>
+                            </page>
+                            <page string="Contact Info">
+                            </page>
+                            <page String="Other Info">
+                                <group colspan="8" col="6">
+                                    <field name="fed_id"/>
+                                    <field name="certification"/>
+                                    <field name="certificate_exp_date"/>
+                                    <field name="coverage_counties"/>
+                                    <field name="coverage_area"/>
+                                    <field name="languages"/>
+                                    <field name="payment_terms"/>
+                                </group>
+                            </page>
+                        </notebook>
+                        <notebook>
+                            <page string="Terminology">
+                                <group>
+                                    <group>
+                                        <field name="medical"/>
+                                        <field name="simultaneous"/>
+                                        <!--</group>-->
+                                        <!--<group>-->
+                                        <field name="legal"/>
+                                        <field name="voiceover"/>
+                                    </group>
+                                    <!--<newline/>-->
+                                    <group>
+                                        <field name="wc_exmpt"/>
+                                        <field name="wc_certificate"/>
+                                        <field name="negotiated_rate"/>
+                                        <button string="View Standard Rates"/>
+                                        <newline/>
+                                        <newline/>
+                                        <!--</group>-->
+                                        <!--<group>-->
+                                        <field name="date_modified"/>
+                                        <field name="modified_by"/>
+                                    </group>
+                                </group>
+                            </page>
+                            <page string="Contract Information">
+                                <group>
+                                    <group>
+                                        <field name="resume_on_file"/>
+                                        <field name="contract_agreement"/>
+                                        <field name="rate_agreement"/>
+                                        <field name="wg_available"/>
+                                    </group>
+                                    <group>
+                                        <field name="nationwide"/>
+                                        <field name="active"/>
+                                        <field name="qualified"/>
+                                        <field name="certified"/>
+                                    </group>
+                                </group>
+                            </page>
+                            <page string="Payment Method">
+                                <group colspan="8" col="6">
+                                    <group>
+                                        <field name="check"/>
+                                        <field name="credit_card"/>
+                                    </group>
+                                    <group>
+                                        <field name="paypal"/>
+                                        <field name="western_union"/>
+                                    </group>
+                                </group>
+                                <button string="Reconcile Vendor"/>
+                            </page>
+                            <page string="Notes">
+                                <group>
+                                    <separator string="Notes"/>
+                                    <newline/>
+                                    <field name="notes" nolabel="1"/>
+                                    <newline/>
+                                    <separator string="The following displays the files related to this record. Double click to View an Item."/>
+                                    <newline/>
+                                    <field name="notes1" nolabel="1"/>
+                                </group>
+                                <button string="Remove Existing"/>
+                                <button string="Archive"/>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="view_project_form" model="ir.ui.view">
+            <field name="name">project.form</field>
+            <field name="model">project</field>
+            <field eval="8" name="priority"/>
+            <field name="arch" type="xml">
+                <form string="Project" version="7.0">
+                    <sheet>
+                        <group>
+                            <field name="name"/>
+                            <field name="company_id"/>
+                            <field name="partner_proj_ids" string="Customer" invisible="1">
+                                <tree>
+                                    <field name="name"/>
+                                    <field name="last_name"/>
+                                </tree>
+                            </field>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="action_interpreter_service_provider_form" model="ir.actions.act_window">
+            <field name="name">Interpreter Service Provider</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">interpreter.service.provider</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Click to add a Service Provider.
+                </p><p>
+                OpenERP helps you easily create
+                an Interpreter Service Provider.
+            </p>
+            </field>
+        </record>
+
+        <menuitem id="menu_interpreter_service_provider_form" parent="menu_event_lang_config" action="action_interpreter_service_provider_form" sequence="3"
+                  groups="bista_iugroup.group_record_manager" />
+
+    </data>
+</odoo>

@@ -1,0 +1,584 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <record id="view_location_form_for_customer" model="ir.ui.view">
+            <field name="name">location.customer.form</field>
+            <field name="model">location</field>
+            <field eval="20" name="priority"/>
+            <field name="arch" type="xml">
+                <form string="Locations" version="7.0" quick_create="false">
+                 <header>
+                                <!--script buttons commented-->
+                    <!-- <button name="geo_localize_all" string="Geo All Locations" type="object" class="oe_highlight"
+                            groups="bista_iugroup.group_iu_admin"/> -->
+                 </header>
+                 <sheet>
+                    <div class="oe_list_content">
+                       <separator string="Location Information"/>
+                       <group colspan="4" col="4">
+                            <group>
+                                <field name="name" string=" Name" default_focus="1" placeholder=" Name...." colspan="1"/>
+                                <field name="complete_name" invisible="1" />
+                            </group>
+                            <group >
+                                <field name="actual_name" string="Department/Specialty" />
+                            </group>
+
+                       </group>
+                   </div>
+                   <group>
+                        <h4 style="color: #4000FF;">Please provide name of building, if any. If none, please state ‘none’. If going to a private residence, please state 'client residence'</h4>
+                   </group>
+                   <group colspan="4" col="6" groups="bista_iugroup.group_record_manager,bista_iugroup.group_iu_cust_service,bista_iugroup.group_iu_recruiter" >
+                        <group>
+                            <field name="active"/>
+                        </group>
+                        <group>
+                            <field name="is_alert" />
+                        </group>
+                        <group>
+                            <field name="is_sdhhs" />
+                        </group>
+                    </group>
+                    <group colspan="4" col="4">
+                    	<group>
+                            <field name="street" placeholder="Street..." string="Address 1" required="0"/>
+                                <field name="street2"  placeholder="Street 2..." string="Address 2"/>
+                                <field name="city" placeholder="City" required="1" />
+                                <field name="patient_id" placeholder="Related Claimant" domain="[('company_id','=',company_id)]" options="{'limit': 7, 'create': false, 'create_edit': false, 'no_open': True}"
+                                       invisible="1" groups="bista_iugroup.group_record_manager,bista_iugroup.group_iu_cust_service,bista_iugroup.group_iu_recruiter"/>
+                                <field name="doctor_id" placeholder="Related Doctor" domain="[('company_id','=',company_id)]" options="{'limit': 7, 'create': false, 'create_edit': false, 'no_open': True}"
+                                       invisible="1" groups="bista_iugroup.group_record_manager,bista_iugroup.group_iu_cust_service,bista_iugroup.group_iu_recruiter"/>
+                                <field name="region"/>
+                                <field name="ordering_partner_id" domain="[('customer', '=', 1),('cust_type', '=','customer'),('is_company', '=',0),('company_id','=',company_id)]"
+                                       invisible="1"  context="{ 'form_view_ref':'bista_iugroup.view_partner_form_inherit_iu'}" options="{'limit': 7, 'create': false, 'create_edit': false, 'no_open': True}"
+                                       string="Related Customer" groups="bista_iugroup.group_record_manager,bista_iugroup.group_iu_cust_service,bista_iugroup.group_iu_recruiter"/>
+                                <separator/>
+                            </group>
+                            <group>
+                                <field name="zone_id" domain="[('company_id','=',company_id)]" options="{'limit': 7, 'create': false, 'create_edit': false, 'no_open': True}"
+                                       attrs="{'required':[('company_id','=',6)]}" groups="bista_iugroup.group_record_manager,bista_iugroup.group_iu_cust_service,bista_iugroup.group_iu_recruiter" />
+                                <field name="state_id" class="oe_no_button" placeholder="State" options="{'limit': 7, 'create': false, 'create_edit': false, 'no_open': True}"
+                                       on_change="onchange_state(state_id)" required="1"/>
+                                <field name="country_id" placeholder="Country" class="oe_no_button" options="{'limit': 7, 'create': false, 'create_edit': false, 'no_open': True}"/>
+                                <field name="zip" placeholder="ZIP"  on_change="onchange_zip(zip , company_id)" required="1"/>
+                                <field name="timezone" invisible="1"/>
+                            </group>
+	                </group>
+                        <group colspan="4" col="4">
+                            <group>
+                                <button string="Geo Localize" name="geo_localize" type="object" class="oe_highlight"
+                                    groups="bista_iugroup.group_record_manager,bista_iugroup.group_iu_cust_service,bista_iugroup.group_iu_recruiter"/>
+                            </group>
+                            <group>
+                                <field name="latitude" />
+                            </group>
+                            <group>
+                                <field name="longitude"/>
+                            </group>
+                        </group>
+	                <group colspan="4" col="4">
+                    	<group colspan="2">
+                            <field name="phone" placeholder="e.g. +32.81.81.37.00" String="Phone 1" on_change="onchange_phone(phone , phone2)"/>
+                            <field name="fax" placeholder="Fax..."/>
+                        </group>
+                        <group colspan="2">
+                            <field name="phone2" placeholder="e.g. +32.81.81.37.00" String="Phone 2" on_change="onchange_phone(phone , phone2)"/>
+                            <field name="company_id" groups="base.group_multi_company" widget="selection"/>
+                        </group>
+	                </group>
+                    <separator string="Location Note"/>
+                    <field name="comment" placeholder="Put a note..." nolabel="1" colspan="4" widget="html"/>
+<!--                    <notebook colspan="4" invisible="1">
+                        <page string="Other Info">
+                            <group>
+                                <group>
+                                    <field name="user_id" domain="[('company_id','=',company_id)]"
+                                           options="{'limit': 7, 'create': false, 'create_edit': false}"/>
+                                </group>
+                                <group>
+                                    <field name="date"/>
+                                </group>
+                                <group>
+                                </group>
+                            </group>
+                        </page>
+                    </notebook>-->
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids" widget="mail_followers"/>
+                    <field name="message_ids" widget="mail_thread"/>
+                </div>
+                </form>
+            </field>
+        </record>
+
+        <record id="view_speciality_tree" model="ir.ui.view">
+            <field name="name">speciality.tree</field>
+            <field name="model">speciality</field>
+            <field eval="8" name="priority"/>
+            <field name="arch" type="xml">
+                <tree string="Speciality">
+                    <field name="name"/>
+                    <field name="company_id" groups="base.group_multi_company"/>
+                </tree>
+            </field>
+        </record>
+        
+        <record id="view_speciality_form" model="ir.ui.view">
+            <field name="name">speciality.form</field>
+            <field name="model">speciality</field>
+            <field eval="8" name="priority"/>
+            <field name="arch" type="xml">
+                <form string="Speciality">
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="company_id" groups="base.group_multi_company" widget="selection" required="1"/>
+                        </group>
+                    </group>
+                </form>
+            </field>
+        </record>
+
+        <record id="action_speciality_form" model="ir.actions.act_window">
+            <field name="name">Speciality</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">speciality</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Click to add a speciality .
+                </p><p>
+                    Odoo helps you easily track all activities related to
+                    a distribution; discussions, history of business speciality etc.
+                </p>
+            </field>
+        </record>
+
+        <menuitem id="menu_speciality_form" parent="menu_configurtion_operations" action="action_speciality_form" sequence="5"
+         groups="bista_iugroup.group_record_manager"/>
+
+        <!-- Doctor -->
+        <record id="view_doctor_tree" model="ir.ui.view">
+            <field name="name">doctor.tree</field>
+            <field name="model">doctor</field>
+            <field eval="8" name="priority"/>
+            <field name="arch" type="xml">
+                <tree string="Contacts">
+                    <field name="name" string="First Name"/>
+                    <field name="middle_name" invisible="1"/>
+                    <field name="last_name"/>
+                    <field name="complete_name" invisible="1"/>
+                    <field name="speciality" />
+                    <field name="function" invisible="1"/>
+                    <field name="phone"/>
+                    <field name="city"/>
+                    <field name="state"/>
+                    <field name="user_id" invisible="1"/>
+                    <field name="company_id" groups="base.group_multi_company" widget="selection"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="view_doctor_form" model="ir.ui.view">
+            <field name="name">doctor.form</field>
+            <field name="model">doctor</field>
+            <field eval="1" name="priority"/>
+            <field name="arch" type="xml">
+                <form string="doctors">
+                    <sheet>
+                        <div class="oe_list_content">
+                            <separator string="Doctor Information"/>
+                            <group>
+                                <group>
+                                    <field name="title" domain="[('company_id','=',company_id)]"  style="padding-right:10px"/>
+                                    <field name="email" string="Email 1" widget="email" placeholder="Primary Email..."/>
+                                    <field name="email2" widget="email" placeholder="Secondry Email..."/>
+                                    <field name="speciality" domain="[('company_id','=',company_id)]"/>
+
+                                </group>
+                                <group>
+                                    <field name="gender"/>
+                                    <field name="company_id" groups="base.group_multi_company" widget="selection" required="1"/>
+                                    <field name="active"/>
+                                    <field name="is_alert"/>
+                                </group>
+                            </group>
+                            <group colspan="6" cols="4">
+                                <field name="name" string="First Name" default_focus="1" placeholder="First Name" colspan="1"/>
+                                <field name="middle_name"  placeholder="Middle Name" colspan="1"/>
+                                <field name="last_name"  placeholder="Last Name" colspan="1" required="1"/>
+                            </group>
+                        </div>
+                        <newline/>
+                        <separator string="Locations"/>
+                        <field name="location_ids" nolabel="1" context="{'default_is_pat_loc': 0 , 'company_id': company_id,'form_view_ref':'bista_iugroup.view_location_form'}" domain="[('company_id','=', company_id)]">
+                            <tree>
+                                <field name="name" />
+                                <field name="phone" />
+                                <field name="street" />
+                                <field name="street2" />
+                                <field name="city" />
+                                <field name="state_id" />
+                                <field name="country_id" />
+                            </tree>
+                        </field>
+                        <separator string="Doctor Note"/>
+                        <field name="comment" placeholder="Put a note..." nolabel="1" colspan="4" widget="html"/>
+                    </sheet>
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids" widget="mail_followers"/>
+                        <field name="message_ids" widget="mail_thread"/>
+                    </div>
+                </form>
+            </field>
+        </record>
+
+        <record id="view_doctor_filter" model="ir.ui.view">
+            <field name="name">doctor.select</field>
+            <field name="model">doctor</field>
+            <field name="arch" type="xml">
+                <search string="Search Doctor">
+                    <field name="complete_name"/>
+                    <field name="name" filter_domain="['|',('name','ilike',self),('ref','=',self)]"/>
+                    <field name="last_name"/>
+                    <field name="middle_name"/>
+                    <field name="speciality" />
+                    <field name="function"/>
+                    <field name="phone"/>
+                    <field name="city"/>
+                    <field name="state"/>
+                    <field name="user_id" />
+                    <field name="company_id" />
+                    <filter help="My Doctors" icon="fa-user" domain="[('user_id','=',uid)]"/>
+                    <separator/>
+                    <group expand="0" string="Group By...">
+                        <filter string="Salesperson" icon="fa-user" domain="[]" context="{'group_by' : 'user_id'}" />
+                        <filter string="Company" icon="fa-user" domain="[]" context="{'group_by' : 'company_id'}" />
+                    </group>
+               </search>
+            </field>
+        </record>
+
+        <!-- Doctor Kanban View -->
+        <record model="ir.ui.view" id="doctor_kanban_view">
+            <field name="name">doctor.kanban</field>
+            <field name="model">doctor</field>
+            <field name="arch" type="xml">
+                <kanban>
+                    <field name="name"/>
+                    <field name="title"/>
+                    <field name="email"/>
+                    <field name="email2"/>
+                    <field name="function"/>
+                    <field name="phone"/>
+                    <field name="mobile"/>
+                    <templates>
+                        <t t-name="kanban-box">
+                            <div class="oe_kanban_vignette oe_semantic_html_override">
+                                <a type="open">
+                                    <img t-att-src='_s + "/base/static/src/img/avatar.png"' class="oe_kanban_image"/>
+                                </a>
+                                <div class="oe_kanban_details">
+                                    <h4 class="oe_partdoctording"><a type="open"><field name="name"/> <field name="middle_name"/> <field name="last_name"/></a></h4>
+                                    <div class="oe_kanban_partner_categories"/>
+                                    <div class="oe_kanban_partner_links"/>
+                                    <ul>
+                                        <li t-if="record.email.raw_value"><a t-attf-href="mailto:#{record.email.raw_value}"><field name="email"/></a></li>
+                                        <li t-if="record.email2.raw_value"><a t-attf-href="mailto:#{record.email2.raw_value}"><field name="email2"/></a></li>
+                                        <li t-if="record.speciality.raw_value"><field name="speciality"/></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </t>
+                    </templates>
+                </kanban>
+            </field>
+        </record>
+
+        <record id="action_doctor_form" model="ir.actions.act_window">
+            <field name="name">Doctors</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">doctor</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form,kanban</field>
+            <field name="search_view_id" ref="view_doctor_filter"/> 
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Click to add a contact in your address book.
+                </p><p>
+                    Odoo helps you easily track all activities related to
+                    a doctor; discussions, history of business opportunities,
+                    documents, etc.
+                </p>
+            </field>
+        </record>
+
+        <record id="action_doctor_form_view1" model="ir.actions.act_window.view">
+            <field eval="2" name="sequence"/>
+            <field name="view_mode">kanban</field>
+            <field name="view_id" ref="doctor_kanban_view"/>
+            <field name="act_window_id" ref="action_doctor_form"/>
+        </record>
+        <record id="action_doctor_form_view2" model="ir.actions.act_window.view">
+            <field eval="1" name="sequence"/>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="view_doctor_form"/>
+            <field name="act_window_id" ref="action_doctor_form"/>
+        </record>
+        <record id="action_doctor_tree_view1" model="ir.actions.act_window.view">
+            <field name="sequence" eval="0"/>
+            <field name="view_mode">tree</field>
+            <field name="view_id" ref="view_doctor_tree"/>
+            <field name="act_window_id" ref="action_doctor_form"/>
+        </record>
+        
+        <!-- Location -->
+        <record id="view_location_tree" model="ir.ui.view">
+            <field name="name">location.tree</field>
+            <field name="model">location</field>
+            <field eval="8" name="priority"/>
+            <field name="arch" type="xml">
+                <tree string="Locations" >
+                    <field name="name" string="First Name"/>
+                    <field name="complete_name" invisible="1"/>
+                    <field name="phone" />
+                    <field name="street" />
+                    <field name="street2" />
+                    <field name="city" />
+                    <field name="zip" />
+                    <field name="state_id" invisible="1"/>
+                    <field name="country_id" invisible="1"/>
+                    <field name="company_id" groups="base.group_multi_company" widget="selection"/>
+                    <field name="user_id" invisible="1"/>
+                </tree>
+            </field>
+        </record>
+        
+        <record id="view_simplified_location_form" model="ir.ui.view">
+            <field name="name">location.form</field>
+            <field name="model">location</field>
+            <field eval="1" name="priority"/>
+            <field name="arch" type="xml">
+                <form string="Location"  quick_create="false">
+                    <sheet>
+                        <div class="oe_list_content">
+                            <separator string="Location Information"/>
+                            <group colspan="4" col="4">
+                                <group>
+                                    <field name="name" string=" Name" readonly="1" default_focus="1" placeholder=" Name...." colspan="1"/>
+                                    <field name="complete_name" invisible="1" />
+                                </group>
+                                <group >
+                                    <field name="actual_name" readonly="1"/>
+                                </group>
+                            </group>
+                        </div>
+                        <group colspan="4" col="6" >
+                            <group>
+                                <field name="active" invisible="1"/>
+                            </group>
+                            <group>
+                            </group>
+                            <group>
+                            </group>
+                        </group>
+                        <group colspan="4" col="4" >
+                    	    <group>
+                                <field name="street" readonly="1" placeholder="Street..." string="Address 1" required="0"/>
+                                <field name="street2" readonly="1" placeholder="Street 2..." string="Address 2"/>
+                                <field name="city" readonly="1" placeholder="City" required="1" />
+                                <field name="patient_id"  placeholder="Related Claimant" domain="[('company_id','=',company_id)]" options="{'limit': 7, 'create': false, 'create_edit': false, 'no_open': True}"
+                                   invisible="1" groups="bista_iugroup.group_record_manager,bista_iugroup.group_iu_cust_service,bista_iugroup.group_iu_recruiter"/>
+                                <field name="doctor_id" placeholder="Related Doctor" domain="[('company_id','=',company_id)]" options="{'limit': 7, 'create': false, 'create_edit': false, 'no_open': True}"
+                                   invisible="1" groups="bista_iugroup.group_record_manager,bista_iugroup.group_iu_cust_service,bista_iugroup.group_iu_recruiter"/>
+                                <field name="ordering_partner_id" domain="[('customer', '=', 1),('cust_type', '=','customer'),('is_company', '=',0),('company_id','=',company_id)]"
+                                   invisible="1"  context="{ 'form_view_ref':'bista_iugroup.view_partner_form_inherit_iu'}" options="{'limit': 7, 'create': false, 'create_edit': false, 'no_open': True}"
+                                   string="Related Customer" groups="bista_iugroup.group_record_manager,bista_iugroup.group_iu_cust_service,bista_iugroup.group_iu_recruiter"/>
+                                <separator/>
+                            </group>
+                            <group>
+                                <field name="zone_id" readonly="1" domain="[('company_id','=',company_id)]" options="{'limit': 7, 'create': false, 'create_edit': false, 'no_open': True}"
+                                       attrs="{'required':[('company_id','=',6)]}" groups="bista_iugroup.group_record_manager,bista_iugroup.group_iu_cust_service,bista_iugroup.group_iu_recruiter" />
+                                <field name="state_id" readonly="1" class="oe_no_button" placeholder="State" options="{'limit': 7, 'create': false, 'create_edit': false, 'no_open': True}"
+                                        required="1"/>
+                                <field name="country_id" readonly="1" placeholder="Country" class="oe_no_button" options="{'limit': 7, 'create': false, 'create_edit': false, 'no_open': True}"/>
+                                <field name="zip" readonly="1" placeholder="ZIP"   required="1"/>
+                                <field name="timezone" invisible="1"/>
+                            </group>
+	                    </group>
+                        <group colspan="4" col="4" invisible="1">
+                            <group colspan="2">
+                                <field name="phone" placeholder="e.g. +32.81.81.37.00" String="Phone 1" />
+                                <field name="fax" placeholder="Fax..."/>
+                            </group>
+                            <group colspan="2">
+                                <field name="phone2" placeholder="e.g. +32.81.81.37.00" String="Phone 2" />
+                                <field name="company_id" groups="base.group_multi_company" widget="selection"/>
+                            </group>
+	                    </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+        
+        <record id="view_location_form" model="ir.ui.view">
+            <field name="name">location.form</field>
+            <field name="model">location</field>
+            <field eval="1" name="priority"/>
+            <field name="arch" type="xml">
+                <form string="Locations" version="7.0" quick_create="false">
+                    <header>
+                    </header>
+                    <sheet>
+                        <div class="oe_list_content">
+                            <separator string="Location Information"/>
+                            <group>
+                                <group>
+                                    <field name="name" string=" Name" default_focus="1" placeholder=" Name...." colspan="1"/>
+                                    <field name="complete_name" invisible="1" />
+                                </group>
+                                <group>
+                                    <field name="actual_name" />
+                                </group>
+                            </group>
+                        </div>
+                        <group>
+                            <h4 style="color: #4000FF;">Please provide name of building, if any. If none, please state ‘none’. If going to a private residence, please state 'client residence'</h4>
+                        </group>
+                        <group  col="3" groups="bista_iugroup.group_record_manager,bista_iugroup.group_iu_cust_service,bista_iugroup.group_iu_recruiter" >
+                            <group>
+                                <field name="active"/>
+                            </group>
+                            <group>
+                                <field name="is_alert" />
+                            </group>
+                            <group>
+                                <field name="is_sdhhs" />
+                            </group>
+                        </group>
+                        <group>
+                    	    <group>
+                                <field name="street" placeholder="Street..." string="Address 1" required="0"/>
+                                    <field name="street2"  placeholder="Street 2..." string="Address 2"/>
+                                    <field name="city" placeholder="City" required="1" />
+                                    <field name="patient_id" placeholder="Related Claimant" domain="[('company_id','=',company_id)]" options="{'limit': 7, 'create': false, 'create_edit': false, 'no_open': True}"
+                                       invisible="1" groups="bista_iugroup.group_record_manager,bista_iugroup.group_iu_cust_service,bista_iugroup.group_iu_recruiter"/>
+                                    <field name="doctor_id" placeholder="Related Doctor" domain="[('company_id','=',company_id)]" options="{'limit': 7, 'create': false, 'create_edit': false, 'no_open': True}"
+                                       invisible="1" groups="bista_iugroup.group_record_manager,bista_iugroup.group_iu_cust_service,bista_iugroup.group_iu_recruiter"/>
+                                    <field name="address_type_id" domain="[('company_id','=',company_id)]" context="{'company_id': company_id }"
+                                       options="{'limit': 7, 'create': false, 'create_edit': false, 'no_open': True}"/>
+                                    <field name="region" />
+                                    <field name="ordering_partner_id" domain="[('customer', '=', 1),('cust_type', '=','customer'),('is_company', '=',0),('company_id','=',company_id)]"
+                                       invisible="1"  context="{ 'form_view_ref':'bista_iugroup.view_partner_form_inherit_iu'}" options="{'limit': 7, 'create': false, 'create_edit': false, 'no_open': True}"
+                                       string="Related Customer" groups="bista_iugroup.group_record_manager,bista_iugroup.group_iu_cust_service,bista_iugroup.group_iu_recruiter"/>
+                                    <separator/>
+                                </group>
+                                <group>
+                                    <field name="zone_id" domain="[('company_id','=',company_id)]" options="{'limit': 7, 'create': false, 'create_edit': false, 'no_open': True}"
+                                       attrs="{'required':[('company_id','=',6)]}" groups="bista_iugroup.group_record_manager,bista_iugroup.group_iu_cust_service,bista_iugroup.group_iu_recruiter" />
+                                    <field name="state_id" class="oe_no_button" placeholder="State" options="{'limit': 7, 'create': false, 'create_edit': false, 'no_open': True}"
+                                        required="1"/>
+                                    <field name="country_id" placeholder="Country" class="oe_no_button" options="{'limit': 7, 'create': false, 'create_edit': false, 'no_open': True}"/>
+                                    <field name="zip" placeholder="ZIP"   required="1"/>
+                                    <field name="timezone" invisible="1"/>
+                                </group>
+	                    </group>
+                        <group col="3">
+                            <group>
+                                <button string="Geo Localize" name="geo_localize" type="object" class="oe_highlight"
+                                    groups="bista_iugroup.group_record_manager,bista_iugroup.group_iu_cust_service,bista_iugroup.group_iu_recruiter"/>
+                            </group>
+                            <group>
+                                <field name="latitude" />
+                            </group>
+                            <group>
+                                <field name="longitude"/>
+                            </group>
+                        </group>
+	                    <group colspan="4" col="4">
+                    	    <group colspan="2">
+                                <field name="phone" placeholder="e.g. +32.81.81.37.00" String="Phone 1" />
+                                <field name="fax" placeholder="Fax..."/>
+                            </group>
+                            <group colspan="2">
+                                <field name="phone2" placeholder="e.g. +32.81.81.37.00" String="Phone 2" />
+                                <field name="company_id" groups="base.group_multi_company" widget="selection"/>
+                            </group>
+	                    </group>
+                        <separator string="Location Note"/>
+                        <field name="comment" placeholder="Put a note..." nolabel="1" colspan="4" widget="html"/>
+                    </sheet>
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids" widget="mail_followers"/>
+                        <field name="message_ids" widget="mail_thread"/>
+                    </div>
+                </form>
+            </field>
+        </record>
+
+       <record id="view_location_filter" model="ir.ui.view">
+            <field name="name">location.select</field>
+            <field name="model">location</field>
+            <field name="arch" type="xml">
+                <search string="Search Locations">
+                    <field name="complete_name" />
+                    <field name="name" filter_domain="[('name','ilike',self)]"/>
+                    <field name="zip" />
+                    <field name="phone" />
+                    <field name="street" />
+                    <field name="street2" />
+                    <field name="city" />
+                    <field name="state_id" />
+                    <field name="country_id" />
+                    <filter help="My Location" icon="fa-user" domain="[('user_id','=',uid)]"/>
+                    <separator/>
+                    <field name="user_id"/>
+                    <group expand="0" string="Group By...">
+                        <filter string="Salesperson" icon="fa-user" domain="[]" context="{'group_by' : 'user_id'}" />
+                        <filter string="Country" context="{'group_by': 'country_id'}"/>
+                        <field name="state_id" string="State" context="{'group_by': 'state_id'}"/>
+                        <filter string="Zip" context="{'group_by': 'zip'}"/>
+                        <filter string="Company" icon="fa-user" domain="[]" context="{'group_by' : 'company_id'}" />
+                   </group>
+                </search>
+            </field>
+       </record>
+
+        <record id="action_location_form" model="ir.actions.act_window">
+            <field name="name">Locations</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">location</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="search_view_id" ref="view_location_filter"/>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Click to add a location in your address book.
+                </p><p>
+                    Odoo helps you easily track all activities related to
+                    a doctor; discussions, history of business opportunities,
+                    documents, etc.
+                </p>
+            </field>
+        </record>
+
+        <record id="action_location_form_view" model="ir.actions.act_window.view">
+            <field eval="2" name="sequence"/>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="view_location_form"/>
+            <field name="act_window_id" ref="action_location_form"/>
+        </record>
+
+        <record id="action_location_tree_view" model="ir.actions.act_window.view">
+            <field name="sequence" eval="1"/>
+            <field name="view_mode">tree</field>
+            <field name="view_id" ref="view_location_tree"/>
+            <field name="act_window_id" ref="action_location_form"/>
+        </record>
+        <menuitem id="menu_doctor" parent="menu_contacts" action="action_doctor_form" sequence="6"/>
+        <menuitem id="menu_locations" parent="menu_contacts" action="action_location_form" sequence="6"/>
+    </data>
+</odoo>

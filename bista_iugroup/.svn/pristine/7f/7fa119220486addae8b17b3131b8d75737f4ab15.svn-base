@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- wizard view -->
+        <record id="assign_to_multi_event_wizard_view" model="ir.ui.view">
+            <field name="name">Assign To Multi Event</field>
+            <field name="model">assign.multi.event.wizard</field>
+            <field name="arch" type="xml">
+                <form string="Assign Interpreter To Multi Event">
+                    <group>
+                        <field name="company_id" invisible="1"/>
+                        <field name="interpreter_id" readonly="1" invisible="1"/>
+                        <separator string="Add Events"/>
+                        <field name="event_ids" nolabel="1" colspan="4" domain="[('state','in',('draft',)),('company_id','=',company_id),('event_type','in',('language',))]"
+                               context="{ 'form_view_ref':'bista_iugroup.view_event_form'}" option="{'no_create_edit': '1'}" >
+                            <tree string="Events"  decoration-muted ="state=='unbilled'" decoration-info="state=='confirmed'" decoration-success="state in ('draft')">
+                                <field name="name" string="Event Id"/>
+                                <field name="partner_id" string="Billing Customer"/>
+                                <field name="ordering_partner_id" string="Ordering Customer" invisible="1"/>
+                                <field name="language_id" />
+                                <field name="event_start" />
+                                <field name="interpreter_id" />
+                                <field name="certification_level_id" />
+                                <field name="doctor_id" />
+                                <field name="company_id" groups="base.group_multi_company" />
+                                <field name="state" />
+                                <field name="event_type" invisible="1"/>
+                                <field name="user_id" invisible="1"/>
+                            </tree>
+                        </field>
+                    </group>
+                    <footer>
+                        <button string="Assign To Events" name="assign_to_multi_events" type="object" class="oe_highlight"/>
+                        or
+                        <button string="Cancel" class="oe_link" special="cancel" />
+                    </footer>
+                </form>
+            </field>
+        </record>
+        
+        <record model="ir.actions.act_window" id="action_assign_multi_event_wizard">
+            <field name="name">Assign To Multi Event</field>
+            <field name="res_model">assign.multi.event.wizard</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="assign_to_multi_event_wizard_view"/>
+            <field name="target">new</field>
+        </record>
+    </data>
+</odoo>

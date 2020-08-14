@@ -1,0 +1,300 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<openerp>
+    <data>
+        
+        <!-- Billing Form for Accounting -->
+        <record id="view_event_lines_tree" model="ir.ui.view">
+            <field name="name">event.lines.tree</field>
+            <field name="model">event.lines</field>
+            <field eval="8" name="priority"/>
+            <field name="arch" type="xml">
+                <tree string="Events" decoration-bf="selected==True">
+                    <field name="name" string="Event Id"/>
+                    <field name="partner_id" string="Billing Customer"/>
+                    <field name="language_id" />
+                    <field name="event_start_date" />
+                    <field name="event_start_time" />
+                    <field name="assigned_interpreters" widget="many2many_tags"/>
+                    <field name="patient_id" string="Claimant"/>
+                    <field name="doctor_id" />
+                    <field name="company_id" groups="base.group_multi_company" />
+                    <field name="state" />
+                    <field name="selected" />
+                    <field name="event_type" invisible="1"/>
+                    <field name="user_id" invisible="1"/>
+                </tree>
+            </field>
+        </record>
+        
+        <!-- Billing Form for Accounting -->
+        <record id="view_billing_form_tree" model="ir.ui.view">
+            <field name="name">billing.form.tree</field>
+            <field name="model">billing.form</field>
+            <field eval="8" name="priority"/>
+            <field name="arch" type="xml">
+                <tree string="Billing Form">
+                    <field name="name" string="First Name"/>
+                    <field name="user_id" invisible="1"/>
+                    <field name="company_id" groups="base.group_multi_company" widget="selection"/>
+                </tree>
+            </field>
+        </record>
+        
+        <record id="view_billing_form" model="ir.ui.view">
+            <field name="name">billing.form</field>
+            <field name="model">billing.form</field>
+            <field eval="1" name="priority"/>
+            <field name="arch" type="xml">
+                <form string="Billing Form" version="7.0" create="false">
+                    <header>
+                        <button string="Create Invoices" name="create_invoices" type="object" class="oe_highlight"
+                                groups="bista_iugroup.group_record_manager" attrs="{'invisible': [('invoice_exist','=',True)]}"/>
+                        <button string="Validate Invoices" name="validate_invoices" type="object" class="oe_highlight" groups="bista_iugroup.group_record_manager"
+                                attrs="{'invisible': [('cust_invoice_state','in',('open','paid',False)),('supp_invoice_state','in',('open','paid','Not Exist',False))]}" />
+                        <button string="Pay Customer Invoice" name="pay_invoice" type="object" context="{'invoice_type':'customer'}"
+                                groups="bista_iugroup.group_record_manager" attrs="{'invisible': [('cust_invoice_state','!=','open')]}"/>
+                        <button string="Pay Interpreter Invoice" name="pay_invoice" type="object" context="{'invoice_type':'supplier'}"
+                                groups="bista_iugroup.group_record_manager" attrs="{'invisible': ['|',('supp_invoice_state','!=','open'),('event_type','=','transport')]}"/>
+                        <button string="Pay Transporter Invoice" name="pay_invoice" type="object" context="{'invoice_type':'transporter'}"
+                                groups="bista_iugroup.group_record_manager" attrs="{'invisible': ['|',('supp_invoice_state2','!=','open'),('event_type','=','language')]}"/>
+                        <button string="Reset To Draft" name="reset_to_draft" type="object"
+                                groups="bista_iugroup.group_record_manager" attrs="{'invisible': ['|',('cust_invoice_state','!=','open'),('supp_invoice_state','!=','open'),'|',('supp_invoice_state2','!=','open')]}"/>
+                        
+                    </header>
+                   
+                        <group>
+                            <field name="company_id" invisible="1" />
+                            <group>
+                                <h3 style="color: #5F9EA0;"> Events for the day: </h3>
+                            </group>
+                            <field name="event_lines" nolabel="1" colspan="4" readonly="1" >
+                                <tree string="Events" decoration-bf="selected==True" decoration-info="selected==True" decoration-success="state=='unbilled'" >
+                                    <field name="name" string="Event Id"/>
+                                    <field name="partner_id" string="Billing Customer"/>
+                                    <field name="ordering_contact_id" />
+                                    <field name="language_id"/>
+                                    <field name="weekday"/>
+                                    <field name="event_start_date"/>
+                                    <field name="event_start_time"/>
+                                    <field name="event_end_time" />
+                                    <field name="assigned_interpreters" widget="many2many_tags"/>
+                                    <field name="patient_id" string="Claimant"/>
+                                    <field name="location_id" />
+                                    <field name="company_id" groups="base.group_multi_company" />
+                                    <field name="state" />
+                                    <field name="event_type" invisible="1"/>
+                                    <field name="user_id" invisible="1"/>
+                                    <field name="selected" invisible="1"/>
+                                    <button string="Select Event" name="select_event" type="object" icon="fa-check-circle"
+                                            groups="bista_iugroup.group_record_manager"/>
+                                </tree>
+                            </field>
+                        </group>
+                        <group colspan="4" cols="6">
+                            <group>
+                                <field name="selected_event_id" readonly="1" context="{'form_view_ref':'bista_iugroup.view_event_form'}"/>
+                                <field name="all_invoiced" invisible="1"/>
+                                <button string="Verify Event" name="approve_event" type="object" groups="bista_iugroup.group_record_manager" 
+                                 attrs="{'invisible': [('selected_event_id','=',False)]}" />        
+                            </group>
+                            <group>
+                                <field name="invoice_date" attrs="{'readonly': ['|','|',('cust_invoice_state','not in',('draft',False)),('supp_invoice_state','not in',('draft',False)),('invoice_exist','=',False)]}" />
+                            </group>
+                            <group>
+                                <field name="invoice_exist" />
+                                <field name="emergency_rate" />
+                            </group>
+                            <group>
+                                <field name="event_purpose" readonly="1"/>
+                                <button string="Update Timesheet" name="update_invoices" type="object"
+                                        groups="bista_iugroup.group_record_manager,account.group_account_manager"  context="{'update_invoice':True}"/> <!--attrs="{'invisible':[('invoices_created','!=',True)]}"-->
+                            </group>
+                        </group>
+                        <group colspan="4" cols="6">
+                            <group>
+                                <h3 style="color: #5F9EA0;"> Timesheet : </h3>
+                            </group>
+                            <group>
+                                <field name="invoices_created" invisible="1"/><!--bista_iugroup.group_record_manager-->
+                            </group>
+                        </group>
+                        <field name="task_lines" class="main_table" >
+                            <tree string="Task Work" editable="top" create="false" delete="false">
+                                <field name="interpreter_id" readonly="1"/>
+                                <field name="name" readonly="1"/>
+                                <field name="event_start_time" required="1" readonly="1" invisible="1" context="{'name':parent}"/>
+                                <field name="event_end_time" required="1" readonly="1" invisible="1" context="{'name':parent}"/>
+                                <field name="event_start_date" string="Date"/>
+                                <field name="event_start_hr" class="custom_integer_task" string="Start Hours" context="{'field':'event_start_hr'}" />
+                                <field name="event_start_min" class="custom_integer_task" string="Start Min" context="{'field':'event_start_min'}" />
+                                <field name="am_pm" class="custom_integer_task" string="AM/ PM"/>
+                                <field name="event_end_hr" class="custom_integer_task" string="End Hours" context="{'field':'event_end_hr'}" />
+                                <field name="event_end_min" class="custom_integer_task" string="End Min" context="{'field':'event_end_min'}" />
+                                <field name="am_pm2" class="custom_integer_task" string="AM/ PM"/>
+                                <field name="hours" readonly="1" sum="Spent Hours" class="custom_integer_task" invisible="1"/>
+                                <field name="time_spent" widget='float_time'/>
+                                <field name="wait_time"/>
+                                <field name="wait_time_bill" />
+                                <field name="travel_time" widget="float_time" />
+                                <field name="total_mileage_covered" class="custom_integer_task"/>
+                                <!--made event_out_come_id editable-->
+                                <field name="event_out_come_id" required="1" domain="[('company_id','=',company_id)]"
+                                       options="{'limit': 7, 'create': false, 'create_edit': false}"/>
+                                <field name="date" invisible="1"/>
+                                <field name="user_id" readonly="1"/>
+                                <field name="company_id" invisible="1"/>
+<!--                                <field name="edited" readonly="1" string="Done?" invisible="1"/>
+                                <button name="mark_as_done" invisible="1" type="object" icon="terp-camera_test" attrs="{'invisible':[('edited','=',True)]}"
+                                        groups="project.group_tasks_work_on_tasks,bista_iugroup.group_iu_cust_service,bista_iugroup.group_iu_recruiter,bista_iugroup.group_record_manager"/>-->
+                            </tree>
+                        </field>
+                        <group>
+                            <h3 style="color: #5F9EA0;"> Customer Invoice: </h3>
+                        </group>
+                        <group>
+                          <field name="cust_invoice_lines" nolabel="1" attrs="{'readonly':[('cust_invoice_state','not in','draft')]}">
+                            <tree string="Customer Invoice lines" editable="top" create="false" delete="false">
+                                <field name="sequence" widget="handle" />
+                                <field name="product_id" options="{'limit': 7, 'create': false, 'create_edit': false ,'always_reload': True}"/>
+                                <field name="name"/>
+                                <field name="company_id" invisible="1"/>
+                                <field name="account_id" groups="account.group_account_user" options="{'limit': 7, 'create': false, 'create_edit': false ,'always_reload': True}"
+                                       domain="[('company_id', '=', parent.company_id), ('journal_id', '=', parent.journal_id), ('type', '=', 'other')]"
+                                       invisible="1"/>
+                                <field name="account_analytic_id" groups="analytic.group_analytic_accounting"
+                                       domain="[('type','!=','view'), ('company_id', '=', parent.company_id)]" invisible="1"/>
+                                <field name="event_out_come_id"  domain="[('company_id','=',company_id)]"
+                                       options="{'limit': 7, 'create': false, 'create_edit': false}"/>
+                                <field name="quantity" string="HR/Miles"/>
+                                <field name="inc_min" string="Inc Type" readonly="1"/>
+                                <field name="uom_id" groups="product.group_uom" options="{'limit': 7, 'create': false, 'create_edit': false ,'always_reload': True}"/>
+                                <field name="price_unit" string="Rate"/>
+                                <field name="travel_time" />
+                                <field name="travelling_rate" />
+                                <field name="miles_driven"/>
+                                <field name="mileage"/>
+                                <field name="mileage_rate"/>
+                                <field name="miscellaneous_bill" invisible="1"/>
+                                <field name="discount" groups="sale.group_discount_per_so_line"/>
+                                
+                                <field name="invoice_line_tax_ids" widget="many2many_tags" context="{'type':parent.type}"
+                                       domain="[('parent_id','=',False),('company_id', '=', parent.company_id)]" invisible="1"/>
+
+                                <field name="price_subtotal" sum="price_subtotal"/>
+                                <field name="total_editable" sum="total_editable" string="Edit Total"/>
+                            </tree>
+                        </field>
+                       </group>
+                       <group attrs="{'invisible':[('event_type','=','transport')]}">
+                            <h3 style="color: #5F9EA0;"> Interpreter Invoice: </h3>
+                        </group>
+                       <group>
+                          <field name="supp_invoice_lines" nolabel="1" attrs="{'readonly':[('supp_invoice_state','not in','draft')],'invisible':[('event_type','=','transport')]}" readonly = '0'><!---->
+                            <tree string="Interpreter Invoice lines" editable="top" create="false" delete="false">
+                                <field name="sequence" widget="handle" />
+                                <field name="product_id" options="{'limit': 7, 'create': false, 'create_edit': false ,'always_reload': True}"
+                                       />
+                                <field name="name"/>
+                                <field name="company_id" invisible="1"/>
+                                <field name="account_id" groups="account.group_account_user" options="{'limit': 7, 'create': false, 'create_edit': false ,'always_reload': True}"
+                                       domain="[('company_id', '=', parent.company_id), ('journal_id', '=', parent.journal_id), ('type', '=', 'other')]"
+                                       invisible="1"/>
+                                <field name="account_analytic_id" groups="analytic.group_analytic_accounting"
+                                       domain="[('type','!=','view'), ('company_id', '=', parent.company_id)]" invisible="1"/>
+                                <field name="event_out_come_id" domain="[('company_id','=',company_id)]"
+                                       options="{'limit': 7, 'create': false, 'create_edit': false}"/>
+                                <field name="quantity" string="HR/Miles"/>
+                                <field name="inc_min" string="Inc Type" readonly="1"/>
+                                <field name="uom_id" groups="product.group_uom" options="{'limit': 7, 'create': false, 'create_edit': false ,'always_reload': True}"
+                                       />
+                                <field name="price_unit" string="Rate"/>
+                                <field name="travel_time" />
+                                <field name="travelling_rate" />
+                                <field name="miles_driven"/>
+                                <field name="mileage"/>
+                                <field name="mileage_rate"/>
+                                <field name="miscellaneous_bill" invisible="1"/>
+                                <field name="discount" groups="sale.group_discount_per_so_line"/>
+                                <field name="invoice_line_tax_ids" widget="many2many_tags" context="{'type':parent.type}"
+                                       domain="[('parent_id','=',False),('company_id', '=', parent.company_id)]" invisible="1"/>
+                                <field name="price_subtotal" sum="price_subtotal"/>
+                                <field name="total_editable" sum="total_editable" string="Edit Total"/>
+                            </tree>
+                         </field>
+                       </group>
+                       <group attrs="{'invisible':[('event_type','=','language')]}">
+                            <h3 style="color: #5F9EA0;"> Transporter Invoice: </h3>
+                        </group>
+                       <group>
+                          <field name="supp_invoice_lines2" nolabel="1" attrs="{'readonly':[('supp_invoice_state2','not in','draft')],'invisible':[('event_type','=','language')]}">
+                            <tree string="Transporter Invoice lines" editable="top" create="false" delete="false">
+                                <field name="sequence" widget="handle" />
+                                <field name="product_id" options="{'limit': 7, 'create': false, 'create_edit': false ,'always_reload': True}" />
+                                <field name="name"/>
+                                <field name="company_id" invisible="1"/>
+                                <field name="account_id" groups="account.group_account_user" options="{'limit': 7, 'create': false, 'create_edit': false ,'always_reload': True}"
+                                       domain="[('company_id', '=', parent.company_id), ('journal_id', '=', parent.journal_id), ('type', '=', 'other')]"
+                                       invisible="1"/>
+                                <field name="account_analytic_id" groups="analytic.group_analytic_accounting"
+                                       domain="[('type','!=','view'), ('company_id', '=', parent.company_id)]" invisible="1"/>
+                                <field name="event_out_come_id" domain="[('company_id','=',company_id)]"
+                                       options="{'limit': 7, 'create': false, 'create_edit': false}"/>
+                                <field name="quantity" string="HR/Miles"/>
+                                <field name="inc_min" string="Inc Type" readonly="1"/>
+                                <field name="uom_id" groups="product.group_uom" options="{'limit': 7, 'create': false, 'create_edit': false ,'always_reload': True}"/>
+                                <field name="price_unit" string="Rate"/>
+                                <field name="travel_time" />
+                                <field name="travelling_rate" />
+                                <field name="miles_driven"/>
+                                <field name="mileage"/>
+                                <field name="mileage_rate"/>
+                                <field name="miscellaneous_bill" invisible="1"/>
+                                <field name="discount" groups="sale.group_discount_per_so_line"/>
+                                <field name="invoice_line_tax_ids" widget="many2many_tags" context="{'type':parent.type}"
+                                       domain="[('parent_id','=',False),('company_id', '=', parent.company_id)]" invisible="1"/>
+                                <field name="price_subtotal" sum="price_subtotal"/>
+                            </tree>
+                         </field>
+                       </group>
+                       <group>
+                           <field name="event_type" invisible="1"/>
+                           <field name="job_comment" readonly="1" widget="html"/>
+                           <field name="event_comment" readonly="1" widget="html"/>
+                           <field name="billing_comment" string= "Interpreter/Translator Billing Note" readonly="1" widget="html"/>
+                           <field name="customer_comment" widget="html" string="Customer Billing Note"/>
+                           <field name="rubrik" string="Rubrik"/>
+                           <field name="invoice_comment" widget="html"/>
+                       </group>
+                        <group colspan="4" cols="6">
+                            <group>
+                                <field name="cust_invoice_id" readonly="1"/>
+                                <field name="cust_invoice_state" readonly="1"/>
+                            </group>
+                            <group>
+                                <field name="supp_invoice_state" readonly="1" attrs="{'invisible': [('event_type','=','transport')]}"/>
+                            </group>
+                            <group>
+                                <field name="supp_invoice_id2" readonly="1" attrs="{'invisible': [('event_type','=','language')]}" />
+                                <field name="supp_invoice_state2" readonly="1" attrs="{'invisible': [('event_type','=','language')]}" />
+                            </group>
+                        </group>
+                        <h3>
+                            <group>
+                                <field name="gross_profit" readonly="1"/>
+                            </group>
+                        </h3>
+                    
+                </form>
+            </field>
+        </record>
+        
+        <record id="action_billing_form" model="ir.actions.act_window">
+            <field name="name">Billing Form</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">billing.form</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+        
+    </data>
+</openerp>

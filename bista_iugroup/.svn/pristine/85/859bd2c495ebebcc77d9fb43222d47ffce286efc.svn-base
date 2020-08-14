@@ -1,0 +1,600 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+	<data>
+		<record id="iug_invoice_dashboard_form_view" model="ir.ui.view">
+			<field name="name">iug.invoice.dashboard.form</field>
+			<field name="model">iug.invoice.dashboard</field>
+			<field name="arch" type="xml">
+				<form create="false" delete="false" edit="false" string="IUG Invoices Analysis">
+					<sheet>
+						<group colspan="4" cols="4">
+							<group>
+								<field name="year" required="1" />
+							</group>
+							<group>
+								<field name="company_id" groups="base.group_multi_company"
+									widget="selection" required="1" />
+							</group>
+						</group>
+						<group>
+							<button name="search_invoices" string="Search" type="object"
+								groups="bista_iugroup.group_record_manager" />
+						</group>
+						<group colsapn="4" col="4">
+							<group>
+								<h3 style="color: #5F9EA0;"> Customer Invoices Analysis: </h3>
+							</group>
+							<group>
+								<h3 style="color: #5F9EA0;"> Supplier Invoices Analysis: </h3>
+							</group>
+						</group>
+						<group colspan="4" cols="4">
+							<group>
+								<field name="analysis_lines" nolabel="1" readonly="1"
+									colspan="2" options="{'always_reload': true}">
+									<tree editable="top">
+										<field name="month" invisible="1" />
+										<field name="month_name" />
+										<field name="draft" sum="draft" />
+										<field name="open" sum="open" />
+										<field name="paid" sum="paid" />
+										<field name="total" sum="total" />
+										<field name="gp" style="color: #5F9EA0;" />
+									</tree>
+								</field>
+							</group>
+							<group>
+								<field name="supp_analysis_lines" nolabel="1" readonly="1"
+									colspan="2" options="{'always_reload': true}">
+									<tree editable="top">
+										<field name="month" invisible="1" />
+										<field name="month_name" />
+										<field name="draft" sum="draft" />
+										<field name="open" sum="open" />
+										<field name="paid" sum="paid" />
+										<field name="total" sum="total" />
+									</tree>
+								</field>
+							</group>
+						</group>
+					</sheet>
+				</form>
+			</field>
+		</record>
+
+		<record id="action_iug_invoice_dashboard" model="ir.actions.act_window">
+			<field name="name">IUG Invoices Analysis</field>
+			<field name="res_model">iug.invoice.dashboard</field>
+			<field name="view_type">form</field>
+			<field name="view_mode">form</field>
+			<field name="context">{}</field>
+			<field name="help"/>
+		</record>
+
+		<menuitem id="menu_iug_invoice_dashboard" parent="bista_iugroup.sub_menu_event_dashboard_custom"
+			action="action_iug_invoice_dashboard" groups="bista_iugroup.group_iu_dashboard" sequence="1" />
+
+		<record id="iug_event_dashboard_form_view" model="ir.ui.view">
+			<field name="name">iug.event.dashboard.form</field>
+			<field name="model">iug.event.dashboard</field>
+			<field name="arch" type="xml">
+				<form create="false" delete="false" edit="false" string="IUG Events Analysis">
+					<sheet>
+						<group colspan="4" cols="4">
+							<group>
+								<field name="year" required="1" />
+							</group>
+							<group>
+								<field name="company_id" groups="base.group_multi_company"
+									widget="selection" required="1" />
+							</group>
+						</group>
+						<group colsapn="4" col="4">
+							<group>
+								<h3 style="color: #5F9EA0;"> Events Analysis: </h3>
+							</group>
+							<group>
+								<button name="search_events" string="Search" type="object"
+									groups="bista_iugroup.group_record_manager" />
+							</group>
+						</group>
+						<group colspan="4" cols="4">
+							<field name="analysis_lines" nolabel="1" readonly="1"
+								colspan="4" options="{'always_reload': true}">
+								<tree editable="top">
+									<field name="month" invisible="1" />
+									<field name="month_name" />
+									<field name="draft" sum="draft" string="Unscheduled" />
+									<field name="scheduled" sum="scheduled" />
+									<field name="allocated" sum="allocated" />
+									<field name="unauthorize" sum="unauthorize" />
+									<field name="confirmed" sum="confirmed" />
+									<field name="unbilled" sum="unbilled" />
+									<field name="invoiced" sum="invoiced" />
+									<field name="done" sum="done" />
+									<field name="cancel" sum="cancel" />
+									<field name="total" sum="total" />
+								</tree>
+							</field>
+						</group>
+					</sheet>
+				</form>
+			</field>
+		</record>
+
+		<record id="action_iug_event_dashboard" model="ir.actions.act_window">
+			<field name="name">IUG Events Analysis</field>
+			<field name="res_model">iug.event.dashboard</field>
+			<field name="view_type">form</field>
+			<field name="view_mode">form</field>
+			<field name="context">{}</field>
+			<field name="help"/>
+		</record>
+
+		<menuitem id="menu_iug_event_dashboard" parent="bista_iugroup.sub_menu_event_dashboard_custom"
+			action="action_iug_event_dashboard" groups="bista_iugroup.group_iu_dashboard" sequence="2" />
+
+		<record id="iug_cancel_event_dashboard_form_view" model="ir.ui.view">
+			<field name="name">iug.cancel.event.dashboard.form</field>
+			<field name="model">iug.cancel.event.dashboard</field>
+			<field name="arch" type="xml">
+				<form create="false" delete="false" edit="false" string="IUG Cancel Events Analysis">
+					<sheet>
+						<group colspan="4" cols="6">
+							<group>
+								<field name="year" required="1" />
+							</group>
+							<group>
+								<field name="company_id" groups="base.group_multi_company" widget="selection" required="1" />
+							</group>
+							<group>
+								<field name="cancel_reason_id"
+									options="{'limit': 7, 'create': false, 'create_edit': false ,'always_reload': True, 'no_open': True}" domain="[('company_id','=',company_id)]" />
+							</group>
+							<group>
+								<field name="partner_id" options="{'limit': 7, 'create': false, 'create_edit': false ,'always_reload': True, 'no_open': True}"
+									domain="[('customer', '=', 1),('cust_type', '=', 'customer'),('company_id', '=',company_id)]" />
+							</group>
+						</group>
+						<group colsapn="4" col="4">
+							<group>
+								<h3 style="color: #5F9EA0;"> Events Analysis: </h3>
+							</group>
+							<group>
+								<button name="search_events" string="Search" type="object"
+									groups="bista_iugroup.group_record_manager" />
+							</group>
+						</group>
+						<group colspan="4" cols="4">
+							<group>
+								<field name="analysis_lines" nolabel="1" readonly="1"
+									colspan="4" options="{'always_reload': true}">
+									<tree editable="top">
+										<field name="month" invisible="1" />
+										<field name="month_name" />
+										<field name="count" sum="count" />
+										<field name="total" sum="count" />
+										<field name="fill_rate" />
+									</tree>
+								</field>
+							</group>
+						</group>
+					</sheet>
+				</form>
+			</field>
+		</record>
+
+		<record id="action_iug_cancel_event_dashboard" model="ir.actions.act_window">
+			<field name="name">IUG Cancel Events Analysis</field>
+			<field name="res_model">iug.cancel.event.dashboard</field>
+			<field name="view_type">form</field>
+			<field name="view_mode">form</field>
+			<field name="context">{}</field>
+			<field name="help"/>
+		</record>
+
+		<menuitem id="menu_iug_cancel_event_dashboard" parent="bista_iugroup.sub_menu_event_dashboard_custom"
+			action="action_iug_cancel_event_dashboard" groups="bista_iugroup.group_iu_dashboard" sequence="3" />
+
+		<record id="iug_scheduler_event_dashboard_form_view" model="ir.ui.view">
+			<field name="name">iug.scheduler.event.dashboard.form</field>
+			<field name="model">iug.scheduler.event.dashboard</field>
+			<field name="arch" type="xml">
+				<form create="false" delete="false" edit="false" string="IUG Scheduler Events Analysis">
+					<sheet>
+						<group colspan="4" cols="6">
+							<group>
+								<field name="year" required="1" />
+							</group>
+							<group>
+								<field name="company_id" groups="base.group_multi_company"
+									widget="selection" required="1" />
+							</group>
+							<group>
+								<field name="month" required="1" />
+							</group>
+						</group>
+						<group colsapn="4" col="4">
+							<group>
+								<h3 style="color: #5F9EA0;"> Events Analysis: </h3>
+							</group>
+							<group>
+								<button name="search_events" string="Search" type="object" groups="bista_iugroup.group_record_manager" />
+							</group>
+						</group>
+						<group colspan="4" cols="4">
+							<field name="analysis_lines" nolabel="1" readonly="1" colspan="4" options="{'always_reload': true}">
+								<tree editable="top">
+									<field name="scheduler_id" />
+									<field name="draft" sum="draft" string="Unscheduled" />
+									<field name="allocated" sum="allocated" />
+									<field name="unauthorize" sum="unauthorize" />
+									<field name="confirmed" sum="confirmed" />
+									<field name="unbilled" sum="unbilled" />
+									<field name="invoiced" sum="invoiced" />
+									<field name="done" sum="done" />
+									<field name="cancel" sum="cancel" />
+									<field name="total" sum="total" />
+								</tree>
+							</field>
+						</group>
+					</sheet>
+				</form>
+			</field>
+		</record>
+
+
+
+		<!-- Action for accounts -->
+		<record id="action_iug_aged_accounts" model="ir.actions.act_window">
+			<field name="name">IUG Aged Partner Balance</field>
+			<field name="res_model">account.aged.trial.balance</field>
+			<field name="view_type">form</field>
+			<field name="view_mode">form</field>
+			<field name="context">{}</field>
+			<field name="help"></field>
+		</record>
+
+		<menuitem id="menu_iug_aged_accounts" parent="bista_iugroup.sub_menu_event_dashboard_custom"
+			action="action_iug_aged_accounts" groups="bista_iugroup.group_iu_dashboard" sequence="8"/>
+
+		<!-- Daily Event Analysis -->
+		<!-- ***************************************** -->
+		<record id="iug_invoice_dashboard_day_event" model="ir.ui.view">
+			<field name="name">iug.invoice.dashboard.day.event</field>
+			<field name="model">iug.current.day.event.analysis</field>
+			<field name="arch" type="xml">
+				<form string="IUG DAY">
+					<sheet>
+						<group>
+							<h3 style="color: #5F9EA0;"> Current Day's Event Analysis: </h3>
+						</group>
+						<group>
+							<field name="event_data_line_ids" nolabel="1" readonly="1" colspan="2" options="{'always_reload': true}">
+								<tree ediatable="bottom">
+									<field name="company_name" />
+									<field name="draft" />
+									<field name="scheduled" />
+									<field name="allocated" />
+									<field name="unauthorize" />
+									<field name="confirmed" />
+									<field name="unbilled" />
+									<field name="invoiced" />
+									<field name="cancel" />
+									<field name="done" />
+									<field name="total" />
+								</tree>
+							</field>
+						</group>
+					</sheet>
+				</form>
+			</field>
+		</record>
+
+		<record id="action_iug_daily_event" model="ir.actions.act_window">
+			<field name="name">IUG Current Date Event Analysis</field>
+			<field name="res_model">iug.current.day.event.analysis</field>
+			<field name="view_type">form</field>
+			<field name="view_mode">form</field>
+			<field name="context">{}</field>
+			<field name="help"></field>
+		</record>
+
+		<menuitem id="menu_iug_daily_event" parent="bista_iugroup.sub_menu_event_dashboard_custom"
+			action="action_iug_daily_event" groups="bista_iugroup.group_iu_dashboard" sequence = "10"/>
+		<!--*************************************** -->
+		<record id="action_iug_scheduler_event_dashboard" model="ir.actions.act_window">
+			<field name="name">IUG Scheduler Events Analysis</field>
+			<field name="res_model">iug.scheduler.event.dashboard</field>
+			<field name="view_type">form</field>
+			<field name="view_mode">form</field>
+			<field name="context">{}</field>
+			<field name="help"></field>
+		</record>
+
+		<!-- Profit by customer -->
+		<!-- ***************************************** -->
+
+		<record id="iug_profit_by_cust_form" model="ir.ui.view">
+			<field name="name">iug.profit.by.cust.form</field>
+			<field name="model">profit.based.on.cust</field>
+			<field name="arch" type="xml">
+				<form string="IUG DAY" version="7.0">
+					<sheet>
+						<group colspan="2">
+							<group>
+								<field name="company_id" groups="base.group_multi_company" widget="selection" required="1" />
+								<field name="partner_id" options="{'limit': 7, 'create': false, 'create_edit': false ,'always_reload': True, 'no_open': True}"/>
+							</group>
+							<group>
+								<field name="date_from" />
+								<field name="date_to" />
+							</group>
+							<group>
+								<p class="oe_view_nocontent_create">
+									<b>Please search the results first than, print-xls report</b>
+								</p>
+							</group>
+							<group>
+								<button name="get_data" string="Search" type="object"
+									groups="bista_iugroup.group_record_manager" />
+								<button name="print_xls" string="Print Xls" type="object" />
+							</group>
+						</group>
+						<group>
+							<field name="cols_profit" nolabel="1" readonly="1" colspan="4" options="{'always_reload': true}">
+								<tree editable="bottom">
+									<field name="partner_id" />
+									<field name="event_count" sum="event_count" />
+									<field name="cust_inv" sum="cust_inv" />
+									<field name="cust_rec" sum="cust_rec" />
+									<field name="supp_inv" sum="supp_inv" />
+									<field name="supp_rec" sum="supp_rec" />
+									<field name="total_income" sum="total_income" />
+									<field name="gp" sum="gp" />
+								</tree>
+							</field>
+						</group>
+					</sheet>
+				</form>
+			</field>
+		</record>
+
+
+		<record id="iug_profit_xls_form" model="ir.ui.view">
+			<field name="name">Excel Output</field>
+			<field name="model">print.xls.cols</field>
+			<field name="arch" type="xml">
+				<form string="Excel Output">
+					<group>
+						<field name="name" invisible="1" />
+						<h1>
+							<field name="xls_output" filename="name" />
+						</h1>
+					</group>
+					<footer>
+						<button special="cancel" string="_Close" class="oe_link" />
+					</footer>
+				</form>
+			</field>
+		</record>
+
+		<record id="action_profit_by_cust" model="ir.actions.act_window">
+			<field name="name">IUG Profitability Report</field>
+			<field name="res_model">profit.based.on.cust</field>
+			<field name="view_type">form</field>
+			<field name="view_mode">form</field>
+			<field name="context">{}</field>
+			<field name="help"></field>
+		</record>
+
+		<menuitem id="menu_iug_profit_cust_event" parent="bista_iugroup.sub_menu_event_dashboard_custom"
+			action="action_profit_by_cust" groups="bista_iugroup.group_iu_dashboard" sequence="11"/>
+
+		<!--*************************************** -->
+		<!-- Detailed Cancel Report -->
+		<!--*************************************** -->
+
+		<record id="iug_detailed_cancel_report" model="ir.ui.view">
+			<field name="name">iug.detailed.cancel.report</field>
+			<field name="model">detailed.cancel.report</field>
+			<field name="arch" type="xml">
+				<form string="Detailed Cancel Report of Events" version="7.0">
+					<sheet>
+						<group>
+							<h3 style="color: #5F9EA0;"> Cancelled Events Details: </h3>
+						</group>
+						<group colspan="4" col="6">
+							<group>
+								<field name="year" style="width:205px" />
+							</group>
+							<group>
+								<field name="month_name" style="width:205px" />
+							</group>
+							<group>
+								<field name="company_id" style="width:205px" widget="selection"/>
+							</group>
+						</group>
+						<group colspan="4" col="6" >
+							<group>
+								<field name="partner_id" style="width:205px" options="{'limit': 7, 'create': false, 'create_edit': false ,'always_reload': True, 'no_open': True}"/>
+							</group>
+							<group>
+								<field name="cancel_reason_id" style="width:205px" domain="[('company_id','=',company_id)]"
+									   options="{'limit': 7, 'create': false, 'create_edit': false ,'always_reload': True, 'no_open': True}"/>
+							</group>
+						</group>
+						<group colspan="4" cols="4">
+							<group>
+								<p class="oe_view_nocontent_create">
+									<b>Please search the results first than, print-xls report</b>
+								</p>
+							</group>
+							<group>
+								<button name="search_details" string="Search" type="object" groups="bista_iugroup.group_record_manager" />
+								<button name="print_xls_report" string="Print Xls" type="object" />
+							</group>
+						</group>
+						<field name="cols_lines" nolabel="1" readonly="1" colspan="2" options="{'always_reload': true}">
+							<tree ediatable="bottom">
+								<field name="event_id" />
+								<field name="event_start_date" />
+								<field name="partner_id" />
+								<field name="contact_id" />
+								<field name="order_partner_id" />
+								<field name="order_contact_id" />
+								<field name="cancel_reason" />
+							</tree>
+						</field>
+					</sheet>
+				</form>
+			</field>
+		</record>
+
+		<record id="action_detailed_cancel_report" model="ir.actions.act_window">
+			<field name="name">Detailed Event Cancellation Report</field>
+			<field name="res_model">detailed.cancel.report</field>
+			<field name="view_type">form</field>
+			<field name="view_mode">form</field>
+			<field name="context">{}</field>
+			<field name="help"></field>
+		</record>
+
+		<menuitem id="menu_detailed_cancel_report" parent="bista_iugroup.sub_menu_event_dashboard_custom"
+			action="action_detailed_cancel_report" groups="bista_iugroup.group_iu_dashboard" sequence="4" />
+
+		<!-- Interpreters Data Fetching -->
+		<!--*************************************** -->
+		<record id="iug_interperters_data" model="ir.ui.view">
+			<field name="name">iug.interperters.data</field>
+			<field name="model">interpreters.details</field>
+			<field name="arch" type="xml">
+				<form string="Interpreters Details">
+					<sheet>
+						<group colspan="4" cols="4">
+							<group>
+								<field name="company_id" readonly="1" widget="selection" required="1"/>
+							</group>
+							<group>
+								<field name="interperter_id" options="{'limit': 7, 'create': false, 'create_edit': false ,'always_reload': True, 'no_open': True}"  />
+							</group>
+							<group>
+								<field name="state_id" options="{'limit': 7, 'create': false, 'create_edit': false ,'always_reload': True, 'no_open': True}"/>
+							</group>
+							<group>
+								<field name="city"/>
+							</group>
+							<group>
+								<field name="language_id" context="{'is_interpreter_list': True}" options="{'limit': 7, 'create': false, 'create_edit': false ,'always_reload': True, 'no_open': True}"/>
+							</group>
+							<group>
+								<field name="certificate_level" context="{'is_interpreter_list': True}" options="{'limit': 7, 'create': false, 'create_edit': false ,'always_reload': True, 'no_open': True}" />
+							</group>
+							<group>
+								<button name="get_interperter_info" string="Search" type="object" groups="bista_iugroup.group_record_manager" />
+								<button name="print_interpreter_data" string="Print Xls" type="object" />
+							</group>
+						</group>
+						<group colspan="4" cols="4">
+							<group>
+								<field name="cols_interpreter_data" nolabel="1" readonly="1" colspan="4" options="{'always_reload': true}">
+									<tree editable="bottom">
+										<field name="interpreter_profile_id" invisible="1"/>
+										<button name="get_interpreter_id" icon="fa-mail-reply" type="object"/>
+										<field name="first_name" />
+										<field name="last_name" />
+										<field name="address_one" />
+										<field name="address_two" />
+										<field name="city" />
+										<field name="state" />
+										<field name="zip" />
+										<field name="ssnid" />
+										<field name="vat" />
+										<field name="email" />
+										<field name="language_id" groups="base.group_multi_company"/>
+									</tree>
+								</field>
+							</group>
+						</group>
+					</sheet>
+				</form>
+			</field>
+		</record>
+
+		<record id="action_interpreters_data" model="ir.actions.act_window">
+			<field name="name">Interpreter Details</field>
+			<field name="res_model">interpreters.details</field>
+			<field name="view_type">form</field>
+			<field name="view_mode">form</field>
+			<field name="context">{}</field>
+			<field name="help"></field>
+		</record>
+		<!--*************************************** -->
+		<menuitem id="menu_interpreters_data" parent="bista_iugroup.sub_menu_event_dashboard_custom"
+			action="action_interpreters_data" groups="bista_iugroup.group_iu_dashboard"
+			sequence="6" />
+		<!--*************************************** -->
+		<menuitem id="menu_iug_scheduler_event_dashboard" parent="bista_iugroup.sub_menu_event_dashboard_custom"
+			action="action_iug_scheduler_event_dashboard" groups="bista_iugroup.group_iu_dashboard"
+			sequence="5" />
+		<!-- Yearly Analysis -->
+		<record id="iug_yearly_profit_analysis_cust_form" model="ir.ui.view">
+			<field name="name">yearly.profit.analysis.form</field>
+			<field name="model">yearly.profit.analysis.report</field>
+			<field name="arch" type="xml">
+				<form string="IUG Yearly Profit Analysis" version="7.0">
+					<sheet>
+						<group colspan="2">
+							<group>
+								<field name="company_id" groups="base.group_multi_company" widget="selection" required="1" />
+								<field name="partner_id" options="{'limit': 7, 'create': false, 'create_edit': false ,'always_reload': True, 'no_open': True}"/>
+							</group>
+							<group>
+								<field name="year_1" required="1" domain="[('company_id','=',company_id)]" options="{'create':false, 'create_edit':false, 'always_reload':True, 'no_open': True}"/>
+								<field name="year_2" required="1" domain="[('company_id','=',company_id)]" options="{'create':false, 'create_edit':false, 'always_reload':True, 'no_open': True}"/>
+                                                                <field name="month"/>
+							</group>
+							<group>
+								<p class="oe_view_nocontent_create">
+									<b>Please search the results first than, print-xls report</b>
+								</p>
+							</group>
+							<group>
+								<button name="get_yearwise_data" string="Search" type="object"/>
+								<button name="print_profit_xls" string="Print Xls" type="object" />
+							</group>
+						</group>
+
+						<group>
+							<field name="cols_profit_year" nolabel="1" readonly="1" colspan="4" options="{'always_reload': true}">
+								<tree editable="bottom">
+									<field name="partner_id" />
+									<field name="event_count" sum="event_count" />
+									<field name="cust_inv" sum="cust_inv" />
+									<field name="supp_inv" sum="supp_inv" />
+									<field name="total_income" sum="total_income" />
+									<field name="event_count_2" sum="event_count_2" />
+									<field name="cust_inv_2" sum="cust_inv_2" />
+									<field name="supp_inv_2" sum="supp_inv_2" />
+									<field name="total_income_2" sum="total_income_2" />
+								</tree>
+							</field>
+						</group>
+					</sheet>
+				</form>
+			</field>
+		</record>
+
+		<record id="action_yearly_profit_analysis" model="ir.actions.act_window">
+			<field name="name">IUG Yearly Profit Analysis</field>
+			<field name="res_model">yearly.profit.analysis.report</field>
+			<field name="view_type">form</field>
+			<field name="view_mode">form</field>
+			<field name="context">{}</field>
+			<field name="help"></field>
+		</record>
+
+		<menuitem id="menu_iug_profit_yearwise_analysis" parent="bista_iugroup.sub_menu_event_dashboard_custom"
+				  action="action_yearly_profit_analysis" groups="bista_iugroup.group_iu_dashboard" sequence = "12"/>
+	</data>
+</odoo>

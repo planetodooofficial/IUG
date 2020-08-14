@@ -1,0 +1,1418 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<openerp>
+    <data>
+
+        ###########Event outcome view###############################
+        <record id="view_event_outcome_form" model="ir.ui.view">
+            <field name="name">Event Out Come</field>
+            <field name="model">event.out.come</field>
+            <field name="arch" type="xml">
+                <form string="Event Outcome" version="7.0">
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="name" required="1"/>
+                                <field name="event_out_come_id" required="1"/>
+                                <field name="company_id" required="1" />
+                            </group>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="action_event_outcome_config_settings" model="ir.actions.act_window">
+            <field name="name">Event Out Come</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">event.out.come</field>
+            <field name="view_mode">tree,form</field>
+            <field name="target">current</field>
+        </record>
+
+        <menuitem id="menu_event_outcome_settings" name="Event Outcome" parent="bista_iugroup.sub_menu_config"
+                  sequence="12" action="action_event_outcome_config_settings" groups="bista_iugroup.group_record_manager"/>
+        ############################################################################################
+        <record id="view_zip_code_form" model="ir.ui.view">
+            <field name="name">Zip Code</field>
+            <field name="model">zip.code</field>
+            <field name="arch" type="xml">
+                <form string="Zip Code" version="7.0">
+                    <sheet>
+                        <group>
+                            <h3><field name="name"/></h3>
+                        </group>
+
+                        <group colspan="4" col="6">
+                            <field name="city" />
+                            <field name="state_id" />
+                            <field name="time_zone" />
+                            <field name="latitude" />
+                            <field name="longitude" />
+                            <field name="latitude_rad" />
+                            <field name="longtitude_rad" />
+                            <field name="longitude" />
+                            <field name="zip_code_id" />
+                            <field name="company_id" groups="base.group_multi_company" widget="selection"/>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+
+        <record id="view_zip_code_tree" model="ir.ui.view">
+            <field name="name">Zip Code</field>
+            <field name="model">zip.code</field>
+            <field name="arch" type="xml">
+                <tree string="Zip Code">
+                    <field name="name"/>
+                    <field name="city" />
+                    <field name="state_id" />
+                    <field name="time_zone" />
+                    <field name="latitude" />
+                    <field name="longitude" />
+                    <field name="latitude_rad" />
+                    <field name="longtitude_rad" />
+                    <field name="longitude" />
+                    <field name="zip_code_id" readonly="1"/>
+                    <field name="company_id" groups="base.group_multi_company" widget="selection"/>
+
+                </tree>
+            </field>
+        </record>
+
+        <record id="action_zip_code_form" model="ir.actions.act_window">
+            <field name="name">Zip Code</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">zip.code</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="view_zip_code_tree"/>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Click to add a Zip Code
+                </p><p>
+                Odoo helps you easily track all activities related to
+                a Zip Code discussions, history of business Zip Code etc.
+            </p>
+            </field>
+        </record>
+
+        <!--         <menuitem id="menu_zip_code_form" parent="bista_iugroup.sub_menu_config" sequence="1" name="Zip Code" action="action_zip_code_form"
+                 groups="bista_iugroup.group_record_manager"/>-->
+
+        <record id="view_race_form" model="ir.ui.view">
+            <field name="name">Race</field>
+            <field name="model">race</field>
+            <field name="arch" type="xml">
+                <form string="Race" version="7.0">
+                    <sheet>
+                        <group>
+                            <h3><field name="name"/></h3>
+                        </group>
+
+                        <group colspan="4" col="6">
+                            <field name="race_id" readonly="1"/>
+
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+
+        <record id="view_race_tree" model="ir.ui.view">
+            <field name="name">Race</field>
+            <field name="model">race</field>
+            <field name="arch" type="xml">
+                <tree string="Race">
+                    <field name="name"/>
+                    <field name="race_id"/>
+
+                </tree>
+            </field>
+        </record>
+
+        <record id="action_race_form" model="ir.actions.act_window">
+            <field name="name">Race</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">race</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="view_race_tree"/>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Click to add a Race
+                </p><p>
+                Odoo helps you easily track all activities related to
+                a distribution; discussions, history of business distribution, etc.
+            </p>
+            </field>
+        </record>
+
+        <!--         <menuitem id="menu_race_form" parent="bista_iugroup.sub_menu_config" sequence="1" name="Race" action="action_race_form"
+                 groups="bista_iugroup.group_record_manager"/>-->
+
+        <record id="view_rate_form" model="ir.ui.view">
+            <field name="name">Rate</field>
+            <field name="model">rate</field>
+            <field name="arch" type="xml">
+                <form string="Rate" version="7.0">
+                    <sheet>
+                        <group>
+                            <h3><field name="name"/></h3>
+                        </group>
+                        <group colspan="4" col="4">
+                            <field name="is_billing_rate" />
+                            <field name="uom_id" />
+                            <field name="default_rate" />
+                            <field name="spanish_regular" />
+                            <field name="spanish_licenced" />
+                            <field name="spanish_certified" />
+                            <field name="exotic_regular" />
+                            <field name="exotic_certified" />
+                            <field name="exotic_middle" />
+                            <field name="exotic_high" />
+                            <field name="rate_id" readonly="1"/>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+
+        <record id="view_rate_tree" model="ir.ui.view">
+            <field name="name">Rate</field>
+            <field name="model">rate</field>
+            <field name="arch" type="xml">
+                <tree string="Rate">
+                    <field name="name"/>
+                    <field name="is_billing_rate" />
+                    <field name="uom_id" />
+                    <field name="default_rate" />
+                    <field name="spanish_regular" />
+                    <field name="spanish_licenced" />
+                    <field name="spanish_certified" />
+                    <field name="exotic_regular" />
+                    <field name="exotic_certified" />
+                    <field name="exotic_middle" />
+                    <field name="exotic_high" />
+                </tree>
+            </field>
+        </record>
+
+        <record id="action_rate_form" model="ir.actions.act_window">
+            <field name="name">Rate</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">rate</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="view_rate_tree"/>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Click to add a Rate
+                </p><p>
+                Odoo helps you easily track all activities related to
+                a Rate.
+            </p>
+            </field>
+        </record>
+
+        <menuitem id="menu_rate_form" parent="bista_iugroup.sub_menu_config" sequence="1" name="Rate" action="action_rate_form"
+                  groups="bista_iugroup.group_record_manager"/>
+
+        <record id="view_interpreter_rate_form" model="ir.ui.view">
+            <field name="name">Interpreter Rate</field>
+            <field name="model">interpreter.rate</field>
+            <field name="arch" type="xml">
+                <form string="Interpreter Rate" version="7.0">
+                    <sheet>
+                        <group colspan="4" col="4">
+                            <field name="name" invisible="1"/>
+                            <field name="interpreter_id" readonly="1"/>
+                            <field name="rate_id" readonly="1"/>
+                            <field name="default_rate" />
+                            <field name="spanish_regular" />
+                            <field name="spanish_licenced" />
+                            <field name="spanish_certified" />
+                            <field name="exotic_regular" />
+                            <field name="exotic_certified" />
+                            <field name="exotic_middle" />
+                            <field name="exotic_high" />
+                            <field name="interpreter_rate_id" readonly="1"/>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+
+        <record id="view_interpreter_rate_tree" model="ir.ui.view">
+            <field name="name">Interpreter Rate</field>
+            <field name="model">interpreter.rate</field>
+            <field name="arch" type="xml">
+                <tree string="Interpreter Rate">
+                    <field name="name" invisible="1"/>
+                    <field name="interpreter_id" readonly="1"/>
+                    <field name="rate_id" readonly="1"/>
+                    <field name="default_rate" />
+                    <field name="spanish_regular" />
+                    <field name="spanish_licenced" />
+                    <field name="spanish_certified" />
+                    <field name="exotic_regular" />
+                    <field name="exotic_certified" />
+                    <field name="exotic_middle" />
+                    <field name="exotic_high" />
+                </tree>
+            </field>
+        </record>
+
+        <record id="action_interpreter_rate_form" model="ir.actions.act_window">
+            <field name="name">interpreter Rate</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">interpreter.rate</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="view_interpreter_rate_tree"/>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Click to add a Rate
+                </p><p>
+                Odoo helps you easily track all activities related to
+                a Rate.
+            </p>
+            </field>
+        </record>
+
+        <!--         <menuitem id="menu_interpreter_rate_form" parent="bista_iugroup.sub_menu_config" sequence="1" name="Interpreter Rate" action="action_interpreter_rate_form"
+                 groups="bista_iugroup.group_record_manager"/>-->
+
+
+        <record id="view_document_form" model="ir.ui.view">
+            <field name="name">document</field>
+            <field name="model">document</field>
+            <field name="arch" type="xml">
+                <form string="Document" version="7.0">
+                    <label for="name" String="Name"/>
+                    <h1><field name="name"/></h1>
+                    <group>
+                        <group>
+                            <field name="doc_sender_name"/>
+                            <field name="sent_to_no"/>
+                            <field name="sent_from_no"/>
+                            <field name="duration"/>
+                        </group>
+                        <group>
+                            <field name="page_count"/>
+                            <field name="doc_type_id"/>
+                            <field name="status_id"/>
+                            <field name="platform_fax_id" invisible="1"/>
+                            <field name="ready_to_send"/>
+                        </group>
+                        <field name="log_text"/>
+                    </group>
+
+
+                </form>
+            </field>
+        </record>
+
+        <record id="view_document_tree" model="ir.ui.view">
+            <field name="name">document</field>
+            <field name="model">document</field>
+            <field name="arch" type="xml">
+                <tree string="Document">
+                    <field name="name"/>
+                    <field name="doc_sender_name"/>
+                    <field name="sent_to_no"/>
+                    <field name="sent_from_no"/>
+                    <field name="duration"/>
+                    <field name="page_count"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="action_document_child_form" model="ir.actions.act_window">
+            <field name="name">Document</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">document</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="view_document_tree"/>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Click to add a Document.
+                </p><p>
+                Odoo helps you easily track all activities related to
+                a distribution; discussions, history of business distribution, etc.
+            </p>
+            </field>
+        </record>
+        <!--<menuitem id="sub_menu_config" sequence="5" string="Document"
+         groups="bista_iugroup.group_record_manager"/>-->
+        <menuitem id="menu_document_child" parent="bista_iugroup.menu_config" sequence="5"
+                  groups="bista_iugroup.group_record_manager" name="Documents"/>
+
+        <!--Docment Menu-->
+        <menuitem id="menu_document_child1" parent="bista_iugroup.menu_document_child" action="action_document_child_form" sequence="5"
+                  groups="bista_iugroup.group_record_manager" name="Documents"/>
+
+
+
+        <record id="view_document_type_tree" model="ir.ui.view">
+            <field name="name">Document Type</field>
+            <field name="model">document.type</field>
+            <field name="arch" type="xml">
+                <tree string="Document Type">
+                    <field name="name"/>
+                    <field name="for_event"/>
+                    <field name="for_vendor"/>
+                    <field name="for_contact"/>
+                    <field name="has_template"/>
+                    <field name="prefix"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="action_document_type_form" model="ir.actions.act_window">
+            <field name="name">Document Type</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">document.type</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="view_document_type_tree"/>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Click to add a Document Type .
+                </p><p>
+                Odoo helps you easily track all activities related to
+                a distribution; discussions, history of business distribution, etc.
+            </p>
+            </field>
+        </record>
+
+
+        <!--Document Type Menu-->
+        <menuitem id="menu_document_type" parent="bista_iugroup.menu_document_child" action="action_document_type_form" sequence="5"
+                  groups="bista_iugroup.group_record_manager" name="Documents Type"/>
+
+
+
+
+        <record id="view_document_status_form" model="ir.ui.view">
+            <field name="name">Document Status</field>
+            <field name="model">document.status</field>
+            <field name="arch" type="xml">
+                <form string="Document Status" version="7.0">
+                    <label for="name" String="Name:"/>
+                    <h1><field name="name"/></h1>
+                    <group>
+                        <group>
+                            <field name="doc_status_id"/>
+                        </group>
+                    </group>
+
+                </form>
+            </field>
+        </record>
+
+        <record id="view_document_status_tree" model="ir.ui.view">
+            <field name="name">Document Status</field>
+            <field name="model">document.status</field>
+            <field name="arch" type="xml">
+                <tree string="Document Status">
+                    <field name="name"/>
+                    <field name="doc_status_id"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="action_document_status_form" model="ir.actions.act_window">
+            <field name="name">Document Status</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">document.status</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="view_document_status_tree"/>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Click to add a Document Status .
+                </p><p>
+                Odoo helps you easily track all activities related to
+                a distribution; discussions, history of business distribution, etc.
+            </p>
+            </field>
+        </record>
+
+        <!--Document Status-->
+        <menuitem id="menu_document_status" parent="bista_iugroup.menu_document_child" action="action_document_status_form" sequence="5"
+                  groups="bista_iugroup.group_record_manager" name="Documents Status"/>
+
+
+
+
+        <record id="view_event_document_form" model="ir.ui.view">
+            <field name="name">Event Document</field>
+            <field name="model">document.to.event</field>
+            <field name="arch" type="xml">
+                <form string="Event Document" version="7.0">
+                    <label for="name" String="NAME:"/>
+                    <h1><field name="name"/></h1>
+                    <group>
+                        <group>
+                            <field name="event_id"/>
+                            <field name="document_id"/>
+                            <field name="interpreter_id" domain="[('cust_type','in',('interpreter','interp_and_transl'))]"
+                                   context="{'form_view_ref':'bista_iugroup.view_interpreter_form'}"/>
+                            <field name="vendor_id"/>
+                            <field name="document_to_event_id" invisible="1"/>
+                        </group>
+                    </group>
+                </form>
+            </field>
+        </record>
+
+        <record id="view_event_document_tree" model="ir.ui.view">
+            <field name="name">Event Document</field>
+            <field name="model">document.to.event</field>
+            <field name="arch" type="xml">
+                <tree string="Event Document">
+                    <field name="name"/>
+                    <field name="event_id"/>
+                    <field name="document_id"/>
+                    <field name="interpreter_id" domain="[('cust_type','in',('interpreter','interp_and_transl'))]"
+                           context="{'form_view_ref':'bista_iugroup.view_interpreter_form'}"/>
+                    <field name="vendor_id"/>
+                    <field name="document_to_event_id" invisible="1"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="action_event_document_form" model="ir.actions.act_window">
+            <field name="name">Event Document</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">document.to.event</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="view_event_document_tree"/>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Click to add a Event Document .
+                </p><p>
+                Odoo helps you easily track all activities related to
+                a distribution; discussions, history of business distribution, etc.
+            </p>
+            </field>
+        </record>
+
+        <!--Event Document-->
+        <menuitem id="menu_event_document" parent="bista_iugroup.menu_document_child" action="action_event_document_form" sequence="5"
+                  groups="bista_iugroup.group_record_manager" name="Event Documents"/>
+
+
+
+        <record id="view_document_sender_form" model="ir.ui.view">
+            <field name="name">Document Sender</field>
+            <field name="model">document.sender</field>
+            <field name="arch" type="xml">
+                <form string="Document Sender" version="7.0">
+                    <label for="name" String="Name:"/>
+                    <h1><field name="name"/></h1>
+                    <group colspan="4" col="6">
+                        <field name="location_id"/>
+                        <field name="document_id"/>
+                        <field name="contact_id"/>
+                        <field name="doctor_id"/>
+                        <field name="customer_id"/>
+                        <field name="interpreter_id" domain="[('cust_type','in',('interpreter','interp_and_transl'))]"
+                               context="{'form_view_ref':'bista_iugroup.view_interpreter_form'}"/>
+                        <field name="vendor_id"/>
+                        <field name="doc_sender_id" invisible="1"/>
+
+                    </group>
+
+                </form>
+            </field>
+        </record>
+
+
+        <record id="view_document_sender_tree" model="ir.ui.view">
+            <field name="name">Document Sender</field>
+            <field name="model">document.sender</field>
+            <field name="arch" type="xml">
+                <tree string="Document Sender">
+                    <field name="name"/>
+                    <field name="location_id"/>
+                    <field name="document_id"/>
+                    <field name="contact_id"/>
+                    <field name="doctor_id"/>
+                    <field name="customer_id"/>
+                    <field name="interpreter_id"/>
+                    <field name="vendor_id"/>
+                    <field name="doc_sender_id" invisible="1"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="action_document_sender_form" model="ir.actions.act_window">
+            <field name="name">Document Sender</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">document.sender</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="view_document_sender_tree"/>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Click to add a Event Document .
+                </p><p>
+                Odoo helps you easily track all activities related to
+                a distribution; discussions, history of business distribution, etc.
+            </p>
+            </field>
+        </record>
+
+        <!--Document Sender-->
+        <menuitem id="menu_document_sender" parent="bista_iugroup.menu_document_child" action="action_document_sender_form" sequence="5"
+                  groups="bista_iugroup.group_record_manager" name="Documents Sender"/>
+
+
+
+
+        <record id="view_document_recipient_form" model="ir.ui.view">
+            <field name="name">Document Recipient</field>
+            <field name="model">document.recipient</field>
+            <field name="arch" type="xml">
+                <form string="Document Recipient" version="7.0">
+                    <label for="name" String="Name:"/>
+                    <h1><field name="name"/></h1>
+                    <group colspan="4" col="6">
+                        <field name="location_id"/>
+                        <field name="document_id"/>
+                        <field name="contact_id"/>
+                        <field name="doctor_id"/>
+                        <field name="customer_id"/>
+                        <field name="interpreter_id" domain="[('cust_type','in',('interpreter','interp_and_transl'))]"
+                               context="{'form_view_ref':'bista_iugroup.view_interpreter_form'}"/>
+                        <field name="vendor_id"/>
+                        <field name="sent_to_company"/>
+                        <field name="sent_to_contact"/>
+                        <field name="doc_recipient_id" invisible="1"/>
+
+                    </group>
+
+                </form>
+            </field>
+        </record>
+
+
+        <record id="view_document_recipient_tree" model="ir.ui.view">
+            <field name="name">Document Recipient</field>
+            <field name="model">document.recipient</field>
+            <field name="arch" type="xml">
+                <tree string="Document Recipient">
+                    <field name="name"/>
+                    <field name="location_id"/>
+                    <field name="document_id"/>
+                    <field name="contact_id"/>
+                    <field name="doctor_id"/>
+                    <field name="customer_id"/>
+                    <field name="interpreter_id"/>
+                    <field name="vendor_id"/>
+                    <field name="sent_to_company"/>
+                    <field name="sent_to_contact"/>
+                    <field name="doc_recipient_id"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="action_document_recipient_form" model="ir.actions.act_window">
+            <field name="name">Document Recipient</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">document.recipient</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="view_document_recipient_tree"/>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Click to add a Document Recipient .
+                </p><p>
+                Odoo helps you easily track all activities related to
+                a distribution; discussions, history of business distribution, etc.
+            </p>
+            </field>
+        </record>
+
+        <!--Document Recipient-->
+        <menuitem id="menu_document_recipient" parent="bista_iugroup.menu_document_child" action="action_document_recipient_form" sequence="5"
+                  groups="bista_iugroup.group_record_manager" name="Documents Recipients"/>
+
+
+
+
+
+        <record id="view_interpreter_zip_code_form" model="ir.ui.view">
+            <field name="name">Interpreter Zip Code</field>
+            <field name="model">interpreter.zip.code</field>
+            <field name="arch" type="xml">
+                <form string="Interpreter Zip Code" version="7.0">
+
+                    <group colspan="4" col="6">
+                        <field name="zip_code_id"/>
+                        <field name="is_live"/>
+                        <newline/>
+                        <field name="interpreter_id" domain="[('cust_type','in',('interpreter','interp_and_transl'))]"
+                               context="{'form_view_ref':'bista_iugroup.view_interpreter_form'}"/>
+                        <field name="language_id"/>
+                        <field name="certification_level_id"/>
+
+
+                    </group>
+
+                </form>
+            </field>
+        </record>
+
+        <record id="view_interpreter_zip_code_tree" model="ir.ui.view">
+            <field name="name">Interpreter Zip Code</field>
+            <field name="model">interpreter.zip.code</field>
+            <field name="arch" type="xml">
+                <tree string="Interpreter Zip Code">
+                    <field name="zip_code_id"/>
+                    <field name="is_live"/>
+                    <field name="interpreter_id"/>
+                    <field name="language_id"/>
+                    <field name="certification_level_id"/>
+
+                </tree>
+            </field>
+        </record>
+
+        <record id="action_interpreter_zip_code_form" model="ir.actions.act_window">
+            <field name="name">Interpreter Zip Code</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">interpreter.zip.code</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="view_interpreter_zip_code_tree"/>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Click to add a interpreter zip code .
+                </p><p>
+                Odoo helps you easily track all activities related to
+                a distribution; discussions, history of business distribution, etc.
+            </p>
+            </field>
+        </record>
+
+
+        <menuitem id="menu_interpreter_child" parent="bista_iugroup.menu_config" sequence="5"
+                  groups="bista_iugroup.group_record_manager" name="Interpreter Address"/>
+
+        <menuitem id="menu_zip_code_child1" parent="bista_iugroup.menu_interpreter_child" action="action_interpreter_zip_code_form" sequence="5"
+                  groups="bista_iugroup.group_record_manager" name="Interpreter Zip Code"/>
+
+        <record id="view_degree_sub_form" model="ir.ui.view">
+            <field name="name">Degree Subject</field>
+            <field name="model">degree.subject</field>
+            <field name="arch" type="xml">
+                <form string="Degree Subject" version="7.0">
+                    <label for="name" String="Name:"/>
+                    <h1><field name="name"/></h1>
+                    <group>
+                        <group>
+                            <field name="degree_subject_id"/>
+                        </group>
+                    </group>
+
+                </form>
+            </field>
+        </record>
+
+        <record id="view_degree_sub_tree" model="ir.ui.view">
+            <field name="name">Degree Subject</field>
+            <field name="model">degree.subject</field>
+            <field name="arch" type="xml">
+                <tree string="Degree Subject">
+                    <field name="name"/>
+                    <field name="degree_subject_id"/>
+
+
+                </tree>
+            </field>
+        </record>
+
+
+        <record id="action_menu_degree_form" model="ir.actions.act_window">
+            <field name="name">Degree Subject</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">degree.subject</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="view_degree_sub_tree"/>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Click to add a interpreter zip code and Zone.
+                </p><p>
+                Odoo helps you easily track all activities related to
+                a distribution; discussions, history of business distribution, etc.
+            </p>
+            </field>
+        </record>
+
+
+
+        <menuitem id="menu_degree" parent="bista_iugroup.menu_config" sequence="5"
+                  groups="bista_iugroup.group_record_manager" name="Degrees"/>
+
+        <menuitem id="menu_degree_sub" parent="bista_iugroup.menu_degree" action="action_menu_degree_form" sequence="5"
+                  groups="bista_iugroup.group_record_manager" name="Degree Subject"/>
+
+
+
+        <record id="view_degree_type_form" model="ir.ui.view">
+            <field name="name">Degree Type</field>
+            <field name="model">degree.type</field>
+            <field name="arch" type="xml">
+                <form string="Degree Type" version="7.0">
+                    <label for="name" String="Name:"/>
+                    <h1><field name="name"/></h1>
+                    <group>
+                        <group>
+                            <field name="degree_type_id"/>
+                        </group>
+                    </group>
+
+                </form>
+            </field>
+        </record>
+
+        <record id="view_degree_type_tree" model="ir.ui.view">
+            <field name="name">Degree Type</field>
+            <field name="model">degree.type</field>
+            <field name="arch" type="xml">
+                <tree string="Degree Type">
+                    <field name="name"/>
+                    <field name="degree_type_id"/>
+
+
+                </tree>
+            </field>
+        </record>
+
+        <record id="action_menu_degree_type_form" model="ir.actions.act_window">
+            <field name="name">Degree Type</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">degree.type</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="view_degree_type_tree"/>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Click to add a interpreter zip code and Zone.
+                </p><p>
+                Odoo helps you easily track all activities related to
+                a distribution; discussions, history of business distribution, etc.
+            </p>
+            </field>
+        </record>
+
+        <menuitem id="menu_degree_type" parent="bista_iugroup.menu_degree" action="action_menu_degree_type_form" sequence="5"
+                  groups="bista_iugroup.group_record_manager" name="Degree Type"/>
+
+
+        <record id="view_iu_contract_form" model="ir.ui.view">
+            <field name="name">IU Contract</field>
+            <field name="model">iu.contract</field>
+            <field name="arch" type="xml">
+                <form string="IU Contract" version="7.0">
+                    <!--<group>-->
+                        <label for="name" String="Name"/>
+                        <h1><field name="name"/></h1>
+                    <!--</group>-->
+                    <group>
+                        <group >
+                            <field name="start_date"/>
+                            <field name="end_date"/>
+                            <field name="amount"/>
+                            <newline/>
+                            <field name="notes"/>
+                            <newline/>
+                            <field name="accumulator"/>
+                            <field name="contract_id" invisible="1"/>
+                        </group>
+                    </group>
+                </form>
+            </field>
+        </record>
+
+        <record id="view_iu_contract_tree" model="ir.ui.view">
+            <field name="name">IU Contract</field>
+            <field name="model">iu.contract</field>
+            <field name="arch" type="xml">
+                <tree string="IU Contract">
+                    <field name="name"/>
+                    <field name="start_date"/>
+                    <field name="end_date"/>
+                    <field name="amount"/>
+                    <field name="accumulator"/>
+
+
+                </tree>
+            </field>
+        </record>
+
+        <record id="action_menu_contract_form" model="ir.actions.act_window">
+            <field name="name">Contract</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">iu.contract</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="view_iu_contract_tree"/>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Click to add a Contract
+                </p><p>
+                Odoo helps you easily track all activities related to
+                a distribution; discussions, history of business distribution, etc.
+            </p>
+            </field>
+        </record>
+
+
+        <menuitem id="menu_contract" parent="bista_iugroup.sub_menu_config" sequence="5"
+                  groups="bista_iugroup.group_record_manager" name="Contracts"/>
+
+        <menuitem id="menu_contract_child" parent="bista_iugroup.menu_contract" action="action_menu_contract_form" sequence="5"
+                  groups="bista_iugroup.group_record_manager" name=" IU Contract"/>
+
+
+
+
+        <record id="view_iu_message_form" model="ir.ui.view">
+            <field name="name">IU Message</field>
+            <field name="model">iu.message</field>
+            <field name="arch" type="xml">
+                <form string="IU Message" version="7.0">
+                    <label for="name" String="Name"/>
+                    <h1><field name="name"/></h1>
+                    <group>
+                        <group>
+                            <field name="entered_date"/>
+                            <field name="delivered_date"/>
+                            <field name="contact_id"/>
+                            <field name="interpreter_id" domain="[('cust_type','in',('interpreter','interp_and_transl'))]"
+                                   context="{'form_view_ref':'bista_iugroup.view_interpreter_form'}"/>
+                            <field name="amount" string="Amount"/>
+                        </group>
+                        <group>
+                            <field name="vendor_id" invisible="1"/>
+                            <field name="is_alert"/>
+                            <field name="delivered_by_staff_id"/>
+                            <field name="message_id" invisible="1"/>
+                            <field name="notes"/>
+                        </group>
+                    </group>
+                </form>
+            </field>
+        </record>
+
+
+        <record id="view_iu_message_tree" model="ir.ui.view">
+            <field name="name">IU Message</field>
+            <field name="model">iu.message</field>
+            <field name="arch" type="xml">
+                <tree string="IU Message">
+                    <field name="name"/>
+                    <field name="entered_date"/>
+                    <field name="delivered_date"/>
+                    <field name="contact_id"/>
+                    <field name="interpreter_id"/>
+                    <field name="amount"/>
+                    <field name="vendor_id" invisible="1"/>
+                    <field name="is_alert"/>
+
+
+                </tree>
+            </field>
+        </record>
+
+        <record id="action_menu_message_form" model="ir.actions.act_window">
+            <field name="name">Message</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">iu.message</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="view_iu_message_tree"/>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Click to add a Message
+                </p><p>
+                Odoo helps you easily track all activities related to
+                a distribution; discussions, history of business distribution, etc.
+            </p>
+            </field>
+        </record>
+
+        <menuitem id="menu_message" parent="bista_iugroup.sub_menu_config" sequence="5"
+                  groups="bista_iugroup.group_record_manager" name="Message"/>
+
+        <menuitem id="menu_message_child" parent="bista_iugroup.menu_message" action="action_menu_message_form" sequence="5"
+                  groups="bista_iugroup.group_record_manager" name=" IU Message"/>
+
+        <!--changes by the Tabassum "14-july-14"1-->
+
+        <record id="view_note_status_form" model="ir.ui.view">
+            <field name="name">Fee Note Status</field>
+            <field name="model">fee.note.status</field>
+            <field name="arch" type="xml">
+                <form string="Fee Note Status" version="7.0">
+                    <sheet>
+                        <h3>
+                            <group>
+                                <field name="name"/>
+                            </group>
+                        </h3>
+                        <group colspan="4" col="4">
+                            <field name="fee_note_status_id" readonly="1"/>
+                            <field name="company_id" groups="base.group_multi_company" widget="selection"/>
+
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+
+        <record id="view_note_status_tree" model="ir.ui.view">
+            <field name="name">Fee Note Status tree</field>
+            <field name="model">fee.note.status</field>
+            <field name="arch" type="xml">
+                <tree string="Fee Note Status">
+                    <field name="name"/>
+                    <field name="company_id" groups="base.group_multi_company" />
+                    <field name="fee_note_status_id" readonly="1"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="action_fee_note_status_form" model="ir.actions.act_window">
+            <field name="name">Fee Note Status</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">fee.note.status</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="view_note_status_tree"/>
+        </record>
+
+        <menuitem id="menu_fee_note_status_form" parent="bista_iugroup.sub_menu_config" sequence="6" name="Fee note Status" action="action_fee_note_status_form"
+                  groups="bista_iugroup.group_record_manager"/>
+
+        <!--2-->
+        <record id="view_claimant_confirm_status_form" model="ir.ui.view">
+            <field name="name">claimant Confirm Status</field>
+            <field name="model">claimant.confirm.status</field>
+            <field name="arch" type="xml">
+                <form string="claimant Confirm Status" version="7.0">
+                    <sheet>
+                        <h3>
+                            <group>
+                                <field name="name"/>
+                            </group>
+                        </h3>
+                        <group colspan="4" col="4">
+                            <field name="claimant_confirm_status_id" readonly="1"/>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+
+        <record id="view_claimant_confirm_status_tree" model="ir.ui.view">
+            <field name="name">claimant Confirm Status Tree</field>
+            <field name="model">claimant.confirm.status</field>
+            <field name="arch" type="xml">
+                <tree string="Claimant Confirm Status">
+                    <field name="name"/>
+                    <field name="claimant_confirm_status_id" readonly="1"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="action_claimant_confirm_status_form" model="ir.actions.act_window">
+            <field name="name">Claimant Confirm Status</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">claimant.confirm.status</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="view_claimant_confirm_status_tree"/>
+        </record>
+
+        <!--  <menuitem id="menu_claimant_confirm_status_form" parent="bista_iugroup.sub_menu_config" sequence="7" name="Claimant Confirm Status" action="action_claimant_confirm_status_form"
+                 groups="bista_iugroup.group_record_manager"/>-->
+
+        <!--3-->
+        <record id="view_location_confirm_status_form" model="ir.ui.view">
+            <field name="name">claimant.confirm.status.form.name</field>
+            <field name="model">location.confirm.status</field>
+            <field name="arch" type="xml">
+                <form string="Location Confirm Status" version="7.0">
+                    <sheet>
+                        <h3>
+                            <group>
+                                <field name="name"/>
+                            </group>
+                        </h3>
+                        <group colspan="4" col="4">
+                            <field name="location_confirm_status_id" readonly="1"/>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+
+        <record id="view_location_confirm_status_tree" model="ir.ui.view">
+            <field name="name">view.location.confirm.status.tree</field>
+            <field name="model">location.confirm.status</field>
+            <field name="arch" type="xml">
+                <tree string="Location Confirm Status">
+                    <field name="name"/>
+                    <field name="location_confirm_status_id" readonly="1"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="action_location_confirm_status_form" model="ir.actions.act_window">
+            <field name="name">Location Confirm Status</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">location.confirm.status</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="view_location_confirm_status_tree"/>
+        </record>
+
+        <!--  <menuitem id="menu_location_confirm_status_form" parent="bista_iugroup.sub_menu_config" sequence="7" name="Location Confirm Status" action="action_location_confirm_status_form"
+                 groups="bista_iugroup.group_record_manager"/>-->
+
+        <!--4-->
+        <record id="view_appointment_type_group_form" model="ir.ui.view">
+            <field name="name">appointment.type.group.form.name</field>
+            <field name="model">appointment.type.group</field>
+            <field name="arch" type="xml">
+                <form string="Appointment Type Group" version="7.0">
+                    <sheet>
+                        <h3>
+                            <group>
+                                <field name="name"/>
+                            </group>
+                        </h3>
+                        <group colspan="4" col="4">
+                            <field name="appointment_type_group_id" readonly="1"/>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+
+        <record id="view_appointment_type_group_tree" model="ir.ui.view">
+            <field name="name">view.appointment_type_groups.tree</field>
+            <field name="model">appointment.type.group</field>
+            <field name="arch" type="xml">
+                <tree string="Appointment Type Group">
+                    <field name="name"/>
+                    <field name="appointment_type_group_id" readonly="1"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="action_appointment_type_group_form" model="ir.actions.act_window">
+            <field name="name">Appointment Type Group</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">appointment.type.group</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="view_appointment_type_group_tree"/>
+        </record>
+
+        <menuitem id="menu_appointment_type_group_form" parent="bista_iugroup.sub_menu_config" sequence="7" name="Appointment Type Group" action="action_appointment_type_group_form"
+                  groups="bista_iugroup.group_record_manager"/>
+
+        <!--5-->
+        <record id="view_appointment_type_form" model="ir.ui.view">
+            <field name="name">appointment.type.form.name</field>
+            <field name="model">appointment.type</field>
+            <field name="arch" type="xml">
+                <form string="Appointment Type" version="7.0">
+                    <sheet>
+                        <h3>
+                            <group>
+                                <field name="name"/>
+                            </group>
+                        </h3>
+                        <group colspan="4" col="4">
+                            <field name="appointment_type_group_id"/>
+                            <field name="appointment_type_id" readonly="1"/>
+                            <field name="is_medical_legal"/>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+
+        <record id="view_appointment_type_tree" model="ir.ui.view">
+            <field name="name">view.appointment_type.tree</field>
+            <field name="model">appointment.type</field>
+            <field name="arch" type="xml">
+                <tree string="Appointment Type">
+                    <field name="name"/>
+                    <field name="appointment_type_group_id"/>
+                    <!--<field name="appointment_type_id"/>-->
+                    <field name="appointment_type_id" readonly="1"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="action_appointment_type_form" model="ir.actions.act_window">
+            <field name="name">Appointment Type</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">appointment.type</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="view_appointment_type_tree"/>
+        </record>
+
+        <menuitem id="menu_appointment_type_form" parent="bista_iugroup.sub_menu_config" sequence="8" name="Appointment Type" action="action_appointment_type_form"
+                  groups="bista_iugroup.group_record_manager"/>
+
+        <!--6-->
+        <record id="view_cancel_reason_form" model="ir.ui.view">
+            <field name="name">Cancel Reason</field>
+            <field name="model">cancel.reason</field>
+            <field name="arch" type="xml">
+                <form string="Cancel Reason" version="7.0">
+                    <sheet>
+                        <h3>
+                            <group>
+                                <field name="name"/>
+                            </group>
+                        </h3>
+                        <group colspan="4" col="4">
+                            <field name="cancel_reason_id" readonly="1"/>
+                            <field name="do_active"/>
+                            <field name="company_id" />
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+
+        <record id="view_cancel_reason_tree" model="ir.ui.view">
+            <field name="name">Cancel Reason Tree</field>
+            <field name="model">cancel.reason</field>
+            <field name="arch" type="xml">
+                <tree string="Cancel Reason">
+                    <field name="name"/>
+                    <field name="cancel_reason_id" readonly="1" />
+                    <field name="company_id" />
+                    <field name="do_active"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="action_cancel_reason_form" model="ir.actions.act_window">
+            <field name="name">Cancel Reason</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">cancel.reason</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="domain">[('do_active','=',1)]</field>
+            <field name="view_id" ref="view_cancel_reason_tree"/>
+        </record>
+
+        <menuitem id="menu_cancel_reason_form" parent="bista_iugroup.sub_menu_config" sequence="9" name="Cancel Reason" action="action_cancel_reason_form"
+                  groups="bista_iugroup.group_record_manager"/>
+
+
+        <!--7-->
+        <record id="view_certification_level_form" model="ir.ui.view">
+            <field name="name">Certification Level</field>
+            <field name="model">certification.level</field>
+            <field name="arch" type="xml">
+                <form string="Certification Level" version="7.0">
+                    <sheet>
+                        <h3>
+                            <group>
+                                <field name="name"/>
+                                <field name="active"/>
+                                <field name="is_required_certification"/>
+                            </group>
+                        </h3>
+                        <group colspan="4" col="4">
+                            <field name="certification_level_id" readonly="1"/>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+
+        <record id="view_certification_level_tree" model="ir.ui.view">
+            <field name="name">Certification Level Tree</field>
+            <field name="model">certification.level</field>
+            <field name="arch" type="xml">
+                <tree string="Cancel Reason">
+                    <field name="name"/>
+                    <field name="certification_level_id" readonly="1"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="action_certification_level_form" model="ir.actions.act_window">
+            <field name="name">Certification Level</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">certification.level</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="view_certification_level_tree"/>
+        </record>
+
+        <menuitem id="menu_certification_level" parent="bista_iugroup.sub_menu_config" sequence="9" name="Certification Level" action="action_certification_level_form"
+                  groups="bista_iugroup.group_record_manager"/>
+        <!--8-->
+        <record id="view_transporter_alloc_history_form" model="ir.ui.view">
+            <field name="name">Transporter Alloc History</field>
+            <field name="model">transporter.alloc.history</field>
+            <field name="arch" type="xml">
+                <form string="Transporter Alloc History" version="7.0">
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="name"/>
+                                <field name="partner_id"/>
+                                <field name="ordering_partner_id"/>
+                                <field name="rate"/>
+                                <field name="event_date"/>
+                                <field name="event_id"/>
+                            </group>
+                            <group>
+                                <field name="language_id"/>
+                                <field name="task_id"/>
+                                <field name="voicemail_msg"/>
+                                <field name="state"/>
+                                <field name="event_start"/>
+                                <field name="event_end"/>
+                            </group>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+
+        <record id="view_transporter_alloc_history_tree" model="ir.ui.view">
+            <field name="name">Transporter Alloc History</field>
+            <field name="model">transporter.alloc.history</field>
+            <field name="arch" type="xml">
+                <tree string="Transporter Alloc History">
+                    <field name="name"/>
+                    <field name="partner_id"/>
+                    <field name="ordering_partner_id"/>
+                    <field name="rate"/>
+                    <field name="event_date"/>
+                    <field name="event_id"/>
+                    <field name="language_id"/>
+                    <field name="task_id"/>
+                    <field name="voicemail_msg"/>
+                    <field name="state"/>
+                    <field name="event_start"/>
+                    <field name="event_end"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="action_transporter_alloc_history_form" model="ir.actions.act_window">
+            <field name="name">Transporter Alloc History</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">transporter.alloc.history</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="view_transporter_alloc_history_tree"/>
+        </record>
+
+        <menuitem id="menu_transporter_alloc_history" parent="bista_iugroup.menu_event_trans_config" name="Transporter Alloc History" action="action_transporter_alloc_history_form"
+        />
+
+        <!--9-->
+        <record id="view_translator_alloc_history_form" model="ir.ui.view">
+            <field name="name">Translator Alloc History</field>
+            <field name="model">translator.alloc.history</field>
+            <field name="arch" type="xml">
+                <form string="Translater Alloc History" version="7.0">
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="name"/>
+                                <field name="partner_id"/>
+                                <field name="ordering_partner_id"/>
+                                <field name="city"/>
+                                <field name="rate"/>
+                                <field name="event_date"/>
+                            </group>
+                            <group>
+                                <field name="event_id"/>
+                                <field name="language_id"/>
+                                <field name="task_id"/>
+                                <field name="voicemail_msg"/>
+                                <field name="state"/>
+                                <field name="event_start"/>
+                                <field name="event_end"/>
+                            </group>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+
+        <record id="view_translater_alloc_history_tree" model="ir.ui.view">
+            <field name="name">Translater Alloc History</field>
+            <field name="model">translator.alloc.history</field>
+            <field name="arch" type="xml">
+                <tree string="Translater Alloc History">
+                    <field name="name"/>
+                    <field name="partner_id"/>
+                    <field name="ordering_partner_id"/>
+                    <!--                        <field name="rating"/>-->
+                    <!--                        <field name="certification"/>-->
+                    <field name="city"/>
+                    <field name="rate"/>
+                    <field name="event_date"/>
+                    <field name="event_id"/>
+                    <field name="language_id"/>
+                    <field name="task_id"/>
+                    <field name="voicemail_msg"/>
+                    <field name="state"/>
+                    <field name="event_start"/>
+                    <field name="event_end"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="action_translater_alloc_history_form" model="ir.actions.act_window">
+            <field name="name">Translater Alloc History</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">translator.alloc.history</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="view_translater_alloc_history_tree"/>
+        </record>
+        <menuitem id="menu_translater_history" parent="bista_iugroup.sub_menu_translation_event" name="Configuration"
+                  sequence="12" />
+        <menuitem id="menu_translater_alloc_history" parent="bista_iugroup.menu_translater_history" name="Translarter Alloc History" action="action_translater_alloc_history_form"
+        />
+    </data>
+</openerp>

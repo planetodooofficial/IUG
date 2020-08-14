@@ -1,0 +1,802 @@
+# -*- coding: utf-8 -*-
+##############################################################################
+#
+#    OpenERP, Open Source Business Applications
+#    Copyright (C) 2004-2012 OpenERP S.A. (<http://openerp.com>).
+#
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU Affero General Public License as
+#    published by the Free Software Foundation, either version 3 of the
+#    License, or (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU Affero General Public License for more details.
+#
+#    You should have received a copy of the GNU Affero General Public License
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+##############################################################################
+import time
+import datetime
+from datetime import timedelta
+from dateutil import relativedelta
+import re
+from odoo.tools import flatten
+import urllib
+from bss_phonumbers_fields import bss_phonenumbers_converter as phonumbers_converter
+import phonenumbers
+import pytz
+from pytz import timezone
+from odoo import SUPERUSER_ID, tools
+from google_maps import GoogleMaps
+from odoo import netsvc
+from odoo import fields,models,_,api
+from odoo.tools import DEFAULT_SERVER_DATE_FORMAT, DEFAULT_SERVER_DATETIME_FORMAT, DATETIME_FORMATS_MAP, float_compare
+import pygmaps
+import webbrowser
+import urllib, random
+import requests
+import base64
+import math
+from lxml import etree
+from math import radians, cos, sin, asin, sqrt
+from google_distance import google_maps_distance
+import logging
+import requests, json
+_logger = logging.getLogger(__name__)
+from odoo import report as odoo_report
+from odoo.exceptions import UserError, RedirectWarning, ValidationError
+#import threading
+#import custom_thread
+#import openerp.pooler as pooler
+#from psycopg2.extensions import ISOLATION_LEVEL_READ_COMMITTED
+try:
+    from pygeocoder import Geocoder
+except Exception , e:
+     raise UserError('Please install pygeocoder - pip install pygeocoder')
+
+api_count = 0
+api_key = False
+api_keys_dict = {'AIzaSyDAPZqsalpxu0T5SPRBXSG8K2ZVnngmmUo': {'count':0 , 'active':False}}
+
+current_date = False
+EVENT_STATES = [
+    ('draft', 'Unscheduled'),
+    ('scheduled', 'Scheduled'),
+    ('allocated', 'Allocated'),
+    ('unauthorize','Unauthorize'),
+    ('confirmed', 'Confirmed'),
+    ('unbilled', 'Unbilled'),
+    ('cancel','Cancelled'),
+    ('done', 'Done'),
+    ('unapproved', 'Unappoved'),
+    ('rejected', 'Rejected'),
+]
+_timezone_event = { -11: 'US/Samoa', -10: 'US/Hawaii',
+                    -9: 'US/Alaska', -8: 'US/Pacific',
+                    -7: 'US/Mountain', -6: 'US/Central',
+                    -5: 'US/Eastern'
+                }
+                        
+def geo_query_address(street=None, zip=None, city=None, state=None, country=None):
+    if country and ',' in country and (country.endswith(' of') or country.endswith(' of the')):
+        # put country qualifier in front, otherwise GMap gives wrong results,
+        # e.g. 'Congo, Democratic Republic of the' => 'Democratic Republic of the Congo'
+        country = '{1} {0}'.format(*country.split(',',1))
+    try:
+        if street:
+            street = street.encode('utf-8', 'ignore')
+            try:
+                street = unicode(street, "ascii",'ignore')
+            except UnicodeError:
+                street = unicode(street, "utf-8", 'ignore').decode('ascii')
+        if zip:
+            zip = zip.encode('utf-8', 'ignore')
+            try:
+                zip = unicode(zip, "ascii",'ignore')
+            except UnicodeError:
+                zip = unicode(zip, "utf-8", 'ignore').decode('ascii')
+        if city:
+            city = city.encode('utf-8', 'ignore')
+            try:
+                city = unicode(city, "ascii",'ignore')
+            except UnicodeError:
+                city = unicode(city, "utf-8", 'ignore').decode('ascii')
+        if state:
+            state = state.encode('utf-8', 'ignore')
+        if country:
+            country = country.encode('utf-8', 'ignore')
+    except Exception:
+        pass
+    return tools.ustr(' '.join(filter(None, [street, ("%s %s" % (zip or '', city or '')).strip(),
+                                              state, country])))
+
+class select_interpreter_line(models.Model):
+    _name = 'select.interpreter.line'
+    _order = 'distance,rate'
+    _inherit = ['mail.thread']
+
+    name=fields.Char(related='interpreter_id.name',string='Name',store=True)
+    middle_name=fields.Char(related='interpreter_id.middle_name', string='Middle Name',store=True)
+    last_name=fields.Char(related='interpreter_id.last_name',string='Last Name',store=True)
+    zip=fields.Char(related='interpreter_id.zip', string='Zip',store=True)
+    phone=fields.Char(related='interpreter_id.cell_phone', string='Phone',store=True)
+    rate=fields.Float('Rate')
+    interpreter_id=fields.Many2one("res.partner",'Interpreter', )
+    preferred=fields.Boolean("Preffered?")
+    event_id=fields.Many2one('event',"Event Id", )
+    visited=fields.Boolean("Visited")
+    visited_date=fields.Date("Visited Date")
+    voicemail_msg=fields.Char("Voicemail Message" , size=128,default='')
+    duration=fields.Char("Duration" , size=42)
+    distance=fields.Float('Distance' , digits = (16,2))
+    state =fields.Selection([
+        ('draft', 'Unscheduled'),
+        ('voicemailsent', 'Voicemail Sent'),
+        ('assigned', 'Assigned'),
+        ('cancel','Cancelled'),
+        ],
+        'Status', readonly=True, required=True,)
+    parent_state=fields.Selection(related='event_id.state', store=True, string="Event State" ,selection=EVENT_STATES,
+             readonly=True,)
+    company_id=fields.Many2one(related='event_id.company_id', relation="res.company", store=True, string="Company" ,
+             readonly=True,)
+    select_interpreter=fields.Boolean('Job Offer')
+
+    @api.multi
+    def onclick_select_interpreter(self):
+        values = {'select_interpreter': True} if not self.select_interpreter else {'select_interpreter': False}
+        self.write(values)
+        return True
+
+    @api.multi
+    def leave_voicemail_without_warning(self):
+        cur_obj = self
+        ir_model_data = self.env['ir.model.data']
+        warning_obj = self.env['warning']
+        history_obj = self.env['interpreter.alloc.history']
+        event = cur_obj.event_id
+        res, template_id, overlap = [], False, False
+        if not cur_obj.interpreter_id:
+            return
+        if event.partner_id.fee_note == True and event.fee_note_test == False:
+            raise UserError(_("Please attach Event Fee Note!"))
+        if event.partner_id.order_note == True and event.order_note_test == False:
+            raise UserError(_("Please attach SAF!"))
+        for select_line in event.interpreter_ids2:
+            if select_line.interpreter_id:
+                if select_line.state == 'voicemailsent' and select_line.interpreter_id.id == cur_obj.interpreter_id.id:
+                    raise UserError(_('Selected interpreter is already present in the Job offered list!'))
+        if event.multi_type == '1':
+            if (event.state not in ('unapproved', 'draft', 'scheduled')) and len(event.assigned_interpreters) >= 1:
+                raise UserError(_('Interpreter is already assigned to this event.'))
+        if event.multi_type == '2':
+            if event.state not in ('unapproved', 'draft', 'scheduled') and len(event.assigned_interpreters) >= 2:
+                raise UserError(_('Interpreters are already assigned to this event.'))
+        if event.multi_type == '3':
+            if event.state not in ('unapproved', 'draft', 'scheduled') and len(event.assigned_interpreters) >= 3:
+                raise UserError(_('Interpreters are already assigned to this event.'))
+        if event.multi_type == '4':
+            if event.state not in ('unapproved', 'draft', 'scheduled') and len(event.assigned_interpreters) >= 4:
+                raise UserError(_('Interpreters are already assigned to this event.'))
+        if event.multi_type == '5':
+            if event.state not in ('unapproved', 'draft', 'scheduled') and len(event.assigned_interpreters) >= 5:
+                raise UserError(_('Interpreters are already assigned to this event.'))
+
+        if not cur_obj.interpreter_id.is_agency:
+            history_ids2 = history_obj.sudo().search([('name', '=', cur_obj.interpreter_id.id),('state', 'in', ('confirm', 'allocated')),
+                                                                 ('company_id', '=', event.company_id.id),('cancel_date', '=', False),
+                                                                 ('event_date', '=', (datetime.datetime.strptime(str(datetime.datetime.strptime(str(event.event_start),"%Y-%m-%d %H:%M:%S").strftime('%Y-%m-%d %H:%M:%S')),"%Y-%m-%d %H:%M:%S")).strftime('%Y-%m-%d'))])
+            for history_id in history_ids2:
+                history_browse = history_id
+                if (event.event_start > history_browse.event_start and event.event_end < history_browse.event_end):
+                    overlap = True
+
+                elif (event.event_start > history_browse.event_start and event.event_start < history_browse.event_end):
+                    overlap = True
+                elif (event.event_end > history_browse.event_start and event.event_end < history_browse.event_end):
+                    overlap = True
+                elif (event.event_start == history_browse.event_start or event.event_end == history_browse.event_end):
+                    overlap = True
+                elif (history_browse.event_start > event.event_start and history_browse.event_start < event.event_end):
+                    overlap = True
+                elif (history_browse.event_end < event.event_end and history_browse.event_end > event.event_start):
+                    overlap = True
+                    #            elif (event.event_start == history_browse.event_end ):
+                    #                overlap = True
+                if overlap:
+                    raise UserError(_('This Interpreter is already appointed for another Event!'))
+
+        if event.state == 'draft':
+            res = event.write({'state': 'scheduled'})
+        
+        if self.interpreter_id.opt_for_sms:
+            self.with_context(job_offer= True).send_sms_to_interpreters_job_offer()
+        event_start = datetime.datetime.strptime(event.event_start, tools.DEFAULT_SERVER_DATETIME_FORMAT)
+        DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
+        from_dt = datetime.datetime.strptime(str(event_start), DATETIME_FORMAT)
+        voicemail_msg = cur_obj.voicemail_msg
+        voicemail_msg = "Voicemail Message left for " + str(cur_obj.interpreter_id.name) + "for Event " + str(event.name) + " on the date " + str(from_dt.strftime('%Y-%m-%d'))
+        self.env['interpreter.history'].create({'partner_id': event.partner_id and event.partner_id.id or False,
+                                                     'name': cur_obj.interpreter_id and cur_obj.interpreter_id.id or False,
+                                                     'event_id': event.id,
+                                                     # 'event_date': from_dt.strftime('%Y-%m-%d'),
+                                                     'state': 'voicemailsent', 'voicemail_msg': voicemail_msg})
+        try:
+            template_id = ir_model_data.get_object_reference('bista_iugroup', 'send_interpreter_job_offered_event')[1]
+        except ValueError:
+            template_id = False
+        if template_id:
+            try:
+                self.env['mail.template'].browse(template_id).send_mail(self.ids[0], force_send=True)
+            except Exception:
+                pass
+        self.write({'state': 'voicemailsent'})
+        if cur_obj.interpreter_id.user_id and cur_obj.interpreter_id.user_id.id != SUPERUSER_ID:
+            if cur_obj.interpreter_id.user_id and event.state in ['draft', 'scheduled']:
+                event.write({'event_follower_ids': [(4, cur_obj.interpreter_id.user_id.id)]})
+        return res
+
+    @api.multi
+    def raise_warning_multi_interpreter(self,selected_interp_ids=[]):
+        if not selected_interp_ids:
+            return False
+        ir_model_data = self.env['ir.model.data']
+        warning_obj = self.env['warning']
+        state_id = self.env['res.country.state'].search([('name', 'ilike', 'California')])
+        found_interpreters = []
+        interpreter_select_lines = self.browse(selected_interp_ids)
+        for inter_line in interpreter_select_lines:
+            interpreter = inter_line.interpreter_id
+            if interpreter.cust_type == 'interpreter' and not interpreter.vat and interpreter.state_id.id == state_id[0]:
+                found_interpreters.append(interpreter)
+
+        if found_interpreters:
+            name = ','.join('%s %s' % (i.name, i.last_name) for i in found_interpreters)
+            wiz_address_new_id = warning_obj.create({
+                'title': 'Warning!',
+                'message': 'Below Mentioned Interpreters does not contain TIN No.(Interpreter\'s Form) filled, please have a look.<br/><br/><span style="color:blue">' + name + '</span>',
+                })
+            res = ir_model_data.get_object_reference('bista_iugroup', 'warning_vat')
+            res_id = res and res[1] or False
+            return {'name': 'Warning',
+                    'type': 'ir.actions.act_window',
+                    'res_model': 'warning',
+                    'res_id': wiz_address_new_id.id,
+                    'view_id': [res_id],
+                    'view_mode': 'form',
+                    'view_type': 'form',
+                    'target': 'new',
+                    }
+
+    @api.multi
+    def leave_voicemail(self):
+        ''' This function updates or assigns interpreter in the event form '''
+        res = self.leave_voicemail_without_warning()
+        ir_model_data = self.env['ir.model.data']
+        warning_obj = self.env['warning']
+        # Check interpreter for TIN field and state is California
+        interpreter_id = self.interpreter_id
+        if interpreter_id.cust_type == 'interpreter':
+            state_id = self.env['res.country.state'].search([('name', 'ilike', 'California')])
+            if not interpreter_id.vat and interpreter_id.state_id.id == state_id[0]:
+                wiz_address_id = warning_obj.create({
+                    'title': 'Warning!',
+                    'message': 'Mentioned Interpreter does not contain TIN No.(Interpreter\'s Form) filled, please have a look.',
+                })
+                res = ir_model_data.get_object_reference('bista_iugroup', 'warning_vat')
+                res_id = res and res[1] or False
+                return {'name': 'Warning',
+                        'type': 'ir.actions.act_window',
+                        'res_model': 'warning',
+                        'res_id': wiz_address_id.id,
+                        'view_id': [res_id],
+                        'view_mode': 'form',
+                        'view_type': 'form',
+                        'target': 'new',
+                        }
+        return res
+
+    @api.multi
+    def schedule_interpreter(self):
+        ''' This function updates or assigns interpreter in the event form '''
+        cur_obj = self
+        mod_obj = self.env['ir.model.data']
+        history_obj = self.env['interpreter.alloc.history']
+        event = cur_obj.event_id
+        overlap = False
+        if not cur_obj.interpreter_id:
+            return
+        if not cur_obj.interpreter_id.is_agency:
+            history_ids2 = history_obj.sudo().search([('name','=',cur_obj.interpreter_id.id),('state','in',('confirm','allocated')),('company_id','=',event.company_id.id),
+                                   ('event_date','=',(datetime.datetime.strptime(str(datetime.datetime.strptime(str(event.event_start),"%Y-%m-%d %H:%M:%S").strftime('%Y-%m-%d %H:%M:%S')),"%Y-%m-%d %H:%M:%S")).strftime('%Y-%m-%d'))])
+            for history_id in history_ids2:
+                history_browse = history_id
+                if (event.event_start > history_browse.event_start and event.event_end < history_browse.event_end) :
+                    overlap = True
+                elif (event.event_start > history_browse.event_start and event.event_start < history_browse.event_end) :
+                    overlap = True
+                elif (event.event_end > history_browse.event_start and event.event_end < history_browse.event_end) :
+                    overlap = True
+                elif (event.event_start == history_browse.event_start or event.event_end == history_browse.event_end) :
+                    overlap = True
+                elif (history_browse.event_start > event.event_start and history_browse.event_start < event.event_end) :
+                    overlap = True
+                elif (history_browse.event_end < event.event_end and history_browse.event_end > event.event_start) :
+                    overlap = True
+    #            elif (event.event_start == history_browse.event_end ):
+    #                overlap = True
+                if overlap:
+                    raise UserError('This Interpreter is already appointed for another Event!')
+        res = mod_obj.get_object_reference('bista_iugroup', 'assign_interpreter_wizard_view1')
+        res_id = res and res[1] or False
+        assign_interpreter_form_id = self.env['assign.interp.wizard'].with_context(active_ids=self.ids).create({}).id
+        return {
+            'name': _('Assign Interpreter'),
+            'view_type': 'form',
+            'view_mode': 'form',
+            'view_id': [res_id],
+            'res_model': 'assign.interp.wizard',
+            'type': 'ir.actions.act_window',
+            'nodestroy': True,
+            'target': 'new',
+            'res_id': assign_interpreter_form_id or False,
+        }
+
+    @api.multi
+    def send_sms_to_interpreters_job_offer(self):
+        select_template_body = None
+        get_template = None
+        sms_template_obj = self.env['sms.template.twilio']
+
+        if self._context.get('job_offer',False):
+            get_template = sms_template_obj.search([('action_for','=','job_offer')])
+        if self._context.get('assigned_interp',False):
+            get_template = sms_template_obj.search([('action_for','=','assigned_interp')])
+        if self._context.get('assigned_customer',False):
+            get_template = sms_template_obj.search([('action_for','=','assigned_customer')])
+        if self._context.get('event_cancel',False):
+            get_template = sms_template_obj.search([('action_for','=','event_cancel')])
+        select_template_body = get_template.sms_text
+
+        if self._context.get('job_offer',False):
+            event_data = self.event_id
+            event_time_start = event_data.event_start_hr+':'+event_data.event_start_min+event_data.am_pm
+            event_time_end = event_data.event_end_hr+':'+event_data.event_end_min+event_data.am_pm2
+            get_contact = self.interpreter_id.phone
+            if get_contact:
+                if event_data.event_start_date:
+                    event_start_date = event_data.event_start_date.split('-')[1] + '/' + \
+                                       event_data.event_start_date.split('-')[2] + '/' + \
+                                       event_data.event_start_date.split('-')[0]
+                else:
+                    event_start_date = event_data.event_start_date
+                sms_vals = {
+                            'sms_body': select_template_body%(event_data.name,event_start_date,
+                                                              event_time_start,event_time_end,
+                                                              event_data.location_id.state_id.name,event_data.location_id.city,
+                                                              event_data.location_id.zip,event_data.name,event_data.name),
+                            'sms_to': get_contact
+                        }
+                self.env['twilio.sms.send'].create(sms_vals)
+            else:
+                pass
+        
+    # @
+    # def update_interpreter(self, cr, uid, ids, context):
+    #     ''' This function updates or assigns interpreter in the event form '''
+    #     res= []
+    #     cur_obj = self.browse(cr ,uid ,ids[0])
+    #     event = cur_obj.event_id
+    #     res = self.pool.get('event').write(cr ,uid , [event.id],{'interpreter_id':cur_obj.interpreter_id and cur_obj.interpreter_id.id or False,
+    #                                                             'state':'allocated'})
+    #     res = self.unlink(cr ,uid , ids)
+    #     return res
+
+    @api.multi
+    def cancel_appointment(self):
+        ''' function to cancel assignment for interpreter  '''
+        mod_obj = self.env['ir.model.data']
+        event_obj = self.env['event']
+        cur_obj = self
+        event = cur_obj.event_id
+        lines_state = []
+        user = self.env.user
+        interp_hist_obj = self.env['interpreter.history']
+        interp_hist_id = interp_hist_obj.search([('event_id', '=', event.id),('name', '=', cur_obj.interpreter_id.id), ('state','=', 'voicemailsent')])
+        interp_hist_id.write({'state': 'cancel'})
+
+        if not event.history_id:
+            self.env['interpreter.alloc.history'].create({'partner_id':event.partner_id and event.partner_id.id or False,'name': cur_obj.interpreter_id and cur_obj.interpreter_id.id or False,
+                    'event_id':event.id,'event_date': event.event_date ,'event_start':event.event_start,'event_end':event.event_end,'state':'cancel','company_id': event.company_id and event.company_id.id or False,
+                    'cancel_date':time.strftime('%Y-%m-%d %H:%M:%S')})
+        else:
+            for history in event.history_id:
+                if history.name.id == cur_obj.interpreter_id.id and history.state == 'allocated':
+                    history.write({'partner_id':event.partner_id and event.partner_id.id or False,'name': cur_obj.interpreter_id and cur_obj.interpreter_id.id or False,
+                            'event_id':event.id,'event_date': event.event_date ,'event_start':event.event_start,'event_end':event.event_end,'state':'cancel','company_id': event.company_id and event.company_id.id or False,
+                            'cancel_date':time.strftime('%Y-%m-%d %H:%M:%S')})
+        
+        self.write({'state':'cancel'})
+        for rec in event.event_follower_ids:
+            _logger.info('Even followers t++++++++++++%s--------------',cur_obj.interpreter_id.user_id.id)
+            _logger.info('Even followers t++++++++++++%s--------------',rec.id)
+            if rec.id==cur_obj.interpreter_id.user_id.id:
+                event.sudo().write({'event_follower_ids': [(3, cur_obj.interpreter_id.user_id.id)]})
+        event_new = event_obj.sudo().browse(event.id)
+        subject = "System Rejected Interpreter's Job offer"
+        if cur_obj.interpreter_id and cur_obj.interpreter_id.user_id:
+            if cur_obj.interpreter_id.has_login and cur_obj.interpreter_id.user_id.id == self._uid:
+                subject = "Interpreter Declined"
+        details = "Interpreter %s has declined job."%(cur_obj.interpreter_id and cur_obj.interpreter_id.complete_name or False)
+        if user.user_type not in ('staff','admin'):
+            event.sudo().message_post(body=details, subject=subject)
+        else:
+            event.message_post(body=details, subject=subject)
+        if not event_new.assigned_interpreters:
+            for each_line in event_new.interpreter_ids2:
+                lines_state.append(each_line.state)
+            if lines_state and len(list(set(lines_state))) == 1 and list(set(lines_state))[0] == 'cancel':
+                event.sudo().write({'state':'draft'})
+        if user.user_type and user.user_type == 'vendor':
+            res = mod_obj.sudo().get_object_reference('bista_iugroup', 'view_event_user_tree')
+            res_id = res and res[1] or False,
+            self=self.with_context(event_id =self.ids[0])
+            return {
+                'name': _('Event'),
+                'view_type': 'form',
+                'view_mode': 'tree',
+                'view_id': [res_id[0]],
+                'res_model': 'event',
+                'type': 'ir.actions.act_window',
+                'nodestroy': True,
+                'target': 'current',
+                'context':{'event_id':self.ids[0]},
+            }
+        return True
+
+    @api.multi
+    def get_direction(self):
+        ''' Shows path between Interpreter and Doctor/Location  '''
+        cur_obj = self
+        location = False
+        interpreter = cur_obj.interpreter_id
+        if cur_obj.event_id:
+            location = cur_obj.event_id.location_id
+        else:
+            return True
+        if not interpreter:
+            return True
+        if not location:
+            raise UserError(_('You must enter location first.'))
+        url="http://maps.google.com/maps?mode=driving&saddr="
+        location_address = geo_query_address(location.street or False , location.zip or False ,location.city or False, \
+                                location.state_id and location.state_id.name or False, location.country_id and location.country_id.name or False)
+        interp_address = geo_query_address(interpreter.street or False , interpreter.zip or False ,interpreter.city or False, \
+                                interpreter.state_id and interpreter.state_id.name or False, interpreter.country_id and interpreter.country_id.name or False)
+        url += interp_address + '&daddr=' + location_address + '&mode=driving'
+        return {
+        'type': 'ir.actions.act_url',
+        'url':url,
+        'nodestroy': True,
+        'target': 'new'
+        }
+
+class select_transporter_line(models.Model):
+    _name = 'select.transporter.line'
+    _order = 'distance ,rate'
+
+    name=fields.Char(related='transporter_id.name',string='Name',store=True)
+    middle_name=fields.Char(related='transporter_id.middle_name', string='Middle Name',store=True)
+    last_name=fields.Char(related='transporter_id.last_name', string='Last Name',store=True)
+    zip=fields.Char(related='transporter_id.zip', string='Zip',store=True)
+    phone=fields.Char(related='transporter_id.cell_phone',string='Phone',store=True)
+    rate=fields.Float(related='transporter_id.rate',string='Rate',store=True)
+    transporter_id=fields.Many2one("res.partner",'Transporter', )
+    select=fields.Boolean("Select")
+    event_id=fields.Many2one('event',"Event Id", )
+    visited=fields.Boolean("Visited")
+    visited_date=fields.Date("Visited Date")
+    voicemail_msg=fields.Char("Voicemail Message" , size=128,default='')
+    duration=fields.Char("Duration" , size=42)
+    distance=fields.Float('Distance' ,)
+    state=fields.Selection([
+        ('draft', 'Unscheduled'),
+        ('voicemailsent', 'Voicemail Sent'),
+        ('assigned', 'Assigned'),
+        ('cancel','Cancelled'),
+        ],'Status', readonly=True, required=True,)
+    parent_state=fields.Selection(related='event_id.state', store=True, string="Event State" ,selection=EVENT_STATES,
+             readonly=True,)
+    company_id=fields.Many2one(related='event_id.company_id', store=True, string="Company" ,
+             readonly=True,)
+
+    @api.multi
+    def leave_voicemail(self):
+        ''' This function updates or assigns transporter in the event form '''
+        cur_obj = self
+        event,res = cur_obj.event_id,False
+        if event.state == 'draft':
+            res = event.write({'state':'scheduled'})
+        self.env['transporter.history'].create({'partner_id':event.partner_id and event.partner_id.id or False,
+                    'name':cur_obj.transporter_id and cur_obj.transporter_id.id or False,'event_id':event.id,#'event_date': from_dt.strftime('%Y-%m-%d'),
+                    'state':'voicemailsent'})
+        if cur_obj.transporter_id.user_id and cur_obj.transporter_id.user_id.id != SUPERUSER_ID:
+            if cur_obj.transporter_id.user_id.partner_id  :
+                event.write({'event_follower_ids':[(4, cur_obj.transporter_id.user_id.id)]})
+        self.write({'state':'voicemailsent'})
+        return res
+
+    @api.multi
+    def update_transporter(self):
+        ''' This function updates or assigns transporter in the event form '''
+        cur_obj = self
+        event,res = cur_obj.event_id, False
+        res = event.write({'transporter_id':cur_obj.transporter_id and cur_obj.transporter_id.id or False,
+                                                                'state':'allocated'})
+        
+        res = self.unlink()
+        return res
+
+    @api.multi
+    def cancel_appointment(self):
+        ''' function to cancel assignment for transporter  '''
+        cur_obj = self
+        event = cur_obj.event_id
+        if not event.history_id2:
+            self.env['transporter.alloc.history'].create({'partner_id':event.partner_id and event.partner_id.id or False,'name': cur_obj.interpreter_id and cur_obj.interpreter_id.id or False,
+                    'event_id':event.id,'event_date': event.event_date ,'event_start':event.event_start,'event_end':event.event_end,'state':'cancel','company_id': event.company_id and event.company_id.id or False,
+                    'cancel_date':time.strftime('%Y-%m-%d %H:%M:%S')})
+        else:
+            event.history_id2.write({'partner_id':event.partner_id and event.partner_id.id or False,'name': cur_obj.interpreter_id and cur_obj.interpreter_id.id or False,
+                    'event_id':event.id,'event_date': event.event_date ,'event_start':event.event_start,'event_end':event.event_end,'state':'cancel','company_id': event.company_id and event.company_id.id or False,
+                    'cancel_date':time.strftime('%Y-%m-%d %H:%M:%S')})
+        self.write({'state':'cancel'})
+        return True
+
+    @api.multi
+    def get_direction(self):
+        ''' Shows path between Transporter and Doctor/Location  '''
+        cur_obj = self
+        location = False
+        transporter = cur_obj.transporter_id
+        if cur_obj.event_id:
+            location = cur_obj.event_id.location_id
+        else:
+            return True
+        if not transporter:
+            return True
+        if not location:
+            raise UserError(_('You must enter location first.'))
+        url="http://maps.google.com/maps?mode=driving&saddr="
+        location_address = ''
+        location_address = geo_query_address(location.street or False , location.zip or False ,location.city or False, \
+                                location.state_id and location.state_id.name or False, location.country_id and location.country_id.name or False)
+        transporter_address = ''
+        transporter_address = geo_query_address(transporter.street or False , transporter.zip or False ,transporter.city or False, \
+                                transporter.state_id and transporter.state_id.name or False, transporter.country_id and transporter.country_id.name or False)
+        url += transporter_address + '&daddr=' + location_address + '&mode=driving'
+        return {
+        'type': 'ir.actions.act_url',
+        'url':url,
+        'nodestroy': True,
+        'target': 'new'
+        }
+
+class select_translator_line(models.Model):
+    _name = 'select.translator.line'
+    _order = 'rate ,distance '
+
+    name=fields.Char(related='translator_id.name',string='Name',store=True , domain=[('cust_type','in',('translator','interp_and_transl'))])
+    middle_name=fields.Char(related='translator_id.middle_name',string='Middle Name',store=True)
+    last_name=fields.Char(related='translator_id.last_name',string='Last Name',store=True)
+    zip=fields.Char(related='translator_id.zip', string='Zip',store=True)
+    phone=fields.Char(related='translator_id.cell_phone', string='Phone',store=True)
+    rate=fields.Float(related='translator_id.rate', string='Rate',store=True)
+    translator_id=fields.Many2one("res.partner",'Translator' ,domain=[('cust_type','in',('translator','interp_and_transl'))])
+    select=fields.Boolean("Select")
+    event_id=fields.Many2one('event',"Event Id", )
+    visited=fields.Boolean("Visited")
+    visited_date=fields.Date("Visited Date")
+    voicemail_msg=fields.Char("Voicemail Message" , size=128,default='')
+    duration=fields.Char("Duration" , size=42)
+    distance=fields.Float('Distance' ,)
+    state=fields.Selection([
+        ('draft', 'Unscheduled'),
+        ('voicemailsent', 'Voicemail Sent'),
+        ('assigned', 'Assigned'),
+        ('cancel','Cancelled'),
+        ], 'Status', readonly=True, required=True,)
+    parent_state=fields.Selection(related='event_id.state', store=True, string="Event State" ,selection=EVENT_STATES,
+             readonly=True,)
+    company_id=fields.Many2one(related='event_id.company_id', store=True, string="Event State" ,
+             readonly=True,)
+
+    @api.multi
+    def leave_voicemail(self):
+        ''' This function updates or assigns translator in the event form '''
+        cur_obj = self
+        ir_model_data = self.env['ir.model.data']
+        event = cur_obj.event_id
+        template_id,res  = [], False
+        for select_line in event.translator_ids2:
+            if select_line.translator_id:
+                if select_line.state in ('draft','voicemailsent') and select_line.translator_id.id == cur_obj.translator_id.id :
+                    raise UserError(_('Selected Translator is already present in the Job offered list!'))
+        if event.state == 'draft':
+            res = event.sudo().write({'state':'scheduled'})
+        try:
+            template_id = ir_model_data.sudo().get_object_reference('bista_iugroup', 'send_translator_job_offered_event')[1]
+        except ValueError:
+            template_id = False
+        if template_id:
+            context={'translator_id': cur_obj.translator_id}
+            try:
+                self.env['mail.template'].browse(template_id).with_context(context=context).send_mail(self.ids[0], force_send=True)
+            except Exception:
+                pass
+        if cur_obj.translator_id.user_id and cur_obj.translator_id.user_id.id != SUPERUSER_ID:
+            if cur_obj.translator_id.user_id.partner_id:
+                event.sudo().write({'event_follower_ids':[(4, cur_obj.translator_id.user_id.partner_id.id)]})
+        self.write({'state':'voicemailsent'})
+        return res
+
+    @api.multi
+    def update_translator(self):
+        ''' This function updates or assigns translator in the event form '''
+        res= []
+        cur_obj = self
+        event = cur_obj.event_id
+        res = event.write({'translator_id':cur_obj.translator_id and cur_obj.translator_id.id or False,
+                                                                'state':'allocated'})
+        res = self.unlink()
+        return res
+
+    @api.multi
+    def cancel_appointment(self):
+        ''' function to cancel assignment for translator  '''
+        self.write({'state':'cancel'})
+        return True
+
+    @api.multi
+    def assign_translator(self):
+        obj=self
+        mod_obj = self.env['ir.model.data']
+        event = obj.event_id
+        assign_history_id = self.env['assign.translator.history'].create({'partner_id':event.partner_id and event.partner_id.id or False,'name':obj.translator_id and obj.translator_id.id or False,
+                    'event_id':event.id,'event_date':event.event_date ,'event_start':event.event_start,'event_end':event.event_end,'state':'assign','company_id': event.company_id and event.company_id.id or False,
+                    'schedule_translator_event_time':time.strftime('%Y-%m-%d %H:%M:%S'),'schedule_event_time':time.strftime('%Y-%m-%d %H:%M:%S')}).id
+        
+        res = event.write({'translator_id':obj.translator_id and obj.translator_id.id or False,
+                                    'state':'allocated','translation_assignment_history_id':assign_history_id})
+        res = self.unlink()
+        template_id1 = mod_obj.get_object_reference('bista_iugroup', 'event_allocation_translator')[1]
+        print"template_id1",template_id1
+        res = event.action_mail_send(event, 'event', template_id1)
+        return res
+
+    @api.multi
+    def get_direction(self):
+        ''' Shows path between Interpreter and Doctor/Location  '''
+        cur_obj = self
+        location = False
+        translator = cur_obj.translator_id
+        if cur_obj.event_id:
+            location = cur_obj.event_id.location_id
+        else:
+            return True
+        if not translator:
+            return True
+        if not location:
+            raise UserError(_('You must enter location first.'))
+        url="http://maps.google.com/maps?mode=driving&saddr="
+        location_address = ''
+        location_address = geo_query_address(location.street or False , location.zip or False ,location.city or False, \
+                                location.state_id and location.state_id.name or False, location.country_id and location.country_id.name or False)
+        trans_address = ''
+        trans_address = geo_query_address(translator.street or False , translator.zip or False ,translator.city or False, \
+                                translator.state_id and translator.state_id.name or False, translator.country_id and translator.country_id.name or False)
+        url += trans_address + '&daddr=' + location_address + '&mode=driving'
+        return {
+        'type': 'ir.actions.act_url',
+        'url':url,
+        'nodestroy': True,
+        'target': 'new'
+        }
+
+class event(models.Model):
+    _description = 'Event'
+    _name = "event"
+    _order = "event_start desc"
+    _inherit = ['mail.thread', 'ir.needaction_mixin']
+
+#    def recancel_appointment(self, cr, uid, ids, context=None):
+#        '''Function to allow interpreters or transpoerters to cancel events assigned to them'''
+#        if isinstance(ids, (int,long)): ids = [ids]
+#        event = self.browse(cr ,uid ,ids[0])
+#        ir_model_data = self.pool.get('ir.model.data')
+#        if event and event.interpreter_id and event.interpreter_id.user_id.id != uid :
+#            raise osv.except_osv(_('Error!'), _('You cannot Cancel this Appointment as you were not allocated to this event.'))
+#        history_id = event.history_id
+#        if history_id:
+#            self.pool.get('interpreter.alloc.history').write(cr, uid, [history_id.id], {'state':'cancel','cancel_date':time.strftime('%Y-%m-%d %H:%M:%S')})
+#        template = 'event_reject_after_scheduled_interpreter' if event.state == 'allocated' else \
+#                    'event_reject_after_confirmed_interpreter'
+#        try:
+#            template_id = ir_model_data.get_object_reference(cr, uid, 'bista_iugroup', template)[1]
+#        except ValueError:
+#            template_id = False
+#        if template_id:
+#            context={'interpreter_id':event.interpreter_id}
+#            self.pool.get('email.template').send_mail( cr, uid, template_id, event.id, True, context)
+#        if event.interpreter_id and event.state == 'allocated':
+#            self.pool.get('event').write(cr ,uid , [event.id],{'interpreter_id':False,
+#            'state':'scheduled'})
+#        return True
+
+
+    # def onchange_time(self, cr, uid, ids, event_start_time, event_end_time, context=None):
+    #     ''' Not used now '''
+    #     res,warning = {},{}
+    #     DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
+    #     res = {}
+    #     if event_start_time and not event_end_time:
+    #         return True
+    #     else:
+    #         if event_start_time and event_end_time:
+    #             start=datetime.datetime.strptime(str(event_start_time), DATETIME_FORMAT)
+    #             if event_end_time:
+    #                 end=datetime.datetime.strptime(str(event_end_time), DATETIME_FORMAT)
+    #                 if start > end:
+    #                     res.update({'event_end': False})
+    #                     warning = {
+    #                         'title': _('Warning!'),
+    #                         'message' : _('Event start time cannot be greater than event end time')
+    #                         }
+    #     return {'value': res,'warning':warning}
+    
+#    schedule function to send create event request to mobile app
+    @api.model
+    def send_feedback_emails(self):
+        mail_obj=self.env['mail.mail']
+        past14days=(datetime.datetime.now()-timedelta(days=14)).strftime('%Y-%m-%d %H:%M:%S.%f')
+        cur=datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')
+        event_ids=self.env['event'].search([('event_start', '>', past14days),('event_end', '<', cur),('state','=','unbilled'),('ordering_contact_id','!=',False),('company_id','=',6)],order = 'ordering_contact_id')
+        template_1_id = self.env['ir.model.data'].get_object_reference('bista_iugroup',
+                                                                          'event_automated_feedback_email_template_1')[1]
+        template_2_id = self.env['ir.model.data'].get_object_reference('bista_iugroup',
+                                                                          'event_automated_feedback_email_template_2')[1]
+        if template_1_id and template_2_id:
+            if event_ids:
+                event_ids_first_obj=self.browse(event_ids[0])
+                ordering_contact_id=event_ids_first_obj.ordering_contact_id.id
+                if len(event_ids)==1:
+                    if event_ids_first_obj.ordering_contact_id.opt_out_of_feedback_emails == False:
+                        if event_ids_first_obj.ordering_contact_id.user_id.user_type not in ['staff','admin']:
+                            event_id_names=event_ids_first_obj.name
+                            self.send_feedback_email(template_1_id, event_ids[0],event_id_names)
+                            self._cr.commit()
+                else:
+                    pre_event_id=event_ids_first_obj
+                    event_id_names = event_ids_first_obj.name
+                    logger = logging.getLogger('test2')
+                    logger.info("This is ocid1------->%s " % str(ordering_contact_id))
+                    ordering_contact_id_count=0
+                    last_event_id=False
+                    for event_id in self.browse(event_ids[1:len(event_ids)]):
+                        logger = logging.getLogger('test2')
+                        logger.info("This is count------->%s " % str(ordering_contact_id_count))
+                        logger = logging.getLogger('test2')
+                        logger.info("This is ocid------->%s " % str(ordering_contact_id))
+                        logger = logging.getLogger('test2')
+                        logger.info("This is loggger3------->%s " % str(event_id.ordering_contact_id.id))
+                        last_event_id=event_id
+                        if event_id.ordering_contact_id.id == ordering_contact_id:
+                            event_id_names+=(','+event_id.name)
+                            ordering_contact_id_count += 1
+                            ordering_contact_id = event_id.ordering_contact_id.id
+                            pre_event_id=event_id
+                        else:
+                            if pre_event_id.ordering_contact_id.opt_out_of_feedback_emails == False:

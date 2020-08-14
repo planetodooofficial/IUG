@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+        <!-- wizard view -->
+        <record id="import_interpreter_rate_wizard_view" model="ir.ui.view">
+            <field name="name">Import Interpreter Rate</field>
+            <field name="model">import.interpreter.rate</field>
+            <field name="arch" type="xml">
+                <form string="Import Interpreter Rate">
+                    <group>
+                        <separator string="Search for the File" colspan="4"/>
+                        <field name="excel_file" filename="file_name"/>
+                        <field name="file_name" invisible="1"/>
+                    </group>
+                    <footer>
+                        <button name="import_excel_interpreter" string="Import Rates Interpreter" type="object" class="oe_highlight"
+                                confirm="Are you sure , You want to import Interpreter Rates" groups="bista_iugroup.group_iu_admin"/>
+                        <button name="import_excel_customer" string="Import Rates Customer" type="object" class="oe_highlight"
+                                confirm="Are you sure , You want to import Customer Rates" groups="bista_iugroup.group_iu_admin"/>
+                        <button name="mark_health_and_human" string="Import Adult List" type="object" class="oe_highlight"
+                                confirm="Are you sure , You want to import Health and Human Adult List?"
+                                context="{'mental_prog': 'adult'}" groups="bista_iugroup.group_iu_admin"/>
+                        <button name="mark_health_and_human" string="Import Child List" type="object" class="oe_highlight"
+                                confirm="Are you sure , You want to import Health and Human Child List?"
+                                context="{'mental_prog': 'child'}" groups="bista_iugroup.group_iu_admin"/>
+                        or
+                        <button string="Cancel" class="oe_link" special="cancel" />
+                    </footer>
+                </form>
+            </field>
+        </record>
+        
+        <record model="ir.actions.act_window" id="action_import_interpreter_wizard">
+            <field name="name">Import Interpreter Rates</field>
+            <field name="res_model">import.interpreter.rate</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="import_interpreter_rate_wizard_view"/>
+            <field name="target">new</field>
+        </record>
+
+        <act_window name="Import Rates"
+            res_model="import.interpreter.rate"
+            src_model="res.partner"
+            view_mode="form"
+            target="new"
+            key2="client_action_multi"
+            id="action_import_interpreter_wizard"
+            groups="bista_iugroup.group_iu_admin"/>
+
+    </data>
+</openerp>

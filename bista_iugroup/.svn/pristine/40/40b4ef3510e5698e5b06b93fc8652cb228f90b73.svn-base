@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <record forcecreate="True" id="ir_cron_duplicte_event" model="ir.cron">
+            <field name="name">Duplicate Event</field>
+            <field eval="False" name="active"/>
+            <field name="user_id" ref="base.user_root"/>
+            <field name="interval_number">1</field>
+            <field name="interval_type">days</field>
+            <field name="numbercall">-1</field>
+            <field eval="False" name="doall"/>
+            <field eval="'schedulars.function'" name="model"/>
+            <field eval="'duplicate_event'" name="function"/>
+            <field eval="'()'" name="args"/>
+        </record>
+        
+        <record forcecreate="True" id="ir_cron_fax_in" model="ir.cron">
+            <field name="name">Incoming Fax</field>
+            <field eval="True" name="active"/>
+            <field name="user_id" ref="base.user_root"/>
+            <field name="interval_number">1</field>
+            <field name="interval_type">minutes</field>
+            <field name="numbercall">-1</field>
+            <field eval="False" name="doall"/>
+            <field eval="'incoming.fax'" name="model"/>
+            <field eval="'get_fax'" name="function"/>
+            <field eval="'()'" name="args"/>
+        </record>
+        
+        <record forcecreate="True" id="ir_cron_fax_in" model="ir.cron">
+            <field name="name">Write Key</field>
+            <field eval="False" name="active"/>
+            <field name="user_id" ref="base.user_root"/>
+            <field name="interval_number">24</field>
+            <field name="interval_type">hours</field>
+            <field name="numbercall">-1</field>
+            <field eval="False" name="doall"/>
+            <field eval="'event'" name="model"/>
+            <field eval="'reset_api_keys'" name="function"/>
+            <field eval="'([],{})'" name="args"/>
+        </record>
+        
+        <record forcecreate="True" id="ir_cron_fax_in" model="ir.cron">
+            <field name="name">Auto Confirm Events</field>
+            <field eval="False" name="active"/>
+            <field name="user_id" ref="base.user_root"/>
+            <field name="interval_number">24</field>
+            <field name="interval_type">hours</field>
+            <field name="numbercall">-1</field>
+            <field eval="False" name="doall"/>
+            <field eval="'event'" name="model"/>
+            <field eval="'event_confirm_schedular'" name="function"/>
+            <field eval="'([],{})'" name="args"/>
+        </record>
+        
+        <record id="ir_cron_eventcreateinmobilescheduler" model="ir.cron">
+                <field eval="&quot;&quot;&quot;event_sync_to_mobile&quot;&quot;&quot;" name="function"/>
+                <field eval="&quot;&quot;&quot;work_days&quot;&quot;&quot;" name="interval_type"/>
+                <field name="user_id" ref="base.user_root"/>
+                <field eval="&quot;&quot;&quot;Synch Event To Mobile App&quot;&quot;&quot;" name="name"/>
+                <field eval="-1" name="numbercall"/>
+                <field eval="&quot;&quot;&quot;2010-01-07 11:35:28&quot;&quot;&quot;" name="nextcall"/>
+                <field eval="5" name="priority"/>
+                <field eval="0" name="doall"/>
+                <field eval="0" name="active"/>
+                <field eval="1" name="interval_number"/>
+                <field eval="&quot;&quot;&quot;event&quot;&quot;&quot;" name="model"/>
+        </record>
+	
+        <record id="ir_cron_current_day_event_analysis" model="ir.cron">
+           <field name="name">Current day event analysis</field>
+           <field name="interval_number">12</field>
+           <field name="interval_type">hours</field>
+           <field name="numbercall">-1</field>
+           <field name="doall" eval="False"/>
+           <field name="model">iug.current.day.event.analysis</field>
+           <field eval="'send_mail_events_daily'" name="function"/>
+           <field name="args">()</field>
+           <field name="active" eval="True"/>
+       </record>
+      
+       <record id="ir_cron_monthly_event_report" model="ir.cron">
+           <field name="name">Monthy Event Report</field>
+           <field name="interval_number">31</field>
+           <field name="interval_type">days</field>
+           <field name="numbercall">-1</field>
+           <field name="doall" eval="False"/>
+           <field name="model">profit.based.on.cust</field>
+           <field eval="'send_monthy_profit_report'" name="function"/>
+           <field name="args">()</field>
+           <field name="active" eval="True"/>
+       </record>
+    </data>
+</odoo>

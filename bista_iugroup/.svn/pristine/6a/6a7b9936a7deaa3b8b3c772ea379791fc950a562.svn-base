@@ -1,0 +1,119 @@
+# -*- coding: utf-8 -*-
+##############################################################################
+#
+#    OpenERP, Open Source Management Solution
+#    Copyright (C) 2004-2010 Tiny SPRL (<http://tiny.be>).
+#
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU Affero General Public License as
+#    published by the Free Software Foundation, either version 3 of the
+#    License, or (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU Affero General Public License for more details.
+#
+#    You should have received a copy of the GNU Affero General Public License
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+##############################################################################
+{
+    'name': 'Bista IU Groups',
+    'version': '0.1',
+    'category': 'Tools',
+    'description': """
+        """,
+    'author': 'Bista Solutions',
+    'website': 'http://www.bistasolutions.com',#'google_maps_distance_duration',
+    'depends': ['base','base_setup','mail','crm','project','hr_timesheet_sheet','hr_timesheet','hr_timesheet_attendance'
+                ,'document_iug','bista_logs',
+                'account','account_period','project_task_work','sales_team','stock'],
+    'data': [
+        'security/security_view.xml',
+        'config_view.xml',
+        'wizard/warning_view.xml',
+        'wizard/warning_transporter_view.xml',
+        'wizard/warning_translator_view.xml',
+        'wizard/assign_multi_event_view.xml',
+        'partner_view.xml',
+        'wizard/duplicate_interpreter_view.xml',
+        'interpreter_view.xml',
+        'doctor_view.xml',
+        'transporter_view.xml',
+        'translator_view.xml',
+        'new_classes_view.xml',
+        'ir_attachment_view.xml',
+        #'wizard/assign_wizard_view.xml',
+        'wizard/assign_interpreter_view.xml',
+        'wizard/assign_transporter_view.xml',
+        'wizard/assign_translator_view.xml',
+        'wizard/recurring_event_view.xml',
+        'wizard/notes_view.xml',
+        # 'wizard/process_voucher_view.xml',
+        # 'wizard/create_voucher_view.xml',
+        'event_view.xml',
+        'interpreter_event_view.xml',
+        'customer_event_view.xml',
+        'res_company_view.xml',
+        'project_view.xml',
+        'hr_timesheet_sheet_view.xml',
+        'mail_message_view.xml',
+        'mail_mail_view.xml',
+        'email_template_view.xml',
+        'res_users_view.xml',
+        'timesheet_view.xml',
+        'wizard/event_report_view.xml',
+        'mymap_view.xml',
+        'timesheet_view.xml',
+        'account_invoice_view.xml',
+        # 'account_voucher_view.xml',
+        'wizard/custom_timesheet_view.xml',
+        'schedular_view.xml',
+#        'kmlmap_view.xml',
+        'portal_task_view.xml',
+        'portal_menu_view.xml',
+        'sequence.xml',
+        'patient_view.xml',
+        'billing_form_view.xml',
+        'product_view.xml',
+        # 'wizard/invoice_import_excel_sheet_view.xml',
+        'fax/fax_view.xml',
+        'fax/fax_config_view.xml',
+        'attach_attachments_view.xml',
+        'search_events_view.xml',
+        'search_interpreters_view.xml',
+        'email_templates.xml',
+
+        'wizard/import_interpreter_rate_view.xml',
+        'wizard/import_mileage_rate_view.xml',
+        'wizard/cancel_event_view.xml',
+        'wizard/invoice_payment_view.xml',
+        'wizard/upload_attachments_view.xml',
+        'wizard/upload_attachments_for_customers_view.xml',
+        'wizard/attach_documents_view.xml',
+        'wizard/update_invoice_view.xml',
+        'report/report_view.xml',
+        'dashboard/event_dashboard_view.xml',
+        'dashboard/iug_invoice_dashboard_view.xml',
+        'dashboard/ordering_contact_report_view.xml',
+        'email_template_view_invoice.xml',
+        'account_journal_view.xml',
+        'security/ir.model.access.csv',
+       ],
+    # 'qweb' : [
+    #     "static/src/xml/*.xml",
+    # ],
+    'css' : [
+        'static/src/css/bista_iugroup.css',
+    ],
+#    'js' : [
+#        "static/src/js/approval.js",
+#        "static/src/js/main.js",
+#    ],
+#    'images': ['static/src/img/format.jpg'],
+    'installable': True,
+    'auto_install': False,
+}
+
+# vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:

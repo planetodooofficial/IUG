@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!--dashboard menu-->
+        <menuitem id="main_menu_event_dashboard_custom"  name="IUG Dashboard" sequence="16" 
+                  groups="bista_iugroup.group_iu_dashboard,bista_iugroup.group_record_manager"/>
+        <menuitem id="sub_menu_event_dashboard_custom" parent="main_menu_event_dashboard_custom" name="Dashboard" sequence="1"
+                 groups="bista_iugroup.group_iu_dashboard,bista_iugroup.group_record_manager"/>
+        <record id="view_form_dash" model="ir.ui.view">
+            <field name="name">Event Dashboard</field>
+            <field name="model">iug.dashboard</field>
+            <field name="arch" type="xml">
+                <form string="Events Dashboard" create="false" edit="false" >
+                    <group col="1">
+                        <button type="object" name="default_get_refresh" string="Refresh" />
+                    </group>
+                    <group>
+                        <div class="adv_search">
+                            <separator string="Last Month"/>
+                            <field name="lastmonth" widget="one2many_list" nolabel="1" readonly="0">
+                                <tree string="Past Result" delete="false" create="false">
+                                    <field name="options"  string=" " readonly="1"/>
+                                    <field name="iug_sd"  readonly="1"/>
+                                    <field name="asit"   readonly="1"/>
+                                    <field name="albors_alnet"   readonly="1"/>
+                                    <field name="acd"   readonly="1"/>
+                                </tree>
+                            </field>
+                        </div>
+                    </group>
+                    <group>
+                        <div class="adv_search">
+                            <separator string="Today's Event"/>
+                            <field name="currentmonth" widget="one2many_list" nolabel="1" readonly="0">
+                                <tree  string="Current Event Result" delete="false" create="false">
+                                    <field name="options"  string=" " readonly="1"/>
+                                    <field name="iug_sd"  readonly="1"/>
+                                    <field name="asit"   readonly="1"/>
+                                    <field name="albors_alnet"   readonly="1"/>
+                                    <field name="acd"   readonly="1"/>
+                                </tree>
+                            </field>
+                        </div>
+                    </group>
+                    <group>
+                        <div class="adv_search">
+                            <separator string="Future Event"/>
+                            <field name="futuremonth" widget="one2many_list" nolabel="1" readonly="0">
+                                <tree string="Future Event Result" delete="false" create="false">
+                                    <field name="options"  string=" " readonly="1"/>
+                                    <field name="iug_sd"  readonly="1"/>
+                                    <field name="asit"   readonly="1"/>
+                                    <field name="albors_alnet"   readonly="1"/>
+                                    <field name="acd"   readonly="1"/>
+                                </tree>
+                            </field>
+                        </div>
+                    </group>
+                    <div class="adv_search">
+                        <separator string="Customised Range"/>
+                        <group col="5">
+                            <field name="start_date"/>
+                            <field name="end_date"/>
+                            <button type="object" name="past_events" string="Search" />
+                            <field name="rangemonth_flag" invisible="1"/>
+                            <field name="name"  invisible="1"/>
+                        </group>
+                    </div>
+                    <group attrs="{'invisible':[('rangemonth_flag','=',True)]}">
+                        <div class="adv_search">
+                            <separator string="Result"/>
+                            <field name="rangemonth" widget="one2many_list" nolabel="1" readonly="0">
+                                <tree  string="Result" delete="false" create="false">
+                                    <field name="options"  string=" " readonly="1"/>
+                                    <field name="iug_sd"  readonly="1"/>
+                                    <field name="asit"   readonly="1"/>
+                                    <field name="albors_alnet"   readonly="1"/>
+                                    <field name="acd"   readonly="1"/>
+                                </tree>
+                            </field>
+                        </div>
+                    </group>
+                </form> 
+            </field>
+        </record>  
+
+        <record model="ir.actions.act_window" id="action_view_dash">
+            <field name="name">Events</field>
+            <field name="res_model">iug.dashboard</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="view_form_dash"/>
+        </record>
+        
+        <!-- dashboard event -->
+        <menuitem id="menu_view_dash" parent="bista_iugroup.sub_menu_event_dashboard_custom"  action="action_view_dash"
+                 groups="bista_iugroup.group_iu_dashboard,bista_iugroup.group_record_manager" sequence="7"/>
+              				
+        <record id="view_form_stat_dash" model="ir.ui.view">
+            <field name="name">Event Statistics Dashboard</field>
+            <field name="model">iug.statistics.dashboard</field>
+            <field name="arch" type="xml">
+                <form string="Event Statistics" version="7.0" create="false" edit="false" >
+                    <group col="3">
+                        <field name="company_id" widget="selection" class="oe_inline"/>
+                        <button type="object" name="refresh_page" string="Refresh" />
+                    </group>
+                    <group>
+                        <group col="2">
+                            <field name="name" invisible="1"/>
+                            <field name="today" />
+                            <field name="tomorrow" />
+                            <field name="unfilled_tomorrow" />
+                            <field name="unauthorized_tomorrow" />
+                            <field name="unconfirmed_tomorrow" />
+                            <field name="empty_list" />
+                            <field name="jobs_added_today" />
+                            <field name="event_added_today" />
+                            <field name="conf_call_today" />
+                        </group>
+                        <group col="2">
+                            <field name="book_month" />
+                            <field name="book_next_month" />
+                            <field name="completed_month" />
+                            <field name="invoice_mtd" />
+                            <field name="average" />
+                            <field name="projected" />
+                            <field name="interpretingYTD" />
+                        </group>
+                    </group>
+                </form> 
+            </field>
+        </record>  
+
+        <record model="ir.actions.act_window" id="action_view_stat_dash">
+            <field name="name">Events Statistics</field>
+            <field name="res_model">iug.statistics.dashboard</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="view_form_stat_dash"/>
+        </record>
+        <!-- statistics dashboard event -->
+        <menuitem id="menu_view_stat_dash" parent="bista_iugroup.sub_menu_event_dashboard_custom"  action="action_view_stat_dash"
+                 groups="bista_iugroup.group_iu_dashboard,bista_iugroup.group_record_manager" sequence="9"/>
+    </data>
+</odoo>

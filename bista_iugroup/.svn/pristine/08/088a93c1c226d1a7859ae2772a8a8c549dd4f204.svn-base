@@ -1,0 +1,157 @@
+# -*- coding: utf-8 -*-
+##############################################################################
+#
+#    OpenERP, Open Source Business Applications
+#    Copyright (C) 2004-2012 OpenERP S.A. (<http://openerp.com>).
+#
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU Affero General Public License as
+#    published by the Free Software Foundation, either version 3 of the
+#    License, or (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU Affero General Public License for more details.
+#
+#    You should have received a copy of the GNU Affero General Public License
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+##############################################################################
+
+import re
+import time
+from odoo import models, fields,api
+from odoo.tools.translate import _
+from odoo import SUPERUSER_ID, tools
+
+w_types = [('warning','Warning'),('info','Information'),('error','Error')]
+
+class warning_transporter(models.TransientModel):
+    _name = 'warning.transporter'
+    _rec_name = 'title'
+
+    history_id=fields.Many2one("select.transporter.line", "History Id" ,)
+    event_id=fields.Many2one("event", "Event Id" ,)
+    title=fields.Char("Title", size=32)
+    warning_message=fields.Text("Message")
+    type=fields.Selection([('warning','Warning'),('info','Information'),('error','Error')],
+                                string='Status', type='selection',)
+
+    @api.model
+    def _get_view_id(self):
+        res = self.env['ir.model.data'].sudo().get_object_reference('bista_iugroup', 'warning_transporter_form')
+        if res:
+            return res[1]
+        else:
+            return False
+
+    @api.model
+    def message(self):
+        message = self
+        message_type = [t[1]for t in w_types if message.type == t[0]][0]
+        res = {
+            'name': '%s: %s' % (_(message_type), _(message.title)),
+            'view_type': 'form',
+            'view_mode': 'form',
+            'view_id': self._get_view_id(),
+            'res_model': 'warning.transporter',
+            'domain': [],
+            'context': self._context,
+            'type': 'ir.actions.act_window',
+            'target': 'new',
+            'res_id': message.id
+        }
+        return res
+
+    @api.model
+    def warning(self,title, message):
+        id = self.sudo().create({'title': title, 'warning_message': message, 'type': 'warning'})
+        res = self.sudo().message()
+        return res
+
+    # def info(self, cr, uid, title, message, context=None):
+    #     res = []
+    #     return res
+    #
+    # def error(self, cr, uid, title, message, context=None):
+    #     res = []
+    #     return res
+
+    @api.model
+    def update_transporter(self):
+        ''' This function updates or assigns transporter in the event form '''
+        self=self.with_context(transporter = True)
+        res,template_id= [],False
+        mod_obj = self.env['ir.model.data']
+        event_id = self._context.get('event_id',False)
+        history_id = self._context.get('history_id',False)
+        user = self.env.user
+        if event_id:
+            event_brw = self.env['event'].sudo().browse(event_id)
+            if history_id:
+                history = self.env['select.transporter.line'].sudo().browse(history_id)
+                res = event_brw.sudo().write({'transporter_id':history.transporter_id and history.transporter_id.id or False,
+                    'state':'allocated'})
+                res = history.sudo().write({'state': 'assigned'})
+            history_id2 = event_brw.history_id2
+            if history_id2:
+                history_id2.sudo().write({'state':'cancel','cancel_date':time.strftime('%Y-%m-%d %H:%M:%S')})
+            new_history_id2=self.env['transporter.alloc.history'].sudo().create({'partner_id':event_brw.partner_id and event_brw.partner_id.id or False,'name':history.transporter_id and history.transporter_id.id or False,
+                'event_id':event_brw.id,'event_date':event_brw.event_date ,'event_start': event_brw.event_start,'event_end':event_brw.event_end,'state':'allocated','company_id': event_brw.company_id and event_brw.company_id.id or False,
+                'allocate_date':time.strftime('%Y-%m-%d %H:%M:%S'),'language': event_brw.language_id.id})
+            event_brw.sudo().write({'history_id2': new_history_id2,'schedule_event_time':time.strftime('%Y-%m-%d %H:%M:%S')})
+#            if user.user_type and user.user_type == 'vendor':
+#                self.pool.get('event').event_confirm_mail(cr ,uid , [event_id] , context=context)
+#                self.pool.get('event').confirm_event(cr ,uid , [event_id] , context=context)
+#                res = mod_obj.get_object_reference(cr, uid, 'bista_iugroup', 'view_event_user_form')
+#                res_id = res and res[1] or False,
+##                print "res_id.......",res_id
+#                return {
+#                    'name': _('Event'),
+#                    'view_type': 'form',
+#                    'view_mode': 'form',
+#                    'view_id': [res_id[0]],
+#                    'res_model': 'event',
+#                    'type': 'ir.actions.act_window',
+#                    'nodestroy': True,
+#                    'target': 'current',
+#                    'res_id': event_id or False,
+#                }
+#                return  res
+#            else:
+
+            if not event_brw.suppress_email:
+                template_id = mod_obj.sudo().get_object_reference('bista_iugroup', 'event_allocation_customer')[1]
+    #                res = self.pool.get('event').action_mail_send( cr, uid, ids , event_brw, 'event', template_id, context=context)
+                if template_id:
+                    mail_message = self.env['mail.template'].sudo().browse(template_id).send_mail(event_id)
+
+            template_id1 = mod_obj.sudo().get_object_reference('bista_iugroup', 'event_allocation_transporter')[1]
+            res = event_brw.sudo().action_mail_send(event_brw, 'event', template_id1)
+                
+        return res
+            
+    @api.model
+    def default_get(self, fields):
+        res = {}
+        res = super(warning_transporter , self).default_get(fields)
+        wiz_ids = self._context.get('active_ids', [])
+#        print "wiz_ids........",wiz_ids
+        if not wiz_ids or len(wiz_ids) != 1:
+            return res
+        wiz_id, = wiz_ids
+#        wiz = self.pool.get('assign.transp.wizard').browse(cr, uid, wiz_ids[0], context=context)
+        event_id = self._context.get('event_id',False)
+
+        history_id = self._context.get('history_id',False)
+#        print "event_id....history_id......",event_id,history_id
+        if 'event_id' in fields:
+            res.update({'event_id':event_id})
+        if 'history_id' in fields:
+            res.update({'history_id':history_id})
+#        if 'event_id' in fields:
+#            res.update(event_id = wiz.event_id.id)
+#        if 'history_id' in fields:
+#            res.update(history_id = wiz.history_id.id)
+        return res

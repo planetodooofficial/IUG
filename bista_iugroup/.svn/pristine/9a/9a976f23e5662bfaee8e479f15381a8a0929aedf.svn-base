@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+         <record id="view_attach_form" model="ir.ui.view">
+            <field name="name">attach.attachments.form</field>
+            <field name="model">attach.attachments</field>
+            <field eval="8" name="priority"/>
+            <field name="arch" type="xml">
+                <form string="Attach Attachments" >
+                    <header>
+                        <button string="Create Attachments for All(Sender)" name="create_attachments_for_all"
+                                type="object" class="oe_highlight" />
+                        <button string="Create Attachments for All(Receiver)" name="create_attachments_for_all_recipient"
+                                type="object" class="oe_highlight" />
+                        <button string="Create Attachments for Events" name="create_attachments_for_events"
+                                type="object" class="oe_highlight" />
+                        <button string="Rename Files" name="rename_files"  type="object" class="oe_highlight" invisible="1"/>
+                    </header>
+                    <sheet>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="action_attach_form" model="ir.actions.act_window">
+            <field name="name">Attachments</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">attach.attachments</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="help" type="html">
+              <p class="oe_view_nocontent_create">
+                Click to add a Map .
+              </p><p>
+                Odoo helps you easily track all activities related to
+                a Default Country; discussions, history of Default Country, etc.
+              </p>
+            </field>
+        </record>
+        <menuitem id="menu_attach" parent="bista_iugroup.menu_event_trans_config" action="action_attach_form" sequence="4"
+                  groups="bista_iugroup.group_iu_admin"/>
+
+    </data>
+</odoo>

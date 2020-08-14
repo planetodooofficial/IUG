@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- wizard view -->
+        <record id="import_mileage_rate_wizard_view" model="ir.ui.view">
+            <field name="name">Import Mileage Rate</field>
+            <field name="model">import.mileage.rate</field>
+            <field name="arch" type="xml">
+                <form string="Import Mileage Rate">
+                    <group>
+                        <separator string="Select File" colspan="4"/>
+                        <field name="excel_file" filename="file_name"/>
+                        <field name="file_name" invisible="1"/>
+                        <field name="company_id" required="1" groups="base.group_multi_company" widget="selection"/>
+                    </group>
+                    <footer>
+                        <button name="get_mileage_rate" string="Import Mileage Rates Interpreter" type="object" class="oe_highlight"
+                                context="{'cust_type': 'interpreter'}" groups="bista_iugroup.group_iu_admin"
+                                /><!--context="{'cust_type': 'interpreter'}" -->
+                        <button name="get_mileage_rate" string="Import Mileage Rates Customer" type="object" class="oe_highlight"
+                                context="{'cust_type': 'customer'}" groups="bista_iugroup.group_iu_admin"
+                                /><!--context="{'cust_type': 'customer'}" -->
+                        or
+                        <button string="Cancel" class="oe_link" special="cancel" />
+                    </footer>
+                </form>
+            </field>
+        </record>
+        
+        <record model="ir.actions.act_window" id="action_import_mileage_wizard">
+            <field name="name">Import Mileage Rates</field>
+            <field name="res_model">import.mileage.rate</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="import_mileage_rate_wizard_view"/>
+            <field name="target">new</field>
+        </record>
+
+        <act_window name="Import Milege Rates"
+            res_model="import.mileage.rate"
+            src_model="res.partner"
+            view_mode="form"
+            target="new"
+            key2="client_action_multi"
+            id="action_import_mileage_wizard"
+            groups="bista_iugroup.group_iu_admin"/>
+
+    </data>
+</odoo>

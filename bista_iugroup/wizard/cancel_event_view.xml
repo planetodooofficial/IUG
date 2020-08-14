@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- wizard view -->
+        <record id="cancel_event_wizard_view" model="ir.ui.view">
+            <field name="name">Cancel Event</field>
+            <field name="model">cancel.event.wizard</field>
+            <field name="arch" type="xml">
+                <form string="Cancel Event">
+                    <group>
+                        <field name="event_id"  readonly="1" invisible="1"/>
+                        <field name="company_id"  readonly="1" invisible="1" />
+                    	<field name="cancel_reason_id"  required="1" domain="[('company_id','=',company_id),('do_active','=',1)]"
+                                       options="{'limit': 7, 'create': False, 'create_edit': False ,'always_reload': True}"/>
+                    </group>
+                    <footer>
+                        <button string="Cancel Event" name="cancel_event" type="object" class="oe_highlight"
+                            context="{'event_id': event_id}"/>
+                        or
+                        <button string="Cancel" class="oe_link" special="cancel" />
+                    </footer>
+                </form>
+            </field>
+        </record>
+        
+        <record model="ir.actions.act_window" id="action_cancel_event">
+            <field name="name">Cancel Event</field>
+            <field name="res_model">cancel.event.wizard</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="cancel_event_wizard_view"/>
+            <field name="target">new</field>
+        </record>
+
+        <record id="multi_cancel_event_wizard_view" model="ir.ui.view">
+            <field name="name">Cancel Multiple Event</field>
+            <field name="model">cancel.multiple.event.wizard</field>
+            <field name="arch" type="xml">
+                <form string="Cancel Event">
+                    <group>
+                        <field name="event_id" widget="many2many_tags"  readonly="1" invisible="1"/>
+                        <field name="company_id"  readonly="1" invisible="1" />
+                        <field name="cancel_reason_id" domain="[('company_id','=',company_id),('do_active','=',1)]"
+                           required="1" options="{'limit': 7, 'create': False, 'create_edit': False ,'always_reload': True}"/>
+
+                        <separator string="Event Note"/>
+                        <field name="event_note" nolabel="1" colspan="4" widget="html"/>
+                    </group>
+                    <footer>
+                        <button string="Cancel Event" name="multiple_cancel_event" type="object" class="oe_highlight"
+                            context="{'event_id': event_id}"/>
+                        or
+                        <button string="Cancel" class="oe_link" special="cancel" />
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <record model="ir.actions.act_window" id="action_multiple_cancel_event">
+            <field name="name">Cancel Multiple Event</field>
+            <field name="res_model">cancel.multiple.event.wizard</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="cancel_event_wizard_view"/>
+            <field name="target">new</field>
+        </record>
+        <act_window name="Cancel Multiple Event"
+            res_model="cancel.multiple.event.wizard"
+            src_model="event"
+            view_mode="form"
+            target="new"
+            key2="client_action_multi"
+            id="action_multiple_cancel_event"
+            groups="bista_iugroup.group_record_manager,bista_iugroup.group_iu_cust_service"/>
+
+    </data>
+</odoo>

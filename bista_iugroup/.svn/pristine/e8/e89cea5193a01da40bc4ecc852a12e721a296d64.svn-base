@@ -1,0 +1,41 @@
+<odoo>
+    <data>
+        <record id="view_interfax_config_tree" model="ir.ui.view">
+            <field name="name">interfax.setting.tree</field>
+            <field name="model">interfax.config.settings</field>
+            <field eval="8" name="priority"/>
+            <field name="arch" type="xml">
+                <tree string="Interfax Configuration" >
+                    <field name="username" string="Username"/>
+                    <field name="password" string="Password"/>
+                    <field name="active"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="view_interfax_config_settings" model="ir.ui.view">
+            <field name="name">interfax settings</field>
+            <field name="model">interfax.config.settings</field>
+            <field name="arch" type="xml">
+                <form string="Interfax Configuration" class="oe_form_configuration">
+                    <group>
+                        <field name="username" string="Username" required="1"/>
+                        <field name="password" string="Password" required="1"/>
+                        <field name="active"/>
+                    </group>
+
+                </form>
+            </field>
+        </record>
+
+        <record id="action_interfax_config_settings" model="ir.actions.act_window">
+            <field name="name">Interfax</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">interfax.config.settings</field>
+            <field name="view_mode">tree,form</field>
+            <field name="target">current</field>
+        </record>
+
+        <menuitem id="menu_interfax_config_settings" name="Interfax" parent="bista_iugroup.menu_bista_config" sequence="10" action="action_interfax_config_settings"/>
+    </data>
+</odoo>

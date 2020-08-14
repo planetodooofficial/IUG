@@ -1,0 +1,260 @@
+from odoo import fields,models,api
+from odoo.tools.translate import _
+import datetime
+import time
+from odoo import SUPERUSER_ID, tools
+from odoo.exceptions import UserError
+
+class assign_interp_wizard(models.TransientModel):
+    """ A wizard to assign interpreter to event """
+    _name = 'assign.interp.wizard'
+
+    @api.multi
+    def update_interpreter(self):
+        ''' This function updates or assigns interpreter in the event form and send mail'''
+        self = self.with_context(interpreter=True)
+        res, template_id1 = [], False
+        user = self.env.user
+        mod_obj = self.env['ir.model.data']
+        event_obj = self.env['event']
+        cur_obj = self
+        event = cur_obj.event_id
+        if user.user_type and user.user_type == 'vendor':
+            if cur_obj.interpreter_id.user_id.id != self.env.uid and self.env.uid != SUPERUSER_ID:
+                raise UserError(_("Being an Interpreter user , You can't schedule this event for other Interpreter."))
+            event_end = datetime.datetime.strptime(str(event.event_end), "%Y-%m-%d %H:%M:%S")
+            if event_end < datetime.datetime.now():
+                raise UserError(_('You cannot be assigned to this event, as the Event is finished.'))
+
+        if event:
+            if len(event.assigned_interpreters) >= 1 and event.multi_type == '1':
+                raise UserError(_('Cannot assign more than one Interpreter when Interpreter Type is Single Interpreter.'))
+            if len(event.assigned_interpreters) >= 2 and event.multi_type == '2':
+                raise UserError(_('Cannot assign more than two Interpreter when Interpreter Type is Double Interpreter.'))
+            if len(event.assigned_interpreters) >= 3 and event.multi_type == '3':
+                raise UserError(_('Cannot assign more than three Interpreter when Interpreter Type is Three Interpreters.'))
+            if len(event.assigned_interpreters) >= 4 and event.multi_type == '4':
+                raise UserError(_('Cannot assign more than four Interpreters when Interpreter Type is Four Interpreters.'))
+            if len(event.assigned_interpreters) >= 5 and event.multi_type == '5':
+                raise UserError(_('Cannot assign more than five Interpreters when Interpreter Type is Five Interpreters.'))
+            else:
+                history_id = self.env['interpreter.alloc.history'].sudo().create({
+                    'partner_id': event.partner_id and event.partner_id.id or False,
+                    'name': cur_obj.interpreter_id and cur_obj.interpreter_id.id or False,
+                    'event_id': event.id, 'event_date': event.event_date, 'event_start': event.event_start,
+                    'event_end': event.event_end, 'state': 'allocated',
+                    'company_id': event.company_id and event.company_id.id or False,
+                    'allocate_date': time.strftime('%Y-%m-%d %H:%M:%S')}).id
+                for interpreter in event.assigned_interpreters:
+                    if cur_obj.interpreter_id.id == interpreter.id:
+                        raise UserError(_('This interpreter is already assigned to the event!'))
+                int_ids = []
+                for interpreter in event.assigned_interpreters:
+                    int_ids.append(interpreter.id)
+                int_ids.append(cur_obj.interpreter_id and cur_obj.interpreter_id.id or False)
+                hist_ids = []
+                for history in event.history_id:
+                    hist_ids.append(history.id)
+                hist_ids.append(history_id)
+                res = event.sudo().write({'assigned_interpreters': [(6, 0, int_ids)],
+                                                                     'history_id': [(6, 0, hist_ids)],
+                                                                     'schedule_event_time': time.strftime(
+                                                                         '%Y-%m-%d %H:%M:%S')})
+                interpreter_line=self.env['select.interpreter.line'].browse(self._context['active_id'])
+                res = interpreter_line.write({'state': 'assigned'})
+                if self._context.has_key('accepted_from'):
+                    subject = "Interpreter Assigned (Accepted through SMS)"
+                else:
+                    subject = "Interpreter Assigned (Accepted through portal)"
+                details = "Interpreter %s has been assigned to this event" % (cur_obj.interpreter_id and cur_obj.interpreter_id.complete_name or False)
+                event.message_post(body=details, subject=subject, context=self._context)
+                state = 'scheduled'
+                event_new = event_obj.sudo().browse(event.id)
+                if event.multi_type == '1' and len(event_new.assigned_interpreters) >= 1:
+                    state = 'allocated'
+                if event.multi_type == '2' and len(event_new.assigned_interpreters) >= 2:
+                    state = 'allocated'
+                if event.multi_type == '3' and len(event_new.assigned_interpreters) >= 3:
+                    state = 'allocated'
+                if event.multi_type == '4' and len(event_new.assigned_interpreters) >= 4:
+                    state = 'allocated'
+                if event.multi_type == '5' and len(event_new.assigned_interpreters) >= 5:
+                    state = 'allocated'
+                #                if state == 'allocated':
+                #                    for interpreter_line in self.pool.get('event').interpreter_ids2:
+                #                        int_line_obj.cancel_appointment(cr, uid, interpreter_line.id, context=context)
+                #                    res = self.pool.get('event').write(cr , uid, [event.id],{'state': state})
+                #                else:
+                res = event.write({'state': state, 'no_editable': True})
+                self._cr.commit()
+                #                 print event_obj.event.id.state,'**********'
+                ####To remove other followers so that they cannot see the events when other interpreter is scheduled#######
+                if event_new.multi_type == '1' and event_new.interpreter_ids2:
+                    for each_line in event_new.interpreter_ids2:
+                        # self.pool.get('event').write(cr , SUPERUSER_ID, [event_new.id], {'event_follower_ids':[(3, each_line.interpreter_id.user_id.id)]})
+                        if each_line.interpreter_id.user_id.id == self._context.get('history_id'):
+                            continue
+                        else:
+                            self._cr.execute("DELETE FROM event_followers_rel1 WHERE event_id = %s and user_id = %s",
+                                       (event_new.id, each_line.interpreter_id.user_id.id))
+                #####Dont Remove followers until 2 interpreters are assigned###########
+                if event_new.multi_type == '2' and len(event_new.assigned_interpreters) >= 2 and event_new.interpreter_ids2:
+                    for each_line in event_new.interpreter_ids2:
+                        event_new.sudo().write({'event_follower_ids': [(3, each_line.interpreter_id.user_id.id)]})
+
+                if event_new.multi_type == '3' and len(event_new.assigned_interpreters) >= 3 and event_new.interpreter_ids2:
+                    for each_line in event_new.interpreter_ids2:
+                        event_new.sudo().write({'event_follower_ids': [(3, each_line.interpreter_id.user_id.id)]})
+
+                if event_new.multi_type == '4' and len(event_new.assigned_interpreters) >= 4 and event_new.interpreter_ids2:
+                    for each_line in event_new.interpreter_ids2:
+                        event_new.sudo().write({'event_follower_ids': [(3, each_line.interpreter_id.user_id.id)]})
+
+                if event_new.multi_type == '5' and len(event_new.assigned_interpreters) >= 5 and event_new.interpreter_ids2:
+                    for each_line in event_new.interpreter_ids2:
+                        event_new.sudo().write({'event_follower_ids': [(3, each_line.interpreter_id.user_id.id)]})
+
+                #                if not event.suppress_email:
+                #                    template_id = mod_obj.get_object_reference(cr, SUPERUSER_ID, 'bista_iugroup', 'event_allocation_customer')[1]
+                #                    if template_id:
+                #                        self.pool.get('email.template').send_mail(cr, SUPERUSER_ID, template_id, event.id)
+                if self._context.has_key('accepted_from'):
+                    template_id1 = mod_obj.sudo().get_object_reference('bista_iugroup', 'event_allocation_interpreter')[1]
+                    if template_id1:
+                        self.env['mail.template'].sudo().browse(template_id1).send_mail(cur_obj.history_id.id)
+                else:
+                    template_id1 = mod_obj.sudo().get_object_reference('bista_iugroup', 'event_allocation_interpreter')[1]
+                    if template_id1:
+                        if user.user_type and user.user_type == 'vendor':
+                            self.env['mail.template'].sudo().browse(template_id1).send_mail(cur_obj.history_id.id)
+                        else:
+                            res = event.sudo().action_mail_send(cur_obj.history_id,
+                                                             'select.interpreter.line', template_id1)
+                    if event.company_id and event.company_id.id == 5 and event.scheduler_id.email != False:
+                        template_id = mod_obj.sudo().get_object_reference('bista_iugroup', 'event_notify_scheduler_acd')[1]
+                        if template_id:
+                            if user.user_type and user.user_type == 'vendor':
+                                self.env['mail.template'].sudo().browse(template_id).send_mail(cur_obj.history_id.id)
+
+                event.write({'no_editable': False})
+                self._cr.commit()
+                return res
+
+    @api.model
+    def default_get(self,fields):
+        res = super(assign_interp_wizard , self).default_get(fields)
+        history_ids = self._context.get('active_ids', [])
+        if not history_ids or len(history_ids) != 1:
+            return res
+        history_id, = history_ids
+        event_id = False
+        history = self.env['select.interpreter.line'].browse(history_ids[0])
+        if 'history_id' in fields:
+            res.update(history_id = history_id)
+        if 'interpreter_id' in fields:
+            res.update(interpreter_id = history.interpreter_id.id)
+        if 'event_id' in fields:
+            res.update(event_id = history.event_id.id)
+        history_obj = self.env['interpreter.alloc.history']
+        h_ids = []
+        if history_ids:
+            if history.event_id:
+                event_id = history.event_id
+                event_date = event_id.event_start_date
+                if event_date:
+                    h_ids = history_obj.search([('name','=',history.interpreter_id.id),('event_start_date','=',event_date),('state','in',('confirm','allocated'))],).ids
+        res['interpreter_ids']= h_ids #[(6, 0, select_ids)]
+        return res
+
+    @api.model
+    def fields_view_get(self, view_id=None, view_type='form', toolbar=False, submenu=False):
+        result = super(assign_interp_wizard, self).fields_view_get(view_id, view_type, toolbar, submenu)
+        if 'active_ids' not in self._context:
+            self=self.with_context(active_ids = [])
+        return result
+
+
+    history_id=fields.Many2one("select.interpreter.line", "History Id" )
+    event_id=fields.Many2one("event", "Event Id" )
+    interpreter_id=fields.Many2one("res.partner", "Interpreter" )
+    interpreter_ids=fields.Many2many("interpreter.alloc.history",'interpreter_alloc_rel','wiz_id','history_id',"Interpreter History")
+
+
+class interpreter_search_lookup(models.Model):
+    '''Search interpreters visting locations alike the current event location '''
+
+    _name='interpreter.search.lookup'
+
+    name=fields.Many2one("res.partner","Interpreter", required = True )
+    partner_id=fields.Many2one("res.partner","Billing Customer" )
+    city=fields.Char(related='name.city', string='City', size=50 ,store=True)
+    rate=fields.Float(related='name.rate', string='Rate',store=True)
+    event_date=fields.Date("Event Date")
+    event_id=fields.Many2one("event", "Event Id" )
+    master_event_id=fields.Many2one("event", "Master Event Id" )
+    state=fields.Char("Status" , size=128)
+    event_start=fields.Char("Event Start Time")
+    event_end=fields.Char("Event End Time")
+    company_id=fields.Many2one(related='event_id.company_id', store=True, string="Event State" ,readonly=True,)
+
+    @api.model
+    def assign_interpreter_to_event(self):
+        res = {}
+        event_obj = self.env['event']
+        select_inter_line_obj = self.env['select.interpreter.line']
+        partner_obj = self.env['res.partner']
+        if self._context.get('interpreter_id') != False:
+            partner_val = partner_obj.browse(self._context.get('interpreter_id'))
+            self._cr.execute(''' select id from select_interpreter_line where interpreter_id=%s and event_id =%s''',(self._context.get('interpreter_id'),self._context.get('master_event_id')))
+            exsiting_interpreter_id = map(lambda x: x[0], self._cr.fetchall())
+            if exsiting_interpreter_id :
+                raise UserError(_(' Interpreter Already assigned to current event !!.'))
+            res = {'name':partner_val.id ,'interpreter_id': self._context.get('interpreter_id'),'event_id': self._context.get('master_event_id'),'preferred':True,'visited':True,'rate':partner_val.rate,'state':'draft'}#'distance':partner_val.distance
+            inter_line_id = select_inter_line_obj.create(res)
+            event=event_obj.browse(self._context.get('master_event_id'))
+            event.write({'interpreter_ids':[(4, inter_line_id)]})
+        return True
+
+class interpreter_search_lookup_assign(models.TransientModel):
+    '''Search interpreters visting locations alike the current event location '''
+    _name='interpreter.search.lookup.assign'
+
+    interpreter_rec=fields.Many2many("interpreter.search.lookup",'interpreter_search_lookup_rel','wiz_id','history_id',"Interpreter History")
+
+    @api.model
+    def default_get(self, fields):
+        ''' Function search for scheduled events for current event's location and date '''
+        interpreter_search_li = []
+        event_obj = self.env['event']
+        interpreter_search_obj = self.env['interpreter.search.lookup']
+        if self._context.get('active_id') :
+            event_vals = event_obj.browse(self._context.get('active_id'))
+            print event_vals
+            self._cr.execute(''' select id from event where location_id =%s and event_start_date >=%s and company_id =%s and state in %s''',(event_vals.location_id.id,event_vals.event_start_date,event_vals.company_id.id,('allocated','confirmed')))
+            vals=map(lambda x: x[0], self._cr.fetchall())
+            for x in vals :
+                val = event_obj.browse(x)
+                self._cr.execute(''' select interpreter_id from event_partner_rel where event_id =%s limit 3 ''',(x,))
+                interpreter_ids=map(lambda x: x[0], self._cr.fetchall())
+                for i in interpreter_ids :
+                    browse_res = event_obj.browse(x)
+                    start_date_hr = browse_res.event_start_hr or '00'
+                    start_min = browse_res.event_start_min or '00' 
+                    am_pm = browse_res.am_pm or ''
+
+                    end_date_hr = browse_res.event_end_hr or '00'
+                    end_min = browse_res.event_end_min or '00'
+                    am_pm2 = browse_res.am_pm2 or ''                    
+                    
+                    start_time_res = start_date_hr +':'+ start_min+ ':' +am_pm
+                    
+                    end_time_res = end_date_hr +':'+ end_min+ ':' +am_pm2
+                    val_assign = {'name':i,'partner_id': val.partner_id and val.partner_id.id or False,'event_date':val.event_start_date or False ,\
+                         'event_start':start_time_res,\
+                        'event_end':end_time_res,\
+                        'state':val.state,'event_id':x,'master_event_id':self._context.get('active_id')}
+                    #import ipdb;ipdb.set_trace()
+                    interpreter_search_id = interpreter_search_obj.create(val_assign).id
+                    interpreter_search_li.append(interpreter_search_id)
+            res={'interpreter_rec':interpreter_search_li}
+        return res

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- wizard view -->
+        <record id="assign_interpreter_wizard_view" model="ir.ui.view">
+            <field name="name">Assign Interpreter</field>
+            <field name="model">assign.interpreter</field>
+            <field name="arch" type="xml">
+                <form string="Assign Interpreter">
+                    <group>
+                        <field name="event_id" invisible="1" readonly="1"/>
+                        <separator/>
+                    </group>
+                    <footer>
+                        <button string="Cancel" special="cancel" class="oe_highlight"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+        
+        <record model="ir.actions.act_window" id="action_assign_wizard">
+            <field name="name">Assign Interpreter</field>
+            <field name="res_model">assign.interpreter</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="assign_interpreter_wizard_view"/>
+            <field name="target">new</field>
+        </record>
+    </data>
+</odoo>

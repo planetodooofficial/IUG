@@ -1,0 +1,432 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- +++++++++++++GROUPS++++++++++++++++-->
+        <record id="group_record_manager" model="res.groups">
+            <field name="name">IU Manager</field>
+            <field name="implied_ids" eval="[(4, ref('project_task_work.group_tasks_work_on_tasks')),(4, ref('sales_team.group_sale_salesman')),
+                                            (4, ref('base.group_user')),(3, ref('base.group_partner_manager')),
+                                            (4, ref('sale.group_discount_per_so_line'))]"/>
+        </record>
+
+        <!-- The portal group -->
+        <record id="group_iu_portal" model="res.groups">
+            <field name="name">IU Portal</field>
+            <field name="implied_ids" eval="[(4, ref('project_task_work.group_tasks_work_on_tasks')),(4, ref('base.group_user')),
+                                             (4, ref('sales_team.group_sale_salesman')),(3, ref('base.group_partner_manager'))]"/>
+            <field name="comment">IU Portal members have specific access rights (such as record rules and restricted menus).
+                They usually do not belong to the usual Odoo groups.</field>
+        </record>
+        
+        <record id="group_iu_portal_transporter" model="res.groups">
+            <field name="name">IU Portal Transporter</field>
+            <field name="implied_ids" eval="[(4, ref('project_task_work.group_tasks_work_on_tasks')),(4, ref('base.group_user')),
+                                             (4, ref('sales_team.group_sale_salesman')),(3, ref('base.group_partner_manager'))]"/>
+            <field name="comment">IU Portal members have specific access rights (such as record rules and restricted menus).
+                They usually do not belong to the usual Odoo groups.</field>
+        </record>
+        
+        <record id="group_iu_customer" model="res.groups">
+            <field name="name">IU Portal Customer</field>
+            <field name="implied_ids" eval="[(4, ref('base.group_user')),(4, ref('project_task_work.group_tasks_work_on_tasks')),
+                                             (3, ref('base.group_partner_manager'))]"/> <!--(4, ref('project_task_work.group_tasks_work_on_tasks')),-->
+            <field name="comment">IU Portal Customer members have specific access rights (such as restricted menus).
+                They usually do not belong to ththe usual Odoo groups.</field>
+        </record>
+        
+        <record id="group_iu_fax" model="res.groups">
+            <field name="name">IU Fax</field>
+            <field name="implied_ids" eval="[(4, ref('base.group_user')),(3, ref('base.group_partner_manager'))]"/>
+            <field name="comment">IU Fax</field>
+        </record>
+        
+        <record id="group_iu_cust_service" model="res.groups">
+            <field name="name">IU Customer Service</field>
+            <field name="implied_ids" eval="[(4, ref('project_task_work.group_tasks_work_on_tasks')),(4, ref('sales_team.group_sale_salesman')),
+                                             (4, ref('group_iu_fax')),(4, ref('base.group_user')),(3, ref('base.group_partner_manager'))]"/>
+            <field name="comment">IU Customer Service</field>
+        </record>
+        
+        <record id="group_iu_recruiter" model="res.groups">
+            <field name="name">IU Recruiter</field>
+            <field name="implied_ids" eval="[(4, ref('project_task_work.group_tasks_work_on_tasks')),(4, ref('sales_team.group_sale_salesman')),
+                                             (4, ref('group_iu_fax')),(4, ref('base.group_user')),(3, ref('base.group_partner_manager'))]"/>
+            <field name="comment">IU Recruiter</field>
+        </record>
+
+        <record id="group_iu_zone" model="res.groups">
+            <field name="name">IU Zone Access</field>
+            <field name="comment">IU Zone Access</field>
+        </record>
+        
+        <record id="group_iu_dashboard" model="res.groups">
+            <field name="name">IU Dashboard</field>
+            <field name="comment">IU Dashboard</field>
+        </record>
+        
+        <record id="group_iu_admin" model="res.groups">
+            <field name="name">IU Admin</field>
+            <field name="comment">IU Admin</field>
+        </record>
+        
+        <record id="group_iu_users" model="res.groups">
+            <field name="name">IU User Access</field>
+            <field name="implied_ids" eval="[(3, ref('base.group_erp_manager'))]"/>
+            <field name="comment">IU User Access</field>
+        </record>
+
+
+<!--     .........   INHERITING RECORD RULES ............... -->
+        <!---->
+        <record id="res_company_rule" model="ir.rule">
+            <field name="name">company rule</field>
+            <field  name="model_id" ref="model_res_company"/>
+            <field eval="True" name="global"/>
+            <field name="domain_force">[('id','child_of',[user.company_id.id])]</field>
+        </record>
+
+        <!--<record id="res_company_rule" model="ir.rule">
+            <field name="name">company rule</field>
+            <field  name="model_id" ref="base.model_res_company"/>
+            <field eval="True" name="global"/>
+            <field name="domain_force">['|',('id','in',[user.company_id.id]),('id','in',[x.id for x in user.company_ids])]</field>
+        </record>-->
+        <!---->
+        <!--<record model="ir.rule" id="portal_project.task_anonymous_rule">-->
+            <!--<field name="name">Project/Task: anonymous users: public only</field>-->
+            <!--<field name="model_id" ref="project.model_project_task"/>-->
+            <!--<field name="domain_force">['|',('user_id', '=', user.id),('message_follower_ids','in',[user.partner_id.id])]</field>-->
+            <!--<field name="groups" eval="[(3, ref('portal.group_anonymous')),(4, ref('group_iu_portal'))]"/>-->
+        <!--</record>-->
+
+        <record model="ir.rule" id="project_anonymous_rule">
+            <field name="name">Project: anonymous users: public only</field>
+            <field name="model_id" ref="project.model_project_project"/>
+            <field name="domain_force">['|',('user_id', '=', user.id),('message_follower_ids','in',[user.partner_id.id])]</field>
+            <field name="groups" eval="[(4, ref('group_iu_portal'))]"/>
+        </record>
+
+        <record model="ir.rule" id="project.task_visibility_rule">
+            <field name="name">Project/Task: employees: public, portal, employee or following or assigned</field>
+            <field name="domain_force">['|',('user_id', '=', user.id),('message_follower_ids','in',[user.partner_id.id])]</field>
+            <field name="model_id" ref="model_project_task"/>
+            <field name="groups" eval="[(3, ref('base.group_user')),(4, ref('group_iu_portal'))]"/>
+        </record>
+        <!---->
+        <record model="ir.rule" id="project.project_public_members_rule">
+            <field name="name">Project: employees: public, portal, employees or following</field>
+            <field name="model_id" ref="project.model_project_project"/>
+            <field name="domain_force">['|',('user_id', '=', user.id),('message_follower_ids','in',[user.partner_id.id])]</field>
+            <field name="groups" eval="[(3, ref('base.group_user')),(4, ref('group_iu_portal'))]"/>
+        </record>
+
+
+        <!-- .......... NEW RECORD RULES............... -->
+
+        <record model="ir.rule" id="iu_portal_tasks">
+            <field name="name">IU Portal Tasks</field>
+            <field name="model_id" ref="model_project_task"/>
+            <field name="domain_force">['|',('user_id', '=', user.id),'|',('assigned_interpreters.user_id', '=', user.id),('message_follower_ids','in',[user.partner_id.id])]</field>
+            <field name="groups" eval="[(4, ref('group_iu_portal'))]"/>
+            <field name="global" eval="True" />
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+
+        <record model="ir.rule" id="iu_portal_projects">
+            <field name="name">IU Portal Projects</field>
+            <field name="model_id" ref="model_project_project"/>
+            <field name="domain_force">['|',('user_id', '=', user.id),('message_follower_ids','in',[user.partner_id.id])]</field>
+            <field name="groups" eval="[(4, ref('group_iu_portal'))]"/>
+            <field name="global" eval="True" />
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+
+        <record model="ir.rule" id="iu_portal_events">
+            <field name="name">IU Portal Events</field>
+            <field name="model_id" ref="model_event"/>
+            <field name="domain_force">['|',('event_follower_ids','=',user.id),('interpreter_user_id','in',[user.id])]</field>
+            <field name="groups" eval="[(4, ref('group_iu_portal')),(3, ref('group_iu_customer'))]"/>
+            <field name="global" eval="True" />
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <record model="ir.rule" id="iu_portal_customer_events">
+            <field name="name">IU Portal Customer Events</field>
+            <field name="model_id" ref="model_event"/>
+            <field name="domain_force">['|','|',('ordering_partner_id.user_id','in',[user.id]),('ordering_contact_id.user_id','in',[user.id]),('user_id','in',[user.id])]</field>
+            <field name="groups" eval="[(4, ref('group_iu_customer')),(3, ref('group_iu_portal'))]"/>
+            <field name="global" eval="True" />
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <record model="ir.rule" id="iu_portal_transporter_events">
+            <field name="name">IU Portal Transporter Events</field>
+            <field name="model_id" ref="model_event"/>
+            <field name="domain_force">['|',('transporter_id.user_id','in',[user.id]),('message_follower_ids','in',[user.partner_id.id])]</field>
+            <field name="groups" eval="[(4, ref('group_iu_portal_transporter'))]"/>
+            <field name="global" eval="True" />
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <record model="ir.rule" id="iu_cust_service_tasks">
+            <field name="name">IU Customer Service Tasks</field>
+            <field name="model_id" ref="model_project_task"/>
+            <field name="domain_force">['|',('user_id', '=', user.id),('message_follower_ids','in',[user.partner_id.id])]</field>
+            <field name="groups" eval="[(4, ref('group_iu_cust_service'))]"/>
+            <field name="global" eval="True" />
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+        <!-- Rule for job offered to interpreter -->
+        <record id="iu_zone_rule_select_interpreter_line" model="ir.rule">
+            <field name="name">Job Offered Rule For Interpreter</field>
+            <field  name="model_id" ref="model_select_interpreter_line"/>
+            <field eval="True" name="global"/><!--'|',('zone_id','=',False), -->
+            <field name="domain_force">[('interpreter_id.user_id','=',user.id)]</field>
+            <field name="groups" eval="[(4, ref('group_iu_portal'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+
+        <!-- Rule For Zone -->
+        <record id="iu_zone_rule_events" model="ir.rule">
+            <field name="name">Zone rule For Events</field>
+            <field  name="model_id" ref="model_event"/>
+            <field name="domain_force">['|',('zone_id.meta_zone_id','=',user.zone_id.id),('scheduler_id','=',user.id)]</field>
+            <field name="groups" eval="[(4, ref('group_iu_zone'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="False"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+
+        <!-- +++++++++++++++ MULTI COMAPNY RECORD RULES +++++++++++++++++++ -->
+
+        <record model="ir.rule" id="iu_ir_attachment">
+            <field name="name">Attachments</field>
+            <field name="model_id" ref="model_ir_attachment"/>
+            <field name="domain_force">[('user_id','=',user.id),('company_id','child_of',[user.company_id.id])]</field>
+            <field name="groups" eval="[(4, ref('group_iu_portal')),(4, ref('group_iu_customer'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+
+        <record model="ir.rule" id="iu_ir_attachment_view">
+            <field name="name">Attachments for view</field>
+            <field name="model_id" ref="model_ir_attachment"/>
+            <field name="domain_force">[('res_model','=','ir.ui.view')]</field>
+            <field name="groups" eval="[(4, ref('group_iu_portal')),(4, ref('group_iu_customer'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="False"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <record model="ir.rule" id="iu_event_out_come">
+            <field name="name">Event OutCome</field>
+            <field name="model_id" ref="model_event_out_come"/>
+            <field name="domain_force">[('company_id','child_of',[user.company_id.id]),('name','not in',('8 Pay but no bill','9 No pay, no bill'))]</field>
+            <field name="groups" eval="[(4, ref('group_iu_portal')),(4, ref('group_iu_customer'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+
+        <record model="ir.rule" id="iu_mail_message">
+            <field name="name">IU Mails</field>
+            <field name="model_id" ref="model_mail_message"/>
+            <field name="domain_force">['|',('company_id','=',False),('company_id','child_of',[user.company_id.id])]</field>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="False"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+
+        <record model="ir.rule" id="iu_mail_mail">
+            <field name="name">IU Mails</field>
+            <field name="model_id" ref="model_mail_mail"/>
+            <field name="domain_force">['|',('company_id','=',False),('company_id','child_of',[user.company_id.id])]</field>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="False"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+
+        <record id="base.res_users_rule" model="ir.rule">
+            <field name="name">user rule</field>
+            <field  name="model_id" ref="model_res_users"/>
+            <field eval="True" name="global"/>
+            <field name="domain_force">['|',('company_id','=',False),('company_id','child_of',[user.company_id.id])]</field>
+            <field name="perm_read" eval="False"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+
+        <record id="iu_event_multi_comp_rule" model="ir.rule">
+            <field name="name">Event - Multi company</field>
+            <field  name="model_id" ref="model_event"/>
+            <field eval="True" name="global"/>
+            <field name="domain_force">['|',('company_id','=',False), ('company_id','child_of',[user.company_id.id])]</field>
+        </record>
+
+
+        <record id="base.res_partner_rule" model="ir.rule">
+            <field name="name">Partners - Multi company</field>
+            <field  name="model_id" ref="model_res_partner"/>
+            <field eval="True" name="global"/>
+            <field name="domain_force">['|',('company_id','in',[x.id for x in user.company_ids]),('company_id','=',False)]</field>
+        </record>
+
+        <record id="iu_doctor_multi_comp_rule" model="ir.rule">
+            <field name="name">Doctors - Multi company</field>
+            <field  name="model_id" ref="model_doctor"/>
+            <field eval="True" name="global"/>
+            <field name="domain_force">['|',('company_id','=',False),('company_id','child_of',[user.company_id.id])]</field>
+        </record>
+
+        <record id="iu_location_multi_comp_rule" model="ir.rule">
+            <field name="name">Locations - Multi company</field>
+            <field  name="model_id" ref="model_location"/>
+            <field eval="True" name="global"/>
+            <field name="domain_force">['|',('company_id','=',False),('company_id','child_of',[user.company_id.id])]</field>
+        </record>
+
+        <record id="iu_claimant_multi_comp_rule" model="ir.rule">
+            <field name="name">Claimant - Multi company</field>
+            <field  name="model_id" ref="model_patient"/>
+            <field eval="True" name="global"/>
+            <field name="domain_force">['|',('company_id','=',False),('company_id','child_of',[user.company_id.id])]</field>
+        </record>
+
+        <record id="iu_project_name_multi_comp_rule" model="ir.rule">
+            <field name="name">Project Name - Multi company</field>
+            <field  name="model_id" ref="model_project"/>
+            <field eval="True" name="global"/>
+            <field name="domain_force">['|',('company_id','=',False),('company_id','child_of',[user.company_id.id])]</field>
+        </record>
+
+        <record id="iu_language_multi_comp_rule" model="ir.rule">
+            <field name="name">Language - Multi company</field>
+            <field  name="model_id" ref="model_language"/>
+            <field eval="True" name="global"/>
+            <field name="domain_force">['|',('company_id','=',False),('company_id','child_of',[user.company_id.id])]</field>
+        </record>
+
+        <record id="iu_certification_level_multi_comp_rule" model="ir.rule">
+            <field name="name">Certification Level - Multi company</field>
+            <field  name="model_id" ref="model_certification_level"/>
+            <field eval="True" name="global"/>
+            <field name="domain_force">['|',('company_id','=',False),('company_id','child_of',[user.company_id.id])]</field>
+        </record>
+
+        <record id="iu_project_task_work_multi_comp_rule" model="ir.rule">
+            <field name="name">Project Task Lines - Multi company</field>
+            <field  name="model_id" ref="model_project_task_work"/>
+            <field eval="True" name="global"/>
+            <field name="domain_force">['|',('company_id','=',False),('company_id','child_of',[user.company_id.id])]</field>
+        </record>
+
+        <record id="iu_mail_message_multi_comp_rule" model="ir.rule">
+            <field name="name">Message - Multi company</field>
+            <field  name="model_id" ref="mail.model_mail_message"/>
+            <field eval="True" name="global"/>
+            <field name="domain_force">['|',('company_id','=',False),('company_id','child_of',[user.company_id.id])]</field>
+        </record>
+
+        <record id="iu_mail_mail_multi_comp_rule" model="ir.rule">
+            <field name="name">Mail - Multi company</field>
+            <field  name="model_id" ref="mail.model_mail_mail"/>
+            <field eval="True" name="global"/>
+            <field name="domain_force">['|',('company_id','=',False),('company_id','child_of',[user.company_id.id])]</field>
+        </record>
+
+        <record id="iu_timesheet_multi_comp_rule" model="ir.rule">
+            <field name="name">Custom Timesheet - Multi company</field>
+            <field  name="model_id" ref="model_timesheet"/>
+            <field eval="True" name="global"/>
+            <field name="domain_force">['|',('company_id','=',False),('company_id','child_of',[user.company_id.id])]</field>
+        </record>
+
+        <record id="iu_affiliation_multi_comp_rule" model="ir.rule">
+            <field name="name">Affiliation - Multi company</field>
+            <field  name="model_id" ref="model_affiliation"/>
+            <field eval="True" name="global"/>
+            <field name="domain_force">['|',('company_id','=',False),('company_id','child_of',[user.company_id.id])]</field>
+        </record>
+
+        <record id="iu_rating_multi_comp_rule" model="ir.rule">
+            <field name="name">Rating - Multi company</field>
+            <field  name="model_id" ref="model_rating"/>
+            <field eval="True" name="global"/>
+            <field name="domain_force">['|',('company_id','=',False),('company_id','child_of',[user.company_id.id])]</field>
+        </record>
+
+        <record id="iu_phone_type_multi_comp_rule" model="ir.rule">
+            <field name="name">Phone Type - Multi company</field>
+            <field  name="model_id" ref="model_phone_type"/>
+            <field eval="True" name="global"/>
+            <field name="domain_force">['|',('company_id','=',False),('company_id','child_of',[user.company_id.id])]</field>
+        </record>
+
+        <record id="iu_rating_multi_comp_rule" model="ir.rule">
+            <field name="name">Rating - Multi company</field>
+            <field  name="model_id" ref="model_rating"/>
+            <field eval="True" name="global"/>
+            <field name="domain_force">['|',('company_id','=',False),('company_id','child_of',[user.company_id.id])]</field>
+        </record>
+
+        <record id="iu_fee_note_status_multi_comp_rule" model="ir.rule">
+            <field name="name">Fee Note Status - Multi company</field>
+            <field  name="model_id" ref="model_fee_note_status"/>
+            <field eval="True" name="global"/>
+            <field name="domain_force">['|',('company_id','=',False),('company_id','child_of',[user.company_id.id])]</field>
+        </record>
+
+        <record id="iu_translator_alloc_history_multi_comp_rule" model="ir.rule">
+            <field name="name">Translator Alloc History - Multi company</field>
+            <field  name="model_id" ref="model_translator_alloc_history"/>
+            <field eval="True" name="global"/>
+            <field name="domain_force">['|',('company_id','=',False),('company_id','child_of',[user.company_id.id])]</field>
+        </record>
+
+        <record id="iu_speciality_multi_comp_rule" model="ir.rule">
+            <field name="name">Speciality - Multi company</field>
+            <field  name="model_id" ref="model_speciality"/>
+            <field eval="True" name="global"/>
+            <field name="domain_force">['|',('company_id','=',False),('company_id','child_of',[user.company_id.id])]</field>
+        </record>
+
+        <record id="iu_timesheet_line_multi_comp_rule" model="ir.rule">
+            <field name="name">Custom Timesheet Line - Multi company</field>
+            <field  name="model_id" ref="model_timesheet_line"/>
+            <field eval="True" name="global"/>
+            <field name="domain_force">['|',('company_id','=',False),('company_id','child_of',[user.company_id.id])]</field>
+        </record>
+
+
+
+    </data>
+</odoo>

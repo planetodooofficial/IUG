@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- wizard view -->
+        <record id="cancel_event_wizard_view" model="ir.ui.view">
+            <field name="name">Cancel Event</field>
+            <field name="model">cancel.event.wizard</field>
+            <field name="arch" type="xml">
+                <form string="Cancel Event">
+                    <group>
+                        <field name="event_id"  readonly="1" invisible="1"/>
+                        <field name="company_id"  readonly="1" invisible="1" />
+                    	<field name="cancel_reason_id"  required="1" domain="[('company_id','=',company_id),('do_active','=',1)]"
+                                       options="{'limit': 7, 'create': False, 'create_edit': False ,'always_reload': True}"/>
+                    </group>
+                    <footer>
+                        <button string="Cancel Event" name="cancel_event" type="object" class="oe_highlight"
+                            context="{'event_id': event_id}"/>
+                        or
+                        <button string="Cancel" class="oe_link" special="cancel" />
+                    </footer>
+                </form>
+            </field>
+        </record>
+        
+        <record model="ir.actions.act_window" id="action_cancel_event">
+            <field name="name">Cancel Event</field>
+            <field name="res_model">cancel.event.wizard</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="cancel_event_wizard_view"/>
+            <field name="target">new</field>
+        </record>
+    </data>
+</odoo>

@@ -1,0 +1,1279 @@
+<?xml version="1.0" ?>
+<openerp>
+    
+    <!-- Mail template is done in a NOUPDATE block so users can freely customize/delete them -->
+     <data noupdate="0">
+
+        <!-- Template FOR FAX SENDING -->
+        
+        <!--<record id="event_fax_sending_template" model="mail.template">-->
+            <!--<field name="name">Fax to the Interpreter</field>-->
+            <!--<field name="model_id" ref="bista_iugroup.model_send_fax"/>-->
+            <!--<field name="email_from" >servers@iu-it.com</field>-->
+<!--&lt;!&ndash;            <field name="email_to" > % if object.partner_id.fax:-->
+            <!--${("1" + str(object.partner_id.fax) + "@efaxsend.com")|safe}-->
+            <!--%else:-->
+            <!--${safe}-->
+            <!--%endif-->
+        <!--</field>&ndash;&gt;-->
+            <!--<field name="email_to" >${("1" + str(object.fax) + "@efaxsend.com")|safe}</field>-->
+            <!--<field name="subject">${("1" + str(object.fax))|safe}</field>-->
+            <!--<field name="body_html"><![CDATA[-->
+            <!--<div style="font-family: 'Lucica Grande', Ubuntu, Arial, Verdana, sans-serif; font-size: 12px; color: rgb(34, 34, 34); background-color: #FFF; ">-->
+                <!--% if object.manual_fax:-->
+                    <!--<p>Hello ${(object.partner_id.name)|safe},</p>-->
+                <!--% endif-->
+                <!--<br/>-->
+                <!--% if object.fax_cover:-->
+                    <!--<p>${(object.fax_cover)|safe}</p>-->
+                <!--% endif-->
+            <!--</div>-->
+            <!--]]>-->
+            <!--</field>-->
+        <!--</record>-->
+        
+        <record id="event_approval" model="mail.template">
+            <field name="name">Event Approval </field>
+            <field name="model_id" ref="bista_iugroup.model_event"/>
+            <field name="email_from" >donotreply@iugroup.com</field>
+            <field name="email_to" >${(object.approving_mgr_email or '')|safe}</field>
+            <field name="subject">Event ${object.name or ''} is Waiting Approval</field>
+            <field name="body_html"><![CDATA[
+                 <div style="font-family: 'Lucica Grande', Ubuntu, Arial, Verdana, sans-serif; font-size: 12px; color: rgb(34, 34, 34); background-color: #FFF; ">
+                    <p>Hello, ${object.name or ''} is waiting approval.</p>
+                    <br/>
+                    <table>
+                        <tr>
+                            <td>Event No:</td>
+                            <td>${object.name or ''}</td>
+                        </tr>
+                        <tr>
+                    		<td>Ordering Contact : </td>
+                    		<td>${(object.ordering_contact_id and object.ordering_contact_id.complete_name)|safe}</td>
+                    	</tr>
+                        <tr>
+                            <td>Event Date:</td>
+                            <td>${(object.event_start_date or ' - - ').split('-')[1]+ '/' + (object.event_start_date or ' - - ').split('-')[2] + '/' + (object.event_start_date or ' - - ').split('-')[0]} at ${object.event_start_hr or ''}:${object.event_start_min or ''} ${str(object.am_pm or '').upper()}
+                                    To ${object.event_end_hr or ''}:${object.event_end_min or ''} ${str(object.am_pm2 or '').upper()}</td>
+                        </tr>
+                        <tr>
+                            <td>Language:</td>
+                            <td>${object.language_id.name or ''}</td>
+                        </tr>
+                        <tr>
+                            <td>Location:</td>
+                            <td>${object.location_id.street or ''}
+                            <br/>${object.location_id.city or ''}
+                            <br/>${object.location_id.state_id.name or ''}
+                            <br/>${object.location_id.country_id.name or ''}
+                            <br/>${object.location_id.zip or ''}</td>
+                        </tr>
+                    </table>
+                    <p>Please do not hesitate to contact us if you have any questions.</p>
+                    <br/><br/><br/>
+                </div>
+                <p>${(object.user_id.name or '')|safe}<br/>
+                </p>
+                <a href="https://erp.iugroup.com${(object.approval_url or '')|safe}" ><h3>Click here to Approve or Reject the Event.</h3></a>
+            ]]>
+            </field>
+        </record>
+        
+        <record id="event_time_verification" model="mail.template">
+            <field name="name">Event Verification</field>
+            <field name="model_id" ref="bista_iugroup.model_event"/>
+            <field name="email_from" >donotreply@iugroup.com</field>
+            <field name="email_to" >${(object.verifying_mgr_email or '')|safe}</field>
+            <field name="subject">Event ${object.name or ''} is Waiting Verification</field>
+            <field name="body_html"><![CDATA[
+                 <div style="font-family: 'Lucica Grande', Ubuntu, Arial, Verdana, sans-serif; font-size: 12px; color: rgb(34, 34, 34); background-color: #FFF; ">
+                    <p>Hello, ${object.name or ''} is waiting Verification.</p>
+                    <br/>
+                    <table>
+                        <tr>
+                            <td>Event No:</td>
+                            <td>${object.name or ''}</td>
+                        </tr>
+                        <tr>
+                            <td>Event Date:</td>
+                            <td>${(object.event_start_date or ' - - ').split('-')[1]+ '/' + (object.event_start_date or ' - - ').split('-')[2] + '/' + (object.event_start_date or ' - - ').split('-')[0]} at ${object.event_start_hr or ''}:${object.event_start_min or ''} ${str(object.am_pm or '').upper()}
+                                    To ${object.event_end_hr or ''}:${object.event_end_min or ''} ${str(object.am_pm2 or '').upper()}</td>
+                        </tr>
+                        <tr>
+                            <td>Language:</td>
+                            <td>${object.language_id.name or ''}</td>
+                        </tr>
+                        <tr>
+                            <td>Location:</td>
+                            <td>${object.location_id.street or ''}
+                            <br/>${object.location_id.city or ''}
+                            <br/>${object.location_id.state_id.name or ''}
+                            <br/>${object.location_id.country_id.name or ''}
+                            <br/>${object.location_id.zip or ''}</td>
+                        </tr>
+                    </table>
+                    <p>Please do not hesitate to contact us if you have any questions.</p>
+                    <br/><br/><br/>
+                </div>
+                <p>${(object.user_id.name or '')|safe}<br/>
+                </p>
+                <a href="https://erp.iugroup.com${(object.verify_url or '')|safe}" ><h3>Click here to Verify the Event.</h3></a>
+            ]]>
+            </field>
+        </record>
+        <!-- ${(object.all_interpreter_email)|safe}-->
+        <record id="event_allocation_interpreter" model="mail.template">
+            <field name="name">Scheduling of the Event(Interpreter)</field>
+            <field name="model_id" ref="bista_iugroup.model_select_interpreter_line"/>
+            <field name="auto_delete" eval="False"/>
+            <field name="email_from" >donotreply@iugroup.com</field>
+            <!--<field name="reply_to" >${(object.event_id.user_id.email or object.event_id.company_id.email or object.company_id.email or '')|safe}</field>-->
+<!--            <field name="email_recipients">${(object.event_id.interpreter_id.id)|safe},${(object.event_id.user_id.partner_id.id)|safe},${(object.event_id.scheduler_id.id)|safe},${(object.event_id.sales_representative_id.id)|safe}</field>-->
+            <field name="email_to" >${(object.interpreter_id.email or '')|safe}</field>
+            <field name="subject">Your Event ${object.event_id.name or ''} is Scheduled</field>
+            <field name="body_html"><![CDATA[
+            <div style="font-family: 'Lucica Grande', Ubuntu, Arial, Verdana, sans-serif; font-size: 12px; color: rgb(34, 34, 34); background-color: #FFF; ">
+                <p>Hello,</p>
+                <br/>
+                <p> We have Scheduled the following event for you :</p>
+                <table>
+                    <tr>
+                        <td>Event No:</td>
+                        <td>${object.event_id.name or ''}</td>
+                    </tr>
+                    <tr>
+                        <td>Event Date:</td>
+                        <td>${(object.event_id.event_start_date or ' - - ').split('-')[1]+ '/' + (object.event_id.event_start_date or ' - - ').split('-')[2] + '/' + (object.event_id.event_start_date or ' - - ').split('-')[0]} at ${object.event_id.event_start_hr}:${object.event_id.event_start_min or ''}
+                                ${str(object.event_id.am_pm or '').upper()} To ${object.event_id.event_end_hr or ''}:${object.event_id.event_end_min or ''} ${str(object.event_id.am_pm2 or '').upper()}</td>
+                    </tr>
+                    <tr>
+                        <td>Language:</td>
+                        <td>${object.event_id.language_id and object.event_id.language_id.name or ''}</td>
+                    </tr>
+                    <tr>
+                        <td>Appointment Type:</td>
+                        <td>${object.event_id.appointment_type_id and object.event_id.appointment_type_id.name or ''}</td>
+                    </tr>
+
+                    <tr>
+                        <td>Location:</td>
+                        <td>${object.event_id.location_id.street or ''}
+                        <br/>${object.event_id.location_id.city or ''}
+                        <br/>${object.event_id.location_id.state_id.name or ''}
+                        <br/>${object.event_id.location_id.country_id.name or ''}
+                        <br/>${object.event_id.location_id.zip or ''}</td>
+                    </tr>
+                    <tr>
+                        <td>Note:</td>
+                        <td>${object.event_id.interpreter_note or ''}</td>
+                    </tr>
+                </table>
+                <p>Please do not hesitate to contact us if you have any questions.</p>
+                <br/><br/><br/>
+            </div>
+            <!--<a href="https://erp.iugroup.com/ipm.html" ><h3>Click here to Download Interpreter Manual.</h3></a>-->
+            ]]>
+            </field>
+        </record>
+
+        <record id="event_allocation_transporter" model="mail.template">
+            <field name="name">Scheduling of the Event(Transporter)</field>
+            <field name="model_id" ref="bista_iugroup.model_event"/>
+            <field name="auto_delete" eval="False" />
+            <field name="email_from" >donotreply@iugroup.com</field>
+            <field name="reply_to" >${(object.user_id.email or object.company_id.email or '')|safe}</field>
+<!--            <field name="email_recipients">${(object.transporter_id.id)|safe},${(object.user_id.partner_id.id)|safe},${(object.scheduler_id.id)|safe},${(object.sales_representative_id.id)|safe}</field>-->
+            <field name="email_to" >${(object.transporter_id.email or '')|safe}</field>
+            <field name="subject">Your Event ${object.name or ''} Scheduled</field>
+            <field name="body_html"><![CDATA[
+            <div style="font-family: 'Lucica Grande', Ubuntu, Arial, Verdana, sans-serif; font-size: 12px; color: rgb(34, 34, 34); background-color: #FFF; ">
+                <p>Hello ,</p>
+                <br/>
+                <p> We have Scheduled the following event for you :</p>
+                <table>
+                    <tr>
+                        <td>Event No:</td>
+                        <td>${object.name or ''}</td>
+                    </tr>
+                    <tr>
+                        <td>Event Date:</td>
+                        <td>${(object.event_start_date or ' - - ').split('-')[1]+ '/' + (object.event_start_date or ' - - ').split('-')[2] + '/' + (object.event_start_date or ' - - ').split('-')[0]} at ${object.event_start_hr or ''}:${object.event_start_min or ''} ${str(object.am_pm or '').upper()}
+                              To ${object.event_end_hr or ''}:${object.event_end_min or ''} ${str(object.am_pm2 or '').upper()}</td>
+                    </tr>
+                    <tr>
+                        <td>Language:</td>
+                        <td>${(object.language_id and object.language_id.name or '')|safe}</td>
+                    </tr>
+                    <tr>
+                        <td>Appointment Type:</td>
+                        <td>${(object.appointment_type_id and object.appointment_type_id.name or '')|safe}</td>
+                    </tr>
+                    <tr>
+                        <td>Phone No:</td>
+                        <td>${(object.patient_id.phone or '')|safe}</td>
+                    </tr>
+                    <tr></tr>
+                    <tr>
+                        <td valign="top">Pickup Location:</td>
+                            <td>
+                                <hr>
+                                ${object.pickup_location_id.street or ''}
+                                <br/>${object.pickup_location_id.city or ''}
+                                <br/>${object.pickup_location_id.state_id.name or ''}
+                                <br/>${object.pickup_location_id.country_id.name or ''}
+                                <br/>${object.pickup_location_id.zip or ''}
+                                <hr>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td valign="top">Stops:</td>
+                        <td><table>
+                            % for stop in object.itinerary_lines:
+                              <tr>
+                                <td>
+                                    ${stop.dest_loc_id.street or ''}
+                                    <br/>${stop.dest_loc_id.city or ''}
+                                    <br/>${stop.dest_loc_id.state_id.name or ''}
+                                    <br/>${stop.dest_loc_id.country_id.name or ''}
+                                    <br/>${stop.dest_loc_id.zip or ''}
+                                    <hr>
+                                </td>
+                                <td valign="top">${stop.distance or 0.00}</td>
+                              </tr>
+                              <tr></tr>
+                            % endfor
+                        </table></td>
+                        <td></td>
+                    </tr>
+                    
+                </table>
+                <p>Please do not hesitate to contact us if you have any questions.</p>
+                <br/>
+                <br/>
+                <br/>
+            </div>
+            <p>${(object.user_id.name or '')|safe}<br/></p>
+            ]]>
+            </field>
+        </record>
+
+        <record id="event_allocation_translator" model="mail.template">
+            <field name="name">Scheduling of the Event(Translator)</field>
+            <field name="model_id" ref="bista_iugroup.model_event"/>
+            <field name="auto_delete" eval="False" />
+            <field name="email_from" >donotreply@iugroup.com</field>
+            <!--<field name="reply_to" >${(object.user_id.email or object.company_id.email or '')|safe}</field>-->
+<!--            <field name="email_recipients">${(object.translator_id.id)|safe},${(object.user_id.partner_id.id)|safe},${(object.scheduler_id.id)|safe},${(object.sales_representative_id.id)|safe}</field>-->
+            <field name="email_to" >${(object.translator_id.email or '')|safe}</field>
+            <field name="subject">Your Event ${object.name} is Scheduled</field>
+            <field name="body_html"><![CDATA[
+            <div style="font-family: 'Lucica Grande', Ubuntu, Arial, Verdana, sans-serif; font-size: 12px; color: rgb(34, 34, 34); background-color: #FFF; ">
+                <p>Hello ,</p>
+                <br/>
+                <p> We have Scheduled the following event for you :</p>
+                <table>
+                    <tr>
+                        <td>Event No:</td>
+                        <td>${object.name or ''}</td>
+                    </tr>
+                    <tr>
+                        <td>Event Date:</td>
+                        <td>${(object.event_start_date or ' - - ').split('-')[1]+ '/' + (object.event_start_date or ' - - ').split('-')[2] + '/' + (object.event_start_date or ' - - ').split('-')[0]} at ${object.event_start_hr}:${object.event_start_min or ''}
+                                ${str(object.am_pm or '').upper()} To ${object.event_end_hr or ''}:${object.event_end_min or ''} ${str(object.am_pm2 or '').upper()}</td>
+                    </tr>
+                    <tr>
+                        <td>Language:</td>
+                        <td>${object.language_id and object.language_id.name or ''}</td>
+                    </tr>
+                    <tr>
+                        <td>Appointment Type:</td>
+                        <td>${object.appointment_type_id and object.appointment_type_id.name or ''}</td>
+                    </tr>
+
+                    <tr>
+                        <td>Location:</td>
+                        <td>${object.location_id.street or ''}
+                        <br/>${object.location_id.city or ''}
+                        <br/>${object.location_id.state_id.name or ''}
+                        <br/>${object.location_id.country_id.name or ''}
+                        <br/>${object.location_id.zip or ''}</td>
+                    </tr>
+                </table>
+                <p>Please do not hesitate to contact us if you have any questions.</p>
+                <br/>
+                <br/>
+                <br/>
+            </div>
+            <p>${(object.user_id.name or '')|safe}<br/></p>
+            ]]>
+            </field>
+        </record>
+
+        <record id="event_allocation_customer" model="mail.template">
+            <field name="name">Scheduling of the Event(Customer)</field>
+            <field name="model_id" ref="bista_iugroup.model_event"/>
+            <field name="auto_delete" eval="False" />
+            <field name="email_from" >donotreply@iugroup.com</field>
+            <!--<field name="reply_to" >${(object.user_id.email or object.company_id.email or '')|safe}</field>-->
+<!--            <field name="email_recipients">${(object.ordering_partner_id.id)|safe}</field>-->
+            <field name="email_to" >${(object.ordering_contact_id.email or '')|safe}</field>
+            <field name="subject">Your Event ${object.name or ''} Scheduled</field>
+            <field name="body_html"><![CDATA[
+            <div style="font-family: 'Lucica Grande', Ubuntu, Arial, Verdana, sans-serif; font-size: 12px; color: rgb(34, 34, 34); background-color: #FFF; ">
+                <p>Hello ${(object.ordering_contact_id and object.ordering_contact_id.complete_name)|safe},</p>
+                <br/>
+                <p> We have Scheduled the following event for you :</p>
+                <table>
+                    <tr>
+                        <td>Event No:</td>
+                        <td>${object.name or ''}</td>
+                    </tr>
+                    <tr>
+                        <td>Event Date:</td>
+                        <td>${(object.event_start_date or ' - - ').split('-')[1]+ '/' + (object.event_start_date or ' - - ').split('-')[2] + '/' + (object.event_start_date or ' - - ').split('-')[0]} at ${object.event_start_hr}:${object.event_start_min or ''}
+                                ${str(object.am_pm or '').upper()} To ${object.event_end_hr or ''}:${object.event_end_min or ''} ${str(object.am_pm2 or '').upper()}</td>
+                    </tr>
+                    <tr>
+                        <td>Language:</td>
+                        <td>${object.language_id and object.language_id.name or ''}</td>
+                    </tr>
+                    <tr>
+                        <td>Appointment Type:</td>
+                        <td>${object.appointment_type_id and object.appointment_type_id.name or ''}</td>
+                    </tr>
+
+                    <tr>
+                        <td>Location:</td>
+                        <td>${object.location_id.street or ''}
+                        <br/>${object.location_id.city or ''}
+                        <br/>${object.location_id.state_id.name or ''}
+                        <br/>${object.location_id.country_id.name or ''}
+                        <br/>${object.location_id.zip or ''}</td>
+                    </tr>
+                </table>
+                <p>Please do not hesitate to contact us if you have any questions.</p>
+                <br/>
+                <br/>
+                <br/>
+            </div>
+            <p>${(object.user_id.name or '')|safe}<br/></p>
+             <!--<a href="https://erp.iugroup.com/cpm.html" ><h3>Click here to Download Customer Manual.</h3></a>-->
+            ]]>
+            </field>
+        </record>
+
+        <record id="confirmation_event_customer_new" model="mail.template">
+            <field name="name">Confirmation of the Event(Customer)</field>
+            <field name="model_id" ref="bista_iugroup.model_event"/>
+            <field name="auto_delete" eval="False" />
+            <field name="email_from" >donotreply@iugroup.com</field>
+            <!--<field name="reply_to" >${(object.user_id.email or object.company_id.email  or '')|safe}</field>-->
+<!--            <field name="email_recipients">${(object.ordering_partner_id.id)|safe}}</field>-->
+            <field name="email_to" >${(object.ordering_contact_id.email)|safe}</field>
+            <field name="subject">Event ${(object.name or '')|safe} Confirmation Email</field>
+            <field name="body_html"><![CDATA[
+                <p> Dear ${(object.ordering_contact_id and object.ordering_contact_id.complete_name or '')}, </p>
+                <p>Your Event has been confirmed.</p>
+                <table>
+                    <tr>
+                        <td>Event No:</td>
+                        <td>${object.name or ''}</td>
+                    </tr>
+                    <tr>
+                        <td>Event Date:</td>
+                        <td>${(object.event_start_date or ' - - ').split('-')[1]+ '/' + (object.event_start_date or ' - - ').split('-')[2] + '/' + (object.event_start_date or ' - - ').split('-')[0]} at ${object.event_start_hr}:${object.event_start_min or ''}
+                                ${str(object.am_pm or '').upper()} To ${object.event_end_hr or ''}:${object.event_end_min or ''} ${str(object.am_pm2 or '').upper()}</td>
+                    </tr>
+                    <tr>
+                        <td>Language:</td>
+                        <td>${object.language_id and object.language_id.name or ''}</td>
+                    </tr>
+                    <tr>
+                        <td>Appointment Type:</td>
+                        <td>${object.appointment_type_id and object.appointment_type_id.name or ''}</td>
+                    </tr>
+
+                    <tr>
+                        <td>Location:</td>
+                        <td>${object.location_id.street or ''}
+                        <br/>${object.location_id.city or ''}
+                        <br/>${object.location_id.state_id.name or ''}
+                        <br/>${object.location_id.country_id.name or ''}
+                        <br/>${object.location_id.zip or ''}</td>
+                    </tr>
+                </table>
+                <p>Please do not hesitate to contact us if you have any questions.</p>
+                <br/>
+                <br/>
+                <br/>
+                <p>${(object.scheduler_id.name or '')|safe}<br/></p>
+                 <!--<a href="https://erp.iugroup.com/cpm.html" ><h3>Click here to Download Customer Manual.</h3></a>-->
+                ]]>
+            </field>
+        </record>
+        
+        <record id="confirmation_event_interpreter" model="mail.template">
+            <field name="name">Confirmation of the Event(Interpreter)</field>
+            <field name="model_id" ref="bista_iugroup.model_event"/>
+            <field name="auto_delete" eval="False" />
+            <field name="email_from" >donotreply@iugroup.com</field>
+            <!--<field name="reply_to" >${(object.user_id.email or object.company_id.email )|safe}</field>-->
+<!--            <field name="email_recipients">${(object.interpreter_id.id)|safe},${(object.user_id.partner_id.id)|safe},${(object.scheduler_id.id)|safe},${(object.sales_representative_id.id)|safe}</field>-->
+            <field name="email_to" >${(object.all_interpreter_email or '')|safe}</field>
+            <field name="subject">Event ${(object.name or '')|safe} Confirmation Email</field>
+            <field name="body_html"><![CDATA[
+                <p> Dear , </p>
+                <p> We confirm that you will be attending the following event:</p>
+                <table>
+                    <tr>
+                        <td>Event No:</td>
+                        <td>${object.name or ''}</td>
+                    </tr>
+                    <tr>
+                        <td>Event Date:</td>
+                        <td>${(object.event_start_date or ' - - ').split('-')[1]+ '/' + (object.event_start_date or ' - - ').split('-')[2] + '/' + (object.event_start_date or ' - - ').split('-')[0]} at ${object.event_start_hr}:${object.event_start_min or ''}
+                                ${str(object.am_pm or '').upper()} To ${object.event_end_hr or ''}:${object.event_end_min or ''} ${str(object.am_pm2 or '').upper()}</td>
+                    </tr>
+                    <tr>
+                        <td>Language:</td>
+                        <td>${object.language_id and object.language_id.name or ''}</td>
+                    </tr>
+                    <tr>
+                        <td>Appointment Type:</td>
+                        <td>${object.appointment_type_id and object.appointment_type_id.name or ''}</td>
+                    </tr>
+
+                    <tr>
+                        <td>Location:</td>
+                        <td>${object.location_id.street or ''}
+                        <br/>${object.location_id.city or ''}
+                        <br/>${object.location_id.state_id.name or ''}
+                        <br/>${object.location_id.country_id.name or ''}
+                        <br/>${object.location_id.zip or ''}</td>
+                    </tr>
+                    <tr>
+                        <td>Note:</td>
+                        <td>${object.interpreter_note or ''}</td>
+                    </tr>
+                </table>
+                <p>Please do not hesitate to contact us if you have any questions.</p>
+                <br/>
+                <br/>
+                <br/>
+                <p>${(object.user_id.name or '')|safe}<br/></p>
+                <!--<a href="https://erp.iugroup.com/ipm.html" ><h3>Click here to Download Interpreter Manual.</h3></a>-->
+                ]]>
+            </field>
+        </record>
+
+        <record id="confirmation_event_transporter" model="mail.template">
+            <field name="name">Confirmation of the Event(Transporter)</field>
+            <field name="model_id" ref="bista_iugroup.model_event"/>
+            <field name="auto_delete" eval="False" />
+            <field name="email_from" >donotreply@iugroup.com</field>
+            <field name="reply_to" >${(object.user_id.email or object.company_id.email )|safe}</field>
+<!--            <field name="email_recipients">${(object.transporter_id.id)|safe},${(object.user_id.partner_id.id)|safe},${(object.scheduler_id.id)|safe},${(object.sales_representative_id.id)|safe}</field>-->
+            <field name="email_to" >${(object.transporter_id.email or '')|safe}</field>
+            <field name="subject">Event ${(object.name or '')|safe} Confirmation Email</field>
+            <field name="body_html"><![CDATA[
+                <p> Dear , </p>
+                <p> We confirm that you will be attending the following event:</p>
+                <table>
+                    <tr>
+                        <td>Event No:</td>
+                        <td>${object.name or ''}</td>
+                    </tr>
+                    <tr>
+                        <td>Event Date:</td>
+                        <td>${(object.event_start_date or ' - - ').split('-')[1]+ '/' + (object.event_start_date or ' - - ').split('-')[2] + '/' + (object.event_start_date or ' - - ').split('-')[0]} at ${object.event_start_hr}:${object.event_start_min or ''}
+                                ${str(object.am_pm or '').upper()} To ${object.event_end_hr or ''}:${object.event_end_min or ''} ${str(object.am_pm2 or '').upper()}</td>
+                    </tr>
+                    <tr>
+                        <td>Language:</td>
+                        <td>${object.language_id and object.language_id.name or ''}</td>
+                    </tr>
+                    <tr>
+                        <td>Appointment Type:</td>
+                        <td>${object.appointment_type_id and object.appointment_type_id.name or ''}</td>
+                    </tr>
+
+                    <tr>
+                        <td>Phone No:</td>
+                        <td>${(object.patient_id.phone or '')|safe}</td>
+                    </tr>
+                    <tr></tr>
+                    <tr>
+                        <td valign="top">Pickup Location:</td>
+                            <td>
+                                <hr>
+                                ${object.pickup_location_id.street or ''}
+                                <br/>${object.pickup_location_id.city or ''}
+                                <br/>${object.pickup_location_id.state_id.name or ''}
+                                <br/>${object.pickup_location_id.country_id.name or ''}
+                                <br/>${object.pickup_location_id.zip or ''}
+                                <hr>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td valign="top">Stops:</td>
+                        <td><table>
+                            % for stop in object.itinerary_lines:
+                              <tr>
+                                <td>
+                                    ${stop.dest_loc_id.street or ''}
+                                    <br/>${stop.dest_loc_id.city or ''}
+                                    <br/>${stop.dest_loc_id.state_id.name or ''}
+                                    <br/>${stop.dest_loc_id.country_id.name or ''}
+                                    <br/>${stop.dest_loc_id.zip or ''}
+                                    <hr>
+                                </td>
+                                <td valign="top">${stop.distance or 0.00}</td>
+                              </tr>
+                              <tr></tr>
+                            % endfor
+                        </table></td>
+                        <td></td>
+                    </tr>
+                    
+                </table>
+                <p>Please do not hesitate to contact us if you have any questions.</p>
+                <br/>
+                <br/>
+                <br/>
+                <p>${(object.user_id.name or '')|safe}<br/></p>
+                ]]>
+            </field>
+        </record>
+        
+        <record id="confirmation_event_translator" model="mail.template">
+            <field name="name">Confirmation of the Event(Translator)</field>
+            <field name="model_id" ref="bista_iugroup.model_event"/>
+            <field name="auto_delete" eval="False" />
+            <field name="email_from" >donotreply@iugroup.com</field>
+            <!--<field name="reply_to" >${(object.user_id.email or object.company_id.email  or '')|safe}</field>-->
+<!--            <field name="email_recipients">${(object.translator_id.id)|safe},${(object.user_id.partner_id.id)|safe},${(object.scheduler_id.id)|safe},${(object.sales_representative_id.id)|safe}</field>-->
+            <field name="email_to" >${(object.translator_id.email or '')|safe}</field>
+            <field name="subject">Event ${(object.name or '')|safe} Confirmation Email</field>
+            <field name="body_html"><![CDATA[
+                <p> Dear , </p>
+                <p> We confirm that you will be attending the following event:</p>
+                <table>
+                    <tr>
+                        <td>Event No:</td>
+                        <td>${object.name or ''}</td>
+                    </tr>
+                    <tr>
+                        <td>Event Date:</td>
+                        <td>${(object.event_start_date or ' - - ').split('-')[1]+ '/' + (object.event_start_date or ' - - ').split('-')[2] + '/' + (object.event_start_date or ' - - ').split('-')[0]} at ${object.event_start_hr}:${object.event_start_min or ''}
+                                ${str(object.am_pm or '').upper()} To ${object.event_end_hr or ''}:${object.event_end_min or ''} ${str(object.am_pm2 or '').upper()}</td>
+                    </tr>
+                    <tr>
+                        <td>Language:</td>
+                        <td>${object.language_id and object.language_id.name or ''}</td>
+                    </tr>
+                    <tr>
+                        <td>Appointment Type:</td>
+                        <td>${object.appointment_type_id and object.appointment_type_id.name or ''}</td>
+                    </tr>
+
+                    <tr>
+                        <td>Location:</td>
+                        <td>${object.location_id.street or ''}
+                        <br/>${object.location_id.city or ''}
+                        <br/>${object.location_id.state_id.name or ''}
+                        <br/>${object.location_id.country_id.name or ''}
+                        <br/>${object.location_id.zip or ''}</td>
+                    </tr>
+                </table>
+                <p>Please do not hesitate to contact us if you have any questions.</p>
+                <br/>
+                <br/>
+                <br/>
+                <p>${(object.user_id.name or '')|safe}<br/></p>
+                ]]>
+            </field>
+        </record>
+
+        <record id="confirmation_event_customer" model="mail.template">
+            <field name="name">New Contract(Event Confirmation Customer)</field>
+            <field name="model_id" ref="bista_iugroup.model_event"/>
+            <field name="auto_delete" eval="False" />
+            <field name="email_from" >donotreply@iugroup.com</field>
+            <!--<field name="reply_to" >${(object.user_id.email or object.company_id.email  or '')|safe}</field>-->
+<!--            <field name="email_recipients">${(object.ordering_partner_id.id)|safe}</field>-->
+            <field name="email_to" >${(object.ordering_contact_id.email)|safe}</field>
+            <field name="subject">Fee Note for Interpreter Services – Approval/Signature Needed</field>
+            <field name="body_html"><![CDATA[
+                <p> Dear ${object.ordering_contact_id.name or ''}, </p>
+
+                <p> We have received an order to provide an interpreter for the following event. This automated form is designed to give you full disclosure of all potential fees, to confirm the booking and to record formally the details of the appointment. If you would please check the details and then fax it back to us with signature to show agreement with the terms. We  will be pleased to book an interpreter for this event.</p>
+
+                <table border="1">
+                    <tr>
+                        <td>Event No:</td>
+                        <td>${object.name or ''}</td>
+                    </tr>
+                    <tr>
+                        <td>Event Date:</td>
+                        <td>${(object.event_start_date or ' - - ').split('-')[1]+ '/' + (object.event_start_date or ' - - ').split('-')[2] + '/' + (object.event_start_date or ' - - ').split('-')[0]} at ${object.event_start_hr}:${object.event_start_min or ''}
+                                ${str(object.am_pm or '').upper()} To ${object.event_end_hr or ''}:${object.event_end_min or ''} ${str(object.am_pm2 or '').upper()}</td>
+                    </tr>
+                    <tr>
+                        <td>Language:</td>
+                        <td>${object.language_id and object.language_id.name or ''}</td>
+                    </tr>
+                    <tr>
+                        <td>Appointment Type:</td>
+                        <td>${object.appointment_type_id and object.appointment_type_id.name or ''}</td>
+                    </tr>
+
+                    <tr>
+                        <td>Location:</td>
+                        <td>${object.location_id.street or ''}
+                        <br/>${object.location_id.city or ''}
+                        <br/>${object.location_id.state_id.name or ''}
+                        <br/>${object.location_id.country_id.name or ''}
+                        <br/>${object.location_id.zip or ''}</td>
+                    </tr>
+                </table>
+
+                <p>Terms for this appointment: </br> </p>
+                <p>Our minimum fee is $${(object.get_rate_info()).get('min_fee')}. This covers the first ${(object.get_rate_info()).get('base_hour')} hours at the rate of $${(object.get_rate_info()).get('per_hour')} per hour.  If there is any additional time beyond it will be billed at $${(object.get_rate_info()).get('qtr_hour')} per 15 minutes or part thereof.  IF THE APPOINTMENT IS CANCELLED WITHIN 24 HOURS FROM ITS OCCURRENCE, IT WOULD INCUR A FEE.  Actual miles driven will be billed at $${object.partner_id.rate or '0.00'} per mile if the total round trip mileage exceeds 50 miles.</p>
+                <p> Please fax this form back to (800) 726-9822.  Thank you.</p>
+                <br/>
+                <br/>
+                 <p>Signature:  </p>                                                                                       <p>Date:</p>
+                <br/>
+                 <!--<a href="https://erp.iugroup.com/cpm.html" ><h3>Click here to Download Customer Manual.</h3></a>-->
+                ]]>
+            </field>
+        </record>
+        <!--language_group_rate-->
+        <record id="cancellation_event" model="mail.template">
+            <field name="name">Cancellation Event</field>
+            <field name="auto_delete" eval="False"/>
+            <field name="model_id" ref="bista_iugroup.model_event"/>
+            <field name="email_from" >donotreply@iugroup.com</field>
+            <!--<field name="reply_to" >${(object.user_id.email or object.company_id.email  or '')|safe}</field>-->
+<!--            <field name="email_recipients">${(object.ordering_partner_id.id)|safe},${(object.interpreter_id.id)|safe},${(object.transporter_id.id)|safe},${(object.translator_id.id)|safe},${(object.user_id.partner_id.id)|safe},
+                ${(object.scheduler_id.id)|safe},${(object.sales_representative_id.id)|safe}</field>-->
+            <field name="email_to" >${(object.ordering_contact_id.email)|safe},${(object.transporter_id.email or '')|safe},${(object.translator_id.email or '')|safe},${(object.all_interpreter_email or '')|safe}</field>
+            <field name="subject">Event ${(object.name or '')|safe} Cancellation Mail</field>
+            <field name="body_html"><![CDATA[
+                <table>
+                    <tr>
+                        <td>RE:</td>
+                        <td>${(object.ordering_contact_id.name or '')|safe}</td>
+                    </tr>
+                    <tr>
+                        <td>DOB:</td>
+                        <td></td>
+                    </tr>
+                </table>
+                <p> Dear ${object.ordering_contact_id.name or ''}, </p>
+
+                <p>We confirm the CANCELLATION of the interpreter for the following event:</p>
+                <table>
+                    <tr>
+                        <td>Event No:</td>
+                        <td>${object.name or ''}</td>
+                    </tr>
+                    <tr>
+                        <td>Event Date:</td>
+                        <td>${(object.event_start_date or ' - - ').split('-')[1]+ '/' + (object.event_start_date or ' - - ').split('-')[2] + '/' + (object.event_start_date or ' - - ').split('-')[0]} at ${object.event_start_hr}:${object.event_start_min or ''}
+                                ${str(object.am_pm or '').upper()} To ${object.event_end_hr or ''}:${object.event_end_min or ''} ${str(object.am_pm2 or '').upper()}</td>
+                    </tr>
+                    <tr>
+                        <td>Language:</td>
+                        <td>${object.language_id and object.language_id.name or ''}</td>
+                    </tr>
+                    <tr>
+                        <td>Appointment Type:</td>
+                        <td>${object.appointment_type_id and object.appointment_type_id.name or ''}</td>
+                    </tr>
+                    <tr>
+                        <td>Location:</td>
+                        <td>${object.location_id.street or ''}
+                        <br/>${object.location_id.city or ''}
+                        <br/>${object.location_id.state_id.name or ''}
+                        <br/>${object.location_id.country_id.name or ''}
+                        <br/>${object.location_id.zip or ''}</td>
+                    </tr>
+                </table>
+                <p>Please do not hesitate to contact us if you have any questions.</p>
+                <br/>
+                <br/>
+                <p>${(object.user_id.name or '')|safe}<br/></p>
+                <!--<a href="https://erp.iugroup.com/ipm.html" ><h3>Click here to Download Interpreter Manual.</h3></a>-->
+                <!--<br/>-->
+                 <!--<a href="https://erp.iugroup.com/cpm.html" ><h3>Click here to Download Customer Manual.</h3></a>-->
+                ]]>
+            </field>
+        </record>
+        
+        <record id="send_translation_estimate_event" model="mail.template">
+            <field name="name">Translation Estimation</field>
+            <field name="auto_delete" eval="False" />
+            <field name="model_id" ref="bista_iugroup.model_event"/>
+            <field name="email_from" >donotreply@iugroup.com</field>
+            <!--<field name="reply_to" >${(object.user_id.email or object.company_id.email  or '')|safe}</field>-->
+<!--            <field name="email_recipients">${(object.ordering_partner_id.id)|safe}</field>-->
+            <field name="email_to" >${(object.ordering_contact_id.email or '')|safe}</field>
+            <field name="subject">Your Event ${object.name or ''} confirmed</field>
+            <field name="body_html"><![CDATA[
+                <p>Hello ${object.ordering_contact_id.name or ''},</p>
+                <p> We have estimated cost for translation of your documents.</p>
+                <p> Your total cost is ${object.total_cost}</p>
+                <p>For any further information please contact our event department.</p>
+                <p>Thank you !</p>
+                <p>Best regards</p>]]>
+            </field>
+        </record>
+        
+        <record id="send_interpreter_job_offered_event" model="mail.template">
+            <field name="name">Interpreter Job Offered</field>
+            <field name="auto_delete" eval="False" />
+            <field name="model_id" ref="bista_iugroup.model_select_interpreter_line"/>
+            <field name="email_from" >donotreply@iugroup.com</field>
+            <!--<field name="reply_to" >${(object.event_id.user_id.email or object.event_id.company_id.email or object.company_id.email or '' )|safe}</field>-->
+<!--            <field name="email_recipients">${(object.event_id.interpreter_id.id)|safe},${(object.event_id.user_id.ordering_partner_id.id)|safe},${(object.event_id.scheduler_id.id)|safe},${(object.event_id.sales_representative_id.id)|safe}</field>-->
+            <field name="email_to" >${(object.interpreter_id.email or '')|safe}</field>
+            <field name="subject">Job Offered</field>
+            <field name="body_html"><![CDATA[
+                <p>Hello,</p>
+                <p> We have offered you a job</p>
+                <p> If you agree to accept this offer, Please Login to Portal <a href="https://erp.iugroup.com/" ><h3>Click here to Login in IUX</h3></a> and Accept this Job.</p>
+                <p></p>
+                <table>
+                    <tr>
+                        <td>Event No:</td>
+                        <td>${object.event_id.name or ''}</td>
+                    </tr>
+                    <tr>
+                        <td>Event Date:</td>
+                        <td>${(object.event_id.event_start_date or ' - - ').split('-')[1]+ '/' + (object.event_id.event_start_date or ' - - ').split('-')[2] + '/' + (object.event_id.event_start_date or ' - - ').split('-')[0]} at ${object.event_id.event_start_hr}:${object.event_id.event_start_min or ''}
+                                ${str(object.event_id.am_pm or '').upper()} To ${object.event_id.event_end_hr or ''}:${object.event_id.event_end_min or ''} ${str(object.event_id.am_pm2 or '').upper()}</td>
+                    </tr>
+                    <tr>
+                        <td>Language:</td>
+                        <td>${object.event_id.language_id and object.event_id.language_id.name or ''}</td>
+                    </tr>
+                    <tr>
+                        <td>Appointment Type:</td>
+                        <td>${object.event_id.appointment_type_id and object.event_id.appointment_type_id.name or ''}</td>
+                    </tr>
+
+                    <tr>
+                        <td>Location:</td>
+                        <td>${object.event_id.location_id.street or ''}
+                        <br/>${object.event_id.location_id.city or ''}
+                        <br/>${object.event_id.location_id.state_id.name or ''}
+                        <br/>${object.event_id.location_id.country_id.name or ''}
+                        <br/>${object.event_id.location_id.zip or ''}</td>
+                    </tr>
+                    <tr>
+                        <td>Note:</td>
+                        <td>${object.event_id.interpreter_note or ''}</td>
+                    </tr>
+                </table>
+                <p>Please do not hesitate to contact us if you have any questions.</p>
+                <br/>
+                <br/>
+                <p>${(object.event_id.scheduler_id.name or '')|safe}<br/>
+                </p>
+                <!--<a href="https://erp.iugroup.com/ipm.html" ><h3>Click here to Download Interpreter Manual.</h3></a>-->
+                ]]>
+            </field>
+        </record>
+        
+        <record id="send_translator_job_offered_event" model="mail.template">
+            <field name="name">Translator Job Offered</field>
+            <field name="auto_delete" eval="False" />
+            <field name="model_id" ref="bista_iugroup.model_select_translator_line"/>
+            <field name="email_from" >donotreply@iugroup.com</field>
+            <!--<field name="reply_to" >${(object.event_id.user_id.email or object.event_id.company_id.email or object.company_id.email or '' )|safe}</field>-->
+<!--            <field name="email_recipients">${(object.event_id.interpreter_id.id)|safe},${(object.event_id.user_id.ordering_partner_id.id)|safe},${(object.event_id.scheduler_id.id)|safe},${(object.event_id.sales_representative_id.id)|safe}</field>-->
+            <field name="email_to" >${(object.translator_id.email or '')|safe}</field>
+            <field name="subject">Job Offered</field>
+            <field name="body_html"><![CDATA[
+                <p>Hello,</p>
+                <p> We have offered you a job</p>
+                <table>
+                    <tr>
+                        <td>Event No:</td>
+                        <td>${object.event_id.name or ''}</td>
+                    </tr>
+                    <tr>
+                        <td>Event Date:</td>
+                        <td>${(object.event_id.event_start_date or ' - - ').split('-')[1]+ '/' + (object.event_id.event_start_date or ' - - ').split('-')[2] + '/' + (object.event_id.event_start_date or ' - - ').split('-')[0]} at ${object.event_id.event_start_hr}:${object.event_id.event_start_min or ''}
+                                ${str(object.event_id.am_pm or '').upper()} To ${object.event_id.event_end_hr or ''}:${object.event_id.event_end_min or ''} ${str(object.event_id.am_pm2 or '').upper()}</td>
+                    </tr>
+                    <tr>
+                        <td>Language:</td>
+                        <td>${object.event_id.language_id and object.event_id.language_id.name or ''}</td>
+                    </tr>
+                    <tr>
+                        <td>Appointment Type:</td>
+                        <td>${object.event_id.appointment_type_id and object.event_id.appointment_type_id.name or ''}</td>
+                    </tr>
+                    <tr>
+                        <td>Location:</td>
+                        <td>${object.event_id.location_id.street or ''}
+                        <br/>${object.event_id.location_id.city or ''}
+                        <br/>${object.event_id.location_id.state_id.name or ''}
+                        <br/>${object.event_id.location_id.country_id.name or ''}
+                        <br/>${object.event_id.location_id.zip or ''}</td>
+                    </tr>
+                    <tr>
+                        <td>Note:</td>
+                        <td>${object.event_id.interpreter_note or ''}</td>
+                    </tr>
+                </table>
+                <p>Please do not hesitate to contact us if you have any questions.</p>
+                <br/>
+                <br/>
+                <p>${(object.event_id.user_id.name or '')|safe}<br/>
+                </p>
+                ]]>
+            </field>
+        </record>
+
+        <record id="reset_password_email" model="mail.template">
+            <field name="name">Reset Password</field>
+            <field name="model_id" ref="base.model_res_users"/>
+            <field name="email_from" >donotreply@iugroup.com</field>
+            <field name="reply_to"><![CDATA[${(object.company_id.name or '')|safe} <${(object.company_id.email or user.email or '')|safe}>]]></field>
+            <field name="email_to">${object.email|safe}</field>
+            <field name="subject">Reset Password</field>
+            <field name="body_html"><![CDATA[
+               Hello,
+                    <p> We have received a request to reset the password associated with this email address. If you made this request, please follow the below instructions.</p>
+                    <p><b>Click the link below to reset your password: </b></p>
+                    <p> <a href="${object.signup_url or ''}">Click Here</a></p></br>
+     				<p> If clicking the link doesn’t work, you can copy and paste the link into your browsers’ address window, or retype it there. </p></br>
+                    <p>Thank you, </p>
+                    <p>Interpreters Unlimited</p>
+               ]]>
+            </field>
+        </record>
+        
+        <!-- Email template for new users -->
+        <record id="set_password_email" model="mail.template">
+            <field name="name">IUG Portal</field>
+            <field name="model_id" ref="base.model_res_users"/>
+            <field name="email_from" >donotreply@iugroup.com</field>
+            <field name="reply_to"><![CDATA[${(object.company_id.email or '')|safe} <${(object.company_id.email or user.email or '')|safe}>]]></field>
+            <field name="email_to">${object.email|safe}</field>
+            <field name="subject"> Invitation to Activate Portal Account</field>
+            <field name="body_html">
+                <![CDATA[
+                    Hello,
+                        <p> We are sending a follow up email to let you know that we have updated our portal for your utilization here at Interpreters Unlimited.  We apologize for the confusion the initial email may have caused.  The changes are primarily on the back end, keeping up to date with the latest HIPAA requirements, with a nice refresh on the user interface.</p>
+                        <p>See details below : <br/></br></p>
+                        <p><b>Portal login URL</b>    : <a href="http://erp.iugroup.com">http://erp.iugroup.com</a> or access through <a href="http://www.interpretersunlimited.com"> http://www.interpretersunlimited.com </a></p>
+                        <p><b>Login ID</b>                :   Email ID (the email address on file with Interpreters Unlimited) </p></br>
+                        <p><b>Password</b>              :  iux@pass </p></br>
+                        <p>You may change your password by following <a href="${object.signup_url or ''}">this link</a>.</p>
+                        <p>Please see the attached manual for reference via the link below </p></br>
+                        <!--<a href="https://erp.iugroup.com/ipm.html" ><h3>Click here to Download Interpreter Manual.</h3></a><br/>-->
+                        <!--<a href="https://erp.iugroup.com/cpm.html" ><h3>Click here to Download Customer Manual.</h3></a> </br>-->
+
+                        <p If you have any questions please do not respond to this email but contact our Client Relations team at 858-866-0500 during the hours of 6am to 5pm PST./></p></br>
+                        <p>Thank you, </p></br>
+                        <p>Your team at Interpreters Unlimited</p>
+                                    ]]>
+            </field>
+        </record>
+
+<!--<td>${formatLang(object.event_start.strftime('%A,%B %d, %Y'))}</td>-->
+        
+<!--        <record id="kaiser_email" model="mail.template">
+            <field name="name">Kaiser Event</field>
+            <field name="model_id" ref="bista_iugroup.model_event"/>
+            <field name="email_from" >${(object.user_id.email or object.company_id.email )|safe}</field>
+            <field name="email_to" >${(object.ordering_partner_id.email)|safe}</field>
+            <field name="subject">Kaiser Event</field>
+            <field name="report_template" ref="report_webkit_iug.webkit_event_vos_form_iu"/>
+            <field name="report_name">${'Kaiser Event'}_${object.name or ''}</field>
+            <field name="body_html"><![CDATA[
+                <table align="left">
+                          <tr>
+                              <td align="right">Kaiser Permanente Verification of Service Form</td>
+                          <tr>
+                          <tr>
+                              <td align="right" >PFA</td>
+                          <tr>
+                          <tr>
+                              <td align="right"></td>
+                          <tr>
+              </table>
+                ]]>
+                 <td align="right"> <div style="width:80px;height:50px;border:1px solid #000;"></div></td> 
+            </field>
+        </record>-->
+        <record id="send_enter_timesheet_event" model="mail.template">
+            <field name="name">Entered Timesheet</field>
+            <field name="auto_delete" eval="False" />
+            <field name="model_id" ref="bista_iugroup.model_event"/>
+            <field name="email_from" >donotreply@iugroup.com</field>
+            <field name="email_to" >${(object.transporter_id.email or '')|safe},${(object.translator_id.email or '')|safe},${(object.view_interpreter.email or '')|safe}</field>
+            <field name="subject">Entered Timesheet for Event ${(object.name or '')|safe}</field>
+            <field name="body_html"><![CDATA[
+                <p>Hello,</p>
+                <p> Timesheet for the Event ${(object.name)|safe} is entered. Please proceed for further process.</p>
+                <br/>
+                <!--<a href="https://erp.iugroup.com/ipm.html" ><h3>Click here to Download Interpreter Manual.</h3></a>-->
+                ]]>
+            </field>
+        </record>
+        
+        <record id="event_reject_after_scheduled_interpreter" model="mail.template">
+            <field name="name">Event Rejection</field>
+            <field name="auto_delete" eval="False" />
+            <field name="model_id" ref="bista_iugroup.model_event"/>
+            <field name="email_from" >donotreply@iugroup.com</field>
+<!--            <field name="email_recipients">${(object.interpreter_id.id)|safe},${(object.user_id.partner_id.id)|safe},${(object.scheduler_id.id)|safe},
+                    ${(object.sales_representative_id.id)|safe}</field>-->
+            <field name="email_to" >${(object.scheduler_id.email)|safe}</field>
+            <field name="subject">Interpreter have cancelled the appointment for Event ${object.name}.</field>
+            <field name="body_html"><![CDATA[
+                 <div style="font-family: 'Lucica Grande', Ubuntu, Arial, Verdana, sans-serif; font-size: 12px; color: rgb(34, 34, 34); background-color: #FFF; ">
+                    <p>Hello, Interpreter have cancelled the appointment for Event ${object.name or ''}.</p>
+                    <br/>
+                    <p>Event has been reverted back to Job Offered state, please assign a new Interpreter.</p>
+                    <br/><br/><br/>
+                    <!--<a href="https://erp.iugroup.com/ipm.html" ><h3>Click here to Download Interpreter Manual.</h3></a>-->
+                </div>
+            ]]>
+            </field>
+        </record>
+        
+        <!--Email template -->
+        <record id="email_template_timesheet" model="mail.template">
+            <field name="name">Timesheet Pending Reminder</field>
+            <field name="email_from">donotreply@iugroup.com</field>
+            <field name="subject">Timesheet pending for Event ${(object.name)|safe}</field>
+            <field name="model_id" ref="bista_iugroup.model_event"/>
+            <field name="email_to" >${(object.all_interpreter_email or '')|safe}</field>
+            <field name="auto_delete" eval="True"/>
+            <field name="body_html"><![CDATA[
+                    <p>Hello,</p>
+	                <p> Your timesheet is pending, kindly fill your timesheet.</p>
+	                <p> Following is your event details.</p>
+	                <p></p>
+	                <table>
+	                    <tr>
+	                        <td>Event No:</td>
+	                        <td>${object.name or ''}</td>
+	                    </tr>
+	                    <tr>
+	                        <td>Event Date:</td>
+	                        <td>${(object.event_start_date or ' - - ').split('-')[1]+ '/' + (object.event_start_date or ' - - ').split('-')[2] + '/' + (object.event_start_date or ' - - ').split('-')[0]} at ${object.event_start_hr}:${object.event_start_min or ''}
+	                                ${str(object.am_pm or '').upper()} To ${object.event_end_hr or ''}:${object.event_end_min or ''} ${str(object.am_pm2 or '').upper()}</td>
+	                    </tr>
+	                    <tr>
+	                        <td>Language:</td>
+	                        <td>${object.language_id and object.language_id.name or ''}</td>
+	                    </tr>
+	                    <tr>
+	                        <td>Appointment Type:</td>
+	                        <td>${object.appointment_type_id and object.appointment_type_id.name or ''}</td>
+	                    </tr>
+	
+	                    <tr>
+	                        <td>Location:</td>
+	                        <td>${object.location_id.street or ''}
+	                        <br/>${object.location_id.city or ''}
+	                        <br/>${object.location_id.state_id.name or ''}
+	                        <br/>${object.location_id.country_id.name or ''}
+	                        <br/>${object.location_id.zip or ''}</td>
+	                    </tr>
+	                    <tr>
+	                        <td>Note:</td>
+	                        <td>${object.interpreter_note or ''}</td>
+	                    </tr>
+	                </table>
+	                
+	                <br/>
+	                <br/>
+	                
+            ]]></field>
+        </record>
+        <!-- Template for current day's event -->
+        <record id="current_day_event_analysis_template" model="mail.template">
+            <field name="name">Morning Event Analysis</field>
+            <field name="email_from">donotreply@iugroup.com</field>
+            <field name="subject">Good Morning:Event Analysis Report</field>
+            <field name="model_id" ref="bista_iugroup.model_iug_current_day_event_analysis"/>
+            <field name="email_to">dummy@example.com</field>
+            <field name="auto_delete" eval="True"/>
+            <field name="body_html">
+            <![CDATA[
+            <div style="font-family: 'Lucica Grande', Ubuntu, Arial, Verdana, sans-serif; font-size: 12px; color: rgb(34, 34, 34); background-color: #FFF; ">
+             <p> Good Morning Everyone, </p>
+                <p> Following is the start of the day  event analysis report for the following companies:</p>
+            </div>
+              <table>
+               <tr>
+                        <td>
+                        <table border="5" BORDERCOLOR=BLUE width="400" height="200">
+                        <tr>
+         <th> <font color="#CC7A29" size = "3">State</font></th>
+         % for data in object.event_data_line_ids:
+          % if data.company_name == '5':
+        <th><font color="#CC7A29" size="3">ACD</font></th>
+        % endif
+        % if data.company_name == '6':
+        <th><font color="#CC7A29" size="3">IUG-SD</font></th>
+        % endif
+        % if data.company_name == '4':
+        <th><font color="#CC7A29" size="3">ASIT</font></th>
+        % endif
+               %endfor
+         </tr>
+      <tr>
+         <td><b><font color="green">Unscheduled</b></font></td>
+                            % for data in object.event_data_line_ids:
+                                <td><b><font color="green">${data.draft or '0'}</font></b></td>
+                            % endfor
+                        </tr>
+                        <tr>
+                        <td><b><font color="green">Scheduled</font></b></td>
+                         % for data in object.event_data_line_ids:
+                                <td><b><font color="green">${data.scheduled or '0'}</font></b></td>
+                            % endfor
+                        </tr>
+
+
+                        <tr>
+                        <td><b><font color="green">Unauthorize</font></b></td>
+                        % for data in object.event_data_line_ids:
+                          <td><b><font color="green">${data.unauthorize or '0'}</font></b></td>
+                         % endfor
+                        </tr>
+
+                        <tr>
+                        <td><b><font color="green">Confirmed</font></b></td>
+                        % for data in object.event_data_line_ids:
+                          <td><b><font color="green">${data.confirmed or '0'}</font></b></td>
+                         % endfor
+                        </tr>
+
+                        <tr>
+                        <td><b><font color="green">Unbilled</font></b></td>
+                        % for data in object.event_data_line_ids:
+                          <td><b><font color="green">${data.unbilled or '0'}</font></b></td>
+                         % endfor
+                        </tr>
+
+                         <tr>
+                        <td><b><font color="green">Invoiced</font></b></td>
+                        % for data in object.event_data_line_ids:
+                          <td><b><font color="green">${data.invoiced or '0'}<font></b></td>
+                         % endfor
+                        </tr>
+
+                        <tr>
+                        <td><b><font color="green">Allocated</font></b></td>
+                        % for data in object.event_data_line_ids:
+                          <td><b><font color="green">${data.allocated or '0'}</font></b></td>
+                         % endfor
+                        </tr>
+
+                        <tr>
+                        <td><b><font color="green">Cancel</font></b></td>
+                        % for data in object.event_data_line_ids:
+                          <td><b><font color="green">${data.cancel or '0'}</font></b></td>
+                         % endfor
+                        </tr>
+
+                        <tr>
+                        <td><b><font color="green">Done</font></b></td>
+                        % for data in object.event_data_line_ids:
+                          <td><b><font color="green">${data.done or '0'}</font></b></td>
+                         % endfor
+                        </tr>
+
+                        <tr>
+                        <td><b><font color="green">Total</font></b></td>
+                        % for data in object.event_data_line_ids:
+                          <td><b><font color="green">${data.total or '0' }</font></b></td>
+                         % endfor
+                        </tr>
+                        </table></td>
+                        <td></td>
+                    </tr>
+                  <table>
+            ]]></field>
+        </record>
+
+        <record id="current_day_evening_event_analysis_template" model="mail.template">
+            <field name="name">Evening Event Analysis</field>
+            <field name="email_from">donotreply@iugroup.com</field>
+            <field name="subject">EOD:Event Analysis Report</field>
+            <field name="model_id" ref="bista_iugroup.model_iug_current_day_event_analysis"/>
+            <field name="email_to">dummy@example.com</field>
+            <field name="auto_delete" eval="True"/>
+            <field name="body_html">
+            <![CDATA[
+            <div style="font-family: 'Lucica Grande', Ubuntu, Arial, Verdana, sans-serif; font-size: 12px; color: rgb(34, 34, 34); background-color: #FFF; ">
+             <p> Good Evening Everyone, </p>
+                <p> Following is the end of the day event analysis report for the following companies:</p>
+            </div>
+              <table>
+               <tr>
+                        <td><table border="5" BORDERCOLOR=BLUE width="400" height="200">
+                        <tr>
+         <th> <font color="#CC7A29" size = "3">State</font></th>
+         % for data in object.event_data_line_ids:
+          % if data.company_name == '5':
+        <th><font color="#CC7A29" size="3">ACD</font></th>
+        % endif
+        % if data.company_name == '6':
+        <th><font color="#CC7A29" size="3">IUG-SD</font></th>
+        % endif
+        % if data.company_name == '4':
+        <th><font color="#CC7A29" size="3">ASIT</font></th>
+        % endif
+               %endfor
+         </tr>
+      <tr>
+         <td><b><font color="green">Unscheduled</b></font></td>
+                            % for data in object.event_data_line_ids:
+                                <td><b><font color="green">${data.draft or '0'}</font></b></td>
+                            % endfor
+                        </tr>
+                        <tr>
+                        <td><b><font color="green">Scheduled</font></b></td>
+                         % for data in object.event_data_line_ids:
+                                <td><b><font color="green">${data.scheduled or '0'}</font></b></td>
+                            % endfor
+                        </tr>
+
+
+                        <tr>
+                        <td><b><font color="green">Unauthorize</font></b></td>
+                        % for data in object.event_data_line_ids:
+                          <td><b><font color="green">${data.unauthorize or '0'}</font></b></td>
+                         % endfor
+                        </tr>
+
+                        <tr>
+                        <td><b><font color="green">Confirmed</font></b></td>
+                        % for data in object.event_data_line_ids:
+                          <td><b><font color="green">${data.confirmed or '0'}</font></b></td>
+                         % endfor
+                        </tr>
+
+                        <tr>
+                        <td><b><font color="green">Unbilled</font></b></td>
+                        % for data in object.event_data_line_ids:
+                          <td><b><font color="green">${data.unbilled or '0'}</font></b></td>
+                         % endfor
+                        </tr>
+
+                         <tr>
+                        <td><b><font color="green">Invoiced</font></b></td>
+                        % for data in object.event_data_line_ids:
+                          <td><b><font color="green">${data.invoiced or '0'}<font></b></td>
+                         % endfor
+                        </tr>
+
+                        <tr>
+                        <td><b><font color="green">Allocated</font></b></td>
+                        % for data in object.event_data_line_ids:
+                          <td><b><font color="green">${data.allocated or '0'}</font></b></td>
+                         % endfor
+                        </tr>
+
+                        <tr>
+                        <td><b><font color="green">Cancel</font></b></td>
+                        % for data in object.event_data_line_ids:
+                          <td><b><font color="green">${data.cancel or '0'}</font></b></td>
+                         % endfor
+                        </tr>
+
+                        <tr>
+                        <td><b><font color="green">Done</font></b></td>
+                        % for data in object.event_data_line_ids:
+                          <td><b><font color="green">${data.done or '0'}</font></b></td>
+                         % endfor
+                        </tr>
+
+                        <tr>
+                        <td><b><font color="green">Total</font></b></td>
+                        % for data in object.event_data_line_ids:
+                          <td><b><font color="green">${data.total or '0' }</font></b></td>
+                         % endfor
+                        </tr>
+                        </table></td>
+                        <td></td>
+                    </tr>
+                  <table>
+            ]]></field>
+        </record>
+         <record id="monthly_event_analysis_template" model="mail.template">
+            <field name="name">Monthly Event Analysis</field>
+            <field name="email_from">donotreply@iugroup.com</field>
+            <field name="subject">Monthly Profitability Report </field>
+            <field name="model_id" ref="bista_iugroup.model_iug_current_day_event_analysis"/>
+            <field name="email_to">dummy@example.com</field>
+            <field name="auto_delete" eval="True"/>
+            <field name="body_html">
+            <![CDATA[
+            <div style="font-family: 'Lucica Grande', Ubuntu, Arial, Verdana, sans-serif; font-size: 12px; color: rgb(34, 34, 34); background-color: #FFF; ">
+             <p> Hello Everyone, </p>
+                <p> Following is the PFA of monthly profitability report.</p>
+            </div>
+            ]]></field>
+         </record>
+         <!---->
+         
+          <record id="event_notify_scheduler_acd" model="mail.template">
+            <field name="name">Event notification to scheduler(ACD)</field>
+            <field name="email_from">donotreply@iugroup.com</field>
+            <field name="model_id" ref="bista_iugroup.model_select_interpreter_line" />
+            <field name="email_to" >${(object.event_id.scheduler_id.email or '')|safe}</field>
+            <field name="auto_delete" eval="True"/>
+            <field name="subject"> Event ${object.event_id.name or ''} is Scheduled</field>
+            <field name="body_html"><![CDATA[
+            <div style="font-family: 'Lucica Grande', Ubuntu, Arial, Verdana, sans-serif; font-size: 12px; color: rgb(34, 34, 34); background-color: #FFF; ">
+                <p>Hello,</p>
+                <br/>
+                <p>Following are the details of scheduled event:</p>
+                <table>
+                    <tr>
+                        <td>Event No:</td>
+                        <td>${object.event_id.name or ''}</td>
+                    </tr>
+                    <tr>
+                        <td>Event Date:</td>
+                        <td>${(object.event_id.event_start_date or ' - - ').split('-')[1]+ '/' + (object.event_id.event_start_date or ' - - ').split('-')[2] + '/' + (object.event_id.event_start_date or ' - - ').split('-')[0]} at ${object.event_id.event_start_hr}:${object.event_id.event_start_min or ''}
+                                ${str(object.event_id.am_pm or '').upper()} To ${object.event_id.event_end_hr or ''}:${object.event_id.event_end_min or ''} ${str(object.event_id.am_pm2 or '').upper()}</td>
+                    </tr>
+                    <tr>
+                        <td>Language:</td>
+                        <td>${object.event_id.language_id and object.event_id.language_id.name or ''}</td>
+                    </tr>
+                    <tr>
+                        <td>Appointment Type:</td>
+                        <td>${object.event_id.appointment_type_id and object.event_id.appointment_type_id.name or ''}</td>
+                    </tr>
+                    <tr>
+                        <td>Location:</td>
+                        <td>${object.event_id.location_id.street or ''}
+                        <br/>${object.event_id.location_id.city or ''}
+                        <br/>${object.event_id.location_id.state_id.name or ''}
+                        <br/>${object.event_id.location_id.country_id.name or ''}
+                        <br/>${object.event_id.location_id.zip or ''}</td>
+                    </tr>
+                    
+                </table>
+                <p>Please do not hesitate to contact us if you have any questions.</p>
+                <br/><br/><br/>
+            </div>
+            ]]>
+            </field>
+         </record>
+    </data>
+</openerp>

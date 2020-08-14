@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="event_notes_wizard" model="ir.ui.view">
+            <field name="name">Event Note</field>
+            <field name="model">event.notes</field>
+            <field name="arch" type="xml">
+                <form string="Event Notes">
+                    <group colspan="4">
+                        <newline/>
+                        <field name="event_fee_note" invisible="context.get('order_note1',False)" filename="name"/>
+                        <field name="event_order_note" invisible="context.get('fee_note1',False)" filename="name"/>
+                        <field name="name" invisible="1"/>
+                        <field name="company_id" invisible="1"/>
+                        <field name="document_type_id" options="{'limit': 7, 'create': false, 'create_edit': false}" domain="[('company_id','=',company_id)]"/>
+                    </group>
+                    <footer>
+                        <button type="object" string="Upload" class="oe_highlight" name="upload_notes"/>
+                        or
+                        <button string="No" class="oe_highlight" special="cancel" />
+                    </footer>
+                </form>
+            </field>
+        </record>
+        
+        <record model="ir.actions.act_window" id="action_event_note">
+            <field name="name">Event Notes</field>
+            <field name="res_model">event.notes</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="event_notes_wizard"/>
+            <field name="target">new</field>
+        </record>
+    </data>
+</odoo>

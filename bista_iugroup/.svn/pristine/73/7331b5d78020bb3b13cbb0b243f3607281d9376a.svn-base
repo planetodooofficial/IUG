@@ -1,0 +1,374 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- wizard view -->
+        <record id="search_events_wizard_form" model="ir.ui.view">
+            <field name="name">Search Events</field>
+            <field name="model">search.events.wizard</field>
+            <field name="arch" type="xml">
+                <form string="Search Events" create="false" edit="true" save="false" >
+                    <group col="6" colspan="4">
+                        <group colspan="1">
+                            <field name="date_type"  string="Event Date"/>
+                            <field name="company_id" widget="selection" />
+                            <field name="event_type" required="1"/>
+                            <field name="language_id" options="{'limit': 7, 'create': false, 'create_edit': false}" domain="[('company_id','=',company_id),('active_custom','=',True)]"/>
+                            <field name="new_event_id"/>
+                            <field name="event_id" string="Old Event ID" class="oe_inline"/>
+                            <field name="scheduler_id" options="{'limit': 7, 'create': false, 'create_edit': false}" domain="[('company_id','=',company_id)]"/>
+                        </group>
+                        <group colspan="2">
+                            <field name="start_date"  />
+                            <field name="state" required="1"/>
+                            <field name="partner_id" domain="[('customer', '=', 1),('is_company', '=',0),('cust_type', '=', 'customer'),('company_id','=',company_id)]"
+                                   string="Billing Customer" options="{'limit': 7, 'create': false, 'create_edit': false ,'always_reload': True}"
+                                   context="{'form_view_ref':'bista_iugroup.view_partner_form_inherit_iu'}" />
+                            <field name="partner_id_2" domain="[('customer', '=', 1),('is_company', '=',0),('cust_type', '=', 'contact'),('company_id','=',company_id)]"
+                                   string="Billing Contact" options="{'limit': 7, 'create': false, 'create_edit': false ,'always_reload': True}"
+                                   context="{'form_view_ref':'bista_iugroup.view_partner_form_inherit_iu'}" />
+                            <field name="patient_id" options="{'limit': 7, 'create': false, 'create_edit': false ,'always_reload': True}" domain="[('company_id','=',company_id)]"/>
+                            <field name="ordering_partner_id" domain="[('customer', '=', 1),('cust_type', '=', 'customer'),('is_company', '=',0),('company_id','=',company_id)]"
+                                   string="Ordering Customer" context="{ 'form_view_ref':'bista_iugroup.view_contact_form'}" options="{'limit': 7, 'create': false, 'create_edit': false}"/>
+                            <field name="ordering_contact_id" domain="[('customer', '=', 1),('cust_type', '=', 'contact'),('is_company', '=',0),('company_id','=',company_id)]"
+                                   string="Ordering Contact" context="{ 'form_view_ref':'bista_iugroup.view_contact_form'}" options="{'limit': 7, 'create': false, 'create_edit': false}"/>
+                        </group>
+                        <group colspan="2">
+                            <field name="end_date" class="oe_inline" />
+                            <field name="interpreter_id" domain="[('cust_type','in',('interpreter','interp_and_transl')),('company_id','=',company_id)]"
+                                   context="{'form_view_ref':'bista_iugroup.view_interpreter_form'}" options="{'limit': 7, 'create': false, 'create_edit': false}" class="oe_inline"/>
+                            <field name="doctor_id" options="{'limit': 7, 'create': false, 'create_edit': false}" domain="[('company_id','=',company_id)]"
+                                   class="oe_inline"/>
+                            <field name="location_id" options="{'limit': 7, 'create': false, 'create_edit': false}" class="oe_inline" domain="[('company_id','=',company_id)]"/>
+                            <field name="state_id"/>
+                            <field name="flag" invisible="1" />
+                            <field name="label_flag" invisible="1"/>
+                            <field name="zone_id" options="{'limit': 7, 'create': false, 'create_edit': false}" domain="[('company_id','=',company_id)]"/>
+                            <field name="cancel_reason_id" class="oe_inline" attrs="{'invisible':[('state','not in',['cancel'])]}" domain="[('company_id','=',company_id)]"/>
+                            <field name="cust_invoice_id" options="{'limit': 7, 'create': false, 'create_edit': false, 'no_open': true}" domain="[('company_id','=',company_id)]"/>
+                            <field name="supp_invoice_id" options="{'limit': 7, 'create': false, 'create_edit': false, 'no_open': true}" domain="[('company_id','=',company_id)]"/>
+                            <button string="Search Events" name="search_events" type="object" class="oe_highlight" />
+                            <field name="name" invisible="1"/>
+                        </group>
+                    </group>
+                    <footer>
+                        <div style="text-align:center;">
+                            <label string="No  Result  Found !!!" attrs="{'invisible':[('label_flag','=',True)]}"/>
+                        </div>
+                    </footer>
+                    <group>
+                    	<div class="adv_search">
+                            <field name="result_set" widget="one2many_list" nolabel="1" attrs="{'invisible':[('flag','=',True)]}" readonly="0">
+                                <tree string="Event Result" decoration-muted="state=='unbilled'" decoration-info="state=='confirmed'" decoration-success="state in ('scheduled')" decoration-danger="state in ('cancel',)" delete="false" create="false">
+                                    <field name="name" readonly="1"/>
+                                    <field name="partner_id" readonly="1"/>
+                                    <field name="language_id" readonly="1"/>
+                                    <field name="event_start_date" readonly="1"/>
+                                    <field name="event_start_time" readonly="1"/>
+                                    <field name="event_end_time" readonly="1"/>
+                                    <field name="job_offered_interpreters_name" string="Job Offered" readonly="1"/>
+                                    <field name="assigned_interpreters" widget="many2many_tags"/>
+                                    <field name="cancel_reason_id"/>
+                                    <field name="state" readonly="1"/>
+                                </tree>
+                            </field>
+                    	</div>
+                    </group>
+                </form>
+            </field>
+        </record>
+        
+        <record model="ir.actions.act_window" id="action_search_language_events_wizard">
+            <field name="name">Search Events</field>
+            <field name="res_model">search.events.wizard</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="search_events_wizard_form"/>
+            <field name="target">current</field>
+        </record>
+
+        <record model="ir.actions.act_window" id="action_search_transport_events_wizard">
+            <field name="name">Search Events</field>
+            <field name="res_model">search.events.wizard</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="context">{"default_event_type": 'transport',"event_type": 'transport'}</field>
+            <field name="view_id" ref="search_events_wizard_form"/>
+            <field name="target">current</field>
+        </record>
+        
+        <record model="ir.actions.act_window" id="action_search_lang_trans_events_wizard">
+            <field name="name">Search Events</field>
+            <field name="res_model">search.events.wizard</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="context">{"default_event_type": 'lang_trans',"event_type": 'lang_trans'}</field>
+            <field name="view_id" ref="search_events_wizard_form"/>
+            <field name="target">current</field>
+        </record>
+        
+        <record model="ir.actions.act_window" id="action_search_lang_trans_events_wizard_custom">
+            <field name="name">Search Events</field>
+            <field name="res_model">search.events.wizard</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="search_events_wizard_form"/>
+            <field name="target">current</field>
+        </record>
+        
+        <menuitem id="menu_search_events" parent="bista_iugroup.sub_menu_lang_event"  action="action_search_language_events_wizard"
+                 groups="bista_iugroup.group_record_manager,bista_iugroup.group_iu_cust_service,bista_iugroup.group_iu_recruiter" sequence="12"/>
+        <menuitem id="menu_search_events_transporter" parent="bista_iugroup.sub_menu_trans_event"  action="action_search_transport_events_wizard"
+                 groups="bista_iugroup.group_record_manager,bista_iugroup.group_iu_cust_service,bista_iugroup.group_iu_recruiter" sequence="12" />
+        <menuitem id="menu_search_events_lang_trans" parent="bista_iugroup.sub_menu_trans_lang_event"  action="action_search_lang_trans_events_wizard" 
+                 groups="bista_iugroup.group_record_manager,bista_iugroup.group_iu_cust_service,bista_iugroup.group_iu_recruiter" sequence="12"/>
+        <menuitem id="menu_search_events_custom" parent="bista_iugroup.sub_menu_lang_event_custom"  action="action_search_lang_trans_events_wizard_custom"
+                 groups="bista_iugroup.group_record_manager,bista_iugroup.group_iu_cust_service,bista_iugroup.group_iu_recruiter" sequence="1"/>
+                 
+        <record id="search_contact_wizard_form" model="ir.ui.view">
+            <field name="name">Search Contact</field>
+            <field name="model">search.contact.wizard</field>
+            <field name="arch" type="xml">
+                <form string="Search Contact" create="false" edit="true" save="false" >
+                    <group>
+                        <group>
+                            <field name="contact_type" />
+                        </group>
+                        <group>
+                            <field name="partner_id" attrs="{'invisible':[('contact_type','in',['doctor','patient','interpreter'])]}" domain="[('cust_type','=',contact_type)]" options="{'limit': 7, 'create': false, 'create_edit': false ,'always_reload': True}"
+                                   context="{'form_view_ref':'bista_iugroup.view_partner_form_inherit_iu'}"/>
+                            <field name="interpreter_partner_id" attrs="{'invisible':[('contact_type','!=','interpreter')]}" domain="[('cust_type','in',('interpreter','interp_and_transl'))]" options="{'limit': 7, 'create': false, 'create_edit': false ,'always_reload': True}"/>
+                            <field name="doctor_id" attrs="{'invisible':[('contact_type','!=','doctor')]}" options="{'limit': 7, 'create': false, 'create_edit': false ,'always_reload': True}"/>
+                            <field name="patient_id" attrs="{'invisible':[('contact_type','!=','patient')]}" options="{'limit': 7, 'create': false, 'create_edit': false ,'always_reload': True}"/>
+                        </group>
+                        <field name="cust_flag" invisible="1"/>
+                        <field name="doct_flag" invisible="1"/>
+                        <field name="pat_flag" invisible="1"/>
+                        <field name="label_flag" invisible="1"/>
+                        <field name="cust_event_flag" invisible="1"/>
+                        <field name="contact_flag" invisible="1"/>
+                        <field name="inter_flag" invisible="1"/>
+                        <field name="translator_flag" invisible="1"/>
+                        <field name="transporter_flag" invisible="1"/>
+                        <field name="current_event_flag" invisible="1"/>
+                        <field name="no_current_event_label_flag" invisible="1"/>
+                        <field name="past_event_flag" invisible="1"/>
+                        <field name="future_event_flag" invisible="1"/>
+                        <field name="name" invisible="1"/>
+                    </group>
+                    <footer>
+                         <button string="Search Contact" name="search_contact" type="object" class="oe_highlight" />
+                         <div  style="text-align:center;">
+                              <label style="color:red; font-size:20px;" string="No  Result  Found !!!" attrs="{'invisible':[('label_flag','=',True)]}"/>
+                         </div>
+                    </footer>
+                    <group>
+                        <field name="result_set" widget="one2many_list" nolabel="1" attrs="{'invisible':[('cust_flag','=',True)]}" readonly="0" context="{'form_view_ref':'bista_iugroup.view_partner_form_inherit_iu','active_id':active_id}">
+                            <tree string="Customer Result"  delete="false" create="false">
+                                <field name="name" readonly="1"/>
+                                <field name="middle_name" readonly="1"/>
+                                <field name="last_name" readonly="1"/>
+                                <field name="fax" readonly="1"/>
+                                <field name="phone" readonly="1"/>
+                                <field name="email" readonly="1"/>
+                                <field name="city" readonly="1"/>
+                                <field name="zip" readonly="1"/>
+                                <field name="zone_id" readonly="1"/>
+                                <field name="country_id" readonly="1"/>
+                                <button name="search_customer_past_event" icon="fa-arrow-left" type="object" />
+                                <button name="search_customer_future_event" icon="fa-arrow-right" type="object" />
+                            </tree>
+                        </field>
+                        <!-- contact result -->
+                        <field name="result_set_contact" widget="one2many_list" nolabel="1" attrs="{'invisible':[('contact_flag','=',True)]}" readonly="0"
+                               context="{'form_view_ref':'bista_iugroup.view_contact_form','active_id':active_id}">
+                            <tree  string="Customer Result"  delete="false" create="false">
+                                <field name="name" readonly="1"/>
+                                <field name="middle_name" readonly="1"/>
+                                <field name="last_name" readonly="1"/>
+                                <field name="fax" readonly="1"/>
+                                <field name="phone" readonly="1"/>
+                                <field name="email" readonly="1"/>
+                                <field name="city" readonly="1"/>
+                                <field name="zip" readonly="1"/>
+                                <field name="zone_id" readonly="1"/>
+                                <field name="country_id" readonly="1"/>
+                                <button name="search_customer_past_event" icon="fa-arrow-left" type="object" />
+                                <button name="search_customer_future_event" icon="fa-arrow-right" type="object" />
+                            </tree>
+                        </field>
+                            <!-- interpreter result -->
+                        <field name="result_set_interpreter" widget="one2many_list" nolabel="1" attrs="{'invisible':[('inter_flag','=',True)]}" readonly="0" context="{'form_view_ref':'bista_iugroup.view_interpreter_form','active_id':active_id}">
+                            <tree string="Customer Result"  delete="false" create="false">
+                                <field name="name" readonly="1"/>
+                                <field name="middle_name" readonly="1"/>
+                                <field name="last_name" readonly="1"/>
+                                <field name="fax" readonly="1"/>
+                                <field name="phone" readonly="1"/>
+                                <field name="email" readonly="1"/>
+                                <field name="city" readonly="1"/>
+                                <field name="zip" readonly="1"/>
+                                <field name="zone_id" readonly="1"/>
+                                <field name="country_id" readonly="1"/>
+                                <button name="search_customer_past_event" icon="fa-arrow-left" type="object" />
+                                <button name="search_customer_future_event" icon="fa-arrow-right" type="object" />
+                            </tree>
+                        </field>
+                        <!-- translater result -->
+                        <field name="result_set_translator" widget="one2many_list" nolabel="1" attrs="{'invisible':[('translator_flag','=',True)]}" readonly="0" context="{'form_view_ref':'bista_iugroup.view_translator_form','active_id':active_id}">
+                            <tree string="Customer Result"  delete="false" create="false">
+                                <field name="name" readonly="1"/>
+                                <field name="middle_name" readonly="1"/>
+                                <field name="last_name" readonly="1"/>
+                                <field name="fax" readonly="1"/>
+                                <field name="phone" readonly="1"/>
+                                <field name="email" readonly="1"/>
+                                <field name="city" readonly="1"/>
+                                <field name="zip" readonly="1"/>
+                                <field name="zone_id" readonly="1"/>
+                                <field name="country_id" readonly="1"/>
+                                <button name="search_customer_past_event" icon="fa-arrow-left" type="object" />
+                                <button name="search_customer_future_event" icon="fa-arrow-right" type="object" />
+                            </tree>
+                        </field>
+                        <!-- transporter result -->
+                        <field name="result_set_transporter" widget="one2many_list" nolabel="1" attrs="{'invisible':[('transporter_flag','=',True)]}" readonly="0" context="{'form_view_ref':'bista_iugroup.view_translator_form','active_id':active_id}">
+                            <tree string="Customer Result"  delete="false" create="false">
+                                <field name="name" readonly="1"/>
+                                <field name="middle_name" readonly="1"/>
+                                <field name="last_name" readonly="1"/>
+                                <field name="fax" readonly="1"/>
+                                <field name="phone" readonly="1"/>
+                                <field name="email" readonly="1"/>
+                                <field name="city" readonly="1"/>
+                                <field name="zip" readonly="1"/>
+                                <field name="zone_id" readonly="1"/>
+                                <field name="country_id" readonly="1"/>
+                                <button name="search_customer_past_event" icon="fa-arrow-left" type="object" />
+                                <button name="search_customer_future_event" icon="fa-arrow-right" type="object" />
+                            </tree>
+                        </field>
+                        <!-- doctor result -->
+                        <field name="result_set_doctor" widget="one2many_list" nolabel="1" attrs="{'invisible':[('doct_flag','=',True)]}" readonly="0" context="{'form_view_ref':'bista_iugroup.view_doctor_form','active_id':active_id}">
+                            <tree string="Doctor Result"  delete="false" create="false">
+                                <field name="name" readonly="1"/>
+                                <field name="middle_name" readonly="1"/>
+                                <field name="last_name" readonly="1"/>
+                                <field name="speciality" readonly="1"/>
+                                <field name="phone" readonly="1"/>
+                                <field name="email" readonly="1"/>
+                                <field name="company_id" readonly="1"/>
+                                <button name="search_doctor_past_event" icon="fa-arrow-left" type="object" />
+                                <button name="search_doctor_future_event" icon="fa-arrow-right" type="object" />
+                            </tree>
+                        </field>
+                    	    <!--patient result -->
+                        <field name="result_set_patient" widget="one2many_list" nolabel="1" attrs="{'invisible':[('pat_flag','=',True)]}" readonly="0" context="{'form_view_ref':'bista_iugroup.view_claimant_form','active_id':active_id}">
+                            <tree string="Doctor Result"  delete="false" create="false">
+                                <field name="name" readonly="1"/>
+                                <field name="last_name" readonly="1"/>
+                                <field name="claim_no" readonly="1"/>
+                                <field name="claim_no2" readonly="1"/>
+                                <field name="billing_partner_id" readonly="1"/>
+                                <field name="billing_contact_id" readonly="1"/>
+                                <field name="fax" readonly="1"/>
+                                <field name="phone" readonly="1"/>
+                                <field name="city" readonly="1" />
+                                <field name="zip" readonly="1"/>
+                                <button name="search_patient_past_event" icon="fa-arrow-left" type="object" />
+                                <button name="search_patient_future_event" icon="fa-arrow-right" type="object" />
+                            </tree>
+                        </field>
+                        <!-- event result -->
+                        <group attrs="{'invisible':[('past_event_flag','=',True)]}">
+                            <separator string="Past Event"/>
+                        </group>
+                        <group attrs="{'invisible':[('future_event_flag','=',True)]}">
+                            <separator string="Future Event"/>
+                        </group>
+                        <newline/>
+                        <group attrs="{'invisible':[('cust_event_flag','=',True)]}">
+                            <div class="adv_search">
+                                <field name="event_result_set" widget="one2many_list" nolabel="1" attrs="{'invisible':[('cust_event_flag','=',True)]}" readonly="0">
+                                    <tree string="Event Result" colors="grey:state=='unbilled';blue:state=='confirmed';green:state in ('scheduled');red:state in ('cancel',)"  delete="false" create="false">
+                                        <field name="name" readonly="1"/>
+                                        <field name="partner_id" readonly="1"/>
+                                        <field name="language_id" readonly="1"/>
+                                        <field name="event_start_date" readonly="1"/>
+                                        <field name="event_start_time" readonly="1"/>
+                                        <field name="event_end_time" readonly="1"/>
+                                        <field name="interpreter_ids2" widget="many2many_tags" string="Job Offered" readonly="1"/>
+                                        <field name="interpreter_id" readonly="1"/>
+                                        <field name="state" readonly="1"/>
+                                    </tree>
+                                </field>
+                            </div>
+                        </group>
+                        <newline/>
+                        <group>
+                            <div  style="text-align:center;">
+                                <label style="color:red; font-size:20px;" string="No Current Event  Found !!!" attrs="{'invisible':[('no_current_event_label_flag','=',True)]}"/>
+                            </div>
+                        </group>
+                        <newline/>
+                        <!-- current event result -->
+                        <group attrs="{'invisible':[('current_event_flag','=',True)]}">
+                            <div class="adv_search">
+                                <separator string="Today's Event"/>
+                                <field name="current_event_result_set" widget="one2many_list" nolabel="1" attrs="{'invisible':[('current_event_flag','=',True)]}" readonly="0">
+                                    <tree string="Today's Event" decoration-muted="state=='unbilled'" decoration-info="state=='confirmed'" decoration-success="state in ('scheduled')" decoration-danger="state in ('cancel',)" delete="false" create="false">
+                                        <field name="name"   readonly="1"/>
+                                        <field name="partner_id"   readonly="1"/>
+                                        <field name="language_id"   readonly="1"/>
+                                        <field name="event_start_date"  readonly="1"/>
+                                        <field name="event_start_time"  readonly="1"/>
+                                        <field name="event_end_time"    readonly="1"/>
+                                        <field name="interpreter_id" readonly="1"/>
+                                        <field name="state" readonly="1"/>
+                                    </tree>
+                                </field>
+                            </div>
+                        </group>
+                    </group>
+                </form>
+            </field>
+        </record>
+
+        <record model="ir.actions.act_window" id="action_search_contact_wizard">
+            <field name="name">Search Contact</field>
+            <field name="res_model">search.contact.wizard</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="search_contact_wizard_form"/>
+            <field name="target">current</field>
+        </record>
+
+        <record model="ir.actions.act_window" id="action_view_event_form_custom">
+            <field name="name">Onsite Interpretation</field>
+            <field name="res_model">event</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="bista_iugroup.view_event_form"/>
+            <field name="target">current</field>
+        </record>   
+
+        <record model="ir.actions.act_window" id="action_view_translation_event_form_custom">
+            <field name="name">Document Translation</field>
+            <field name="res_model">event</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="bista_iugroup.view_translation_event_form"/>
+            <field name="target">current</field>
+        </record>
+
+        <!--Contact type search menu-->
+        <menuitem id="menu_search_contact_custom" parent="bista_iugroup.sub_menu_lang_event_custom"  action="action_search_contact_wizard"
+                 groups="bista_iugroup.group_record_manager,bista_iugroup.group_iu_cust_service,bista_iugroup.group_iu_recruiter" sequence="2"/>
+                 <!-- Onsite Interpretation menu -->
+        <menuitem id="menu_view_event_form_custom" parent="bista_iugroup.sub_menu_lang_create_event_custom"  action="action_view_event_form_custom"
+                 groups="bista_iugroup.group_record_manager,bista_iugroup.group_iu_cust_service,bista_iugroup.group_iu_recruiter" sequence="3"/>
+              <!-- Document Translation menu -->
+        <menuitem id="menu_view_translation_event_form_custom" parent="bista_iugroup.sub_menu_lang_create_event_custom"  action="action_view_translation_event_form_custom"
+                 groups="bista_iugroup.group_record_manager,bista_iugroup.group_iu_cust_service,bista_iugroup.group_iu_recruiter" sequence="4"/>
+		
+    </data>
+</odoo>

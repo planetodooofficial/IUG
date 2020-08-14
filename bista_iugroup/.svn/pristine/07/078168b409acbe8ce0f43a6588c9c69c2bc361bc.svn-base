@@ -1,0 +1,286 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <record id="view_event_user_form" model="ir.ui.view">
+            <field name="name">event.form</field>
+            <field name="model">event</field>
+            <field eval="25" name="priority"/>
+            <field name="arch" type="xml">
+                <form string="events"  create="false" delete="false" edit="false">
+                    <header>
+                        <button string="Create Timesheet" name="enter_timesheet" states="confirmed" type="object" class="oe_highlight"/>
+                        <button string="Edit Timesheet" name="view_timesheet" states="unbilled" type="object" class="oe_highlight"/>
+                        <field name="state" widget="statusbar" statusbar_visible="draft,scheduled,confirmed,done" attrs="{'invisible': [('state','=', 'unbilled')]}"/>
+                    </header>
+                    <sheet string="Event">
+                        <group colspan="2" col="4">
+                            <h3>
+                                <group>
+                                    <field name="name" string="Event Id" readonly="1"/>
+                                    <field name="task_state" invisible="1"/>
+                                </group>
+                            </h3>
+                            <group>
+                                <field name="event_type" string="Event Type" readonly="1"/>
+                            </group>
+                        </group>
+                        <group colspan="4" col="6">
+                            <group>
+                                <notebook colspan="2">
+                                    <page string="Billing Info">
+                                        <h3>
+                                            <group>
+                                                <field name="patient_id" style="color: #5F9EA0;" readonly="1" context="{'form_view_ref':'bista_iugroup.view_simplified_claimant_form'}"/>
+                                            </group>
+                                        </h3>
+                                        <div class="oe_title">
+                                            <group>
+                                                <field name="language_id" attrs="{'required': ['|',('event_type','=','language')]}" readonly="1" />
+                                                <field name="ref" string="Reference" readonly="1"/>
+                                            </group>
+                                        </div>
+                                        <newline/>
+                                        <group colspan="2">
+                                            <field name="project_name_id" readonly="1"/>
+                                            <field name="multi_type" invisible="1"/>
+                                            <field name="id" invisible="1"/>
+                                            <field name="company_id" readonly="1" groups="base.group_multi_company"/>
+                                            <field name="task_id" readonly="1" invisible="1"/>
+                                            <field name="user_id" readonly="1" invisible="1"/>
+                                            <field name="customer_basis" invisible="1"/>
+                                        </group>
+                                        <button name="open_map_interpreter" string="Get Directions" type="object" icon="fa-search-plus" class="oe_left"
+                                                    states="allocated,confirmed,unbilled,invoiced,cancel,done"/>
+                                        <group states="scheduled">
+                                            <h4 style="color: red;"> Please click on the green icon to accept the job and to reject the offer please click on the cancel icon.</h4>
+                                        </group>
+                                        <separator string="Job Offered To" states="scheduled"/>
+                                        <field name="interpreter_ids2" colspan="2" readonly="1" states="scheduled" options="{'reload_on_button': true}" domain="[('state','!=','cancel')]">
+                                            <tree string="Job Offered To"  decoration-muted="state=='cancel'">
+                                                <field name="interpreter_id" readonly="1"/>
+                                                <field name="visited" readonly="1"/>
+                                                <field name="visited_date" readonly="1" string="Visit Date" />
+                                                <field name="zip" readonly="1" invisible="1"/>
+                                                <field name="parent_state" invisible="1"/>
+                                                <field name="voicemail_msg" invisible="1"/>
+                                                <button name="get_direction" type="object" icon="fa-map-marker" attrs="{'invisible': [('parent_state','in',('done','cancel'))]}"
+                                                        groups="bista_iugroup.group_record_manager,bista_iugroup.group_iu_portal"/>
+                                                <button type="action" name="%(bista_iugroup.action_assign_wizard1)d" icon="fa-check" attrs="{'invisible': ['|',('parent_state','in',('done','cancel')),('state','in',('cancel'))]}"
+                                                        groups="bista_iugroup.group_record_manager,bista_iugroup.group_iu_portal"/>
+                                                <button  name="cancel_appointment" type="object" icon="fa-times-circle" attrs="{'invisible': ['|',('parent_state','in',('done','cancel')),('state','in',('cancel'))]}"
+                                                         groups="bista_iugroup.group_record_manager,bista_iugroup.group_iu_portal" confirm="Aru you sure ,You want to reject the Job Offer?"/>
+                                                <field name="state" invisible="1"/>
+                                            </tree>
+                                        </field>
+                                        <separator string="Interpreter Note"/>
+                                        <field name="interpreter_note" placeholder="Put an Interpreter note..." nolabel="1" colspan="2" readonly="1"/>
+                                    </page>
+                                </notebook>
+                            </group>
+                            <group>
+                                <notebook colspan="2">
+                                    <page string="Order Info">
+                                        <group>
+                                            <field name="event_start_date" readonly="1"/>
+                                        </group>
+                                        <div class="address_format">
+                                            <label for="event_start_hr" style="width: 50%%" string="Start Time" />
+                                            <field name="event_start_hr" class="custom_character" readonly="1" context="{'field':'event_start_hr'}" />
+                                            : <field name="event_start_min" class="custom_character" readonly="1"
+                                                     context="{'field':'event_start_min'}" />
+                                            <field name="am_pm" style="width: 10%%" readonly="1"/>
+                                            <field name="customer_timezone" style="width: 30%%" attrs="{'readonly':[('state','in',('confirmed','unbilled','invoiced','cancel','done'))]}" readonly="1"/>
+                                        </div>
+                                        <div class="address_format">
+                                            <label for="event_end_hr" style="width: 50%%" string="End Time" readonly="1"/>
+                                            <field name="event_end_hr" class="custom_character" readonly="1" context="{'field':'event_end_hr'}" />
+                                            : <field name="event_end_min" class="custom_character" readonly="1" context="{'field':'event_end_min'}" />
+                                            <field name="am_pm2" style="width: 10%%" readonly="1"/>
+                                        </div>
+                                        <div class="oe_title" >
+                                            <group>
+                                                <field name="event_start" readonly="1" groups="bista_iugroup.group_iu_admin"/>
+                                                <field name="event_end" readonly="1" groups="bista_iugroup.group_iu_admin"/>
+                                            </group>
+                                        </div>
+                                        <group>
+                                            <field name="location_id" options='{"always_reload": True}' readonly="1" attrs="{'invisible':[('event_type','=','lang_trans')]}"
+                                                    context="{'form_view_ref':'bista_iugroup.view_simplified_location_form'}"/>
+                                        </group>
+                                        <group>
+                                            <button name="search_interpreters" string="Search Interpreters" type="object" icon="fa-search-plus" class="oe_left"
+                                                    attrs="{'invisible': ['|',('event_type','=','transport')]}" invisible="1"/>
+                                            <button name="search_transporters" string="Search Transporters" type="object" icon="fa-search-plus" class="oe_left"
+                                                    attrs="{'invisible': ['|',('event_type','=','language')]}" invisible="1"/>
+                                        </group>
+                                    </page>
+                                </notebook>
+                            </group>
+                        </group>
+                        <field name="event_follower_ids" colspan="2" invisible="1"/>
+                        <div class="oe_chatter" invisible="1">
+                            <field name="message_follower_ids" widget="mail_followers"/>
+                            <field name="message_ids" widget="mail_thread"/>
+                        </div>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+        
+        <record id="view_event_user_tree" model="ir.ui.view">
+            <field name="name">event.tree</field>
+            <field name="model">event</field>
+            <field eval="8" name="priority"/>
+            <field name="arch" type="xml">
+                <tree string="Events" decoration-muted="state=='unbilled'" decoration-info="state=='confirmed'" decoration-success="state in ('scheduled')" decoration-danger="state in ('cancel',)" create="false" delete="false" edit="false">
+                    <field name="name" string="Event Id"/>
+                    <field name="language_id" />
+                    <field name="event_start_date" />
+                    <field name="event_start_time" />
+                    <field name="assigned_interpreters" widget="many2many_tags" invisible="1"/>
+                    <field name="doctor_id" />
+                    <field name="state" invisible="1"/>
+                </tree>
+            </field>
+        </record>
+        
+        <record id="view_event_filter_portal" model="ir.ui.view">
+            <field name="name">event.search</field>
+            <field name="model">event</field>
+            <field name="arch" type="xml">
+                <search string="Events">
+                    <field name="name" string="Event Id"/>
+                    <filter name="past_events" string="Past Events" domain="[('event_end','&lt;=', time.strftime('%%Y-%%m-%%d %%H:%%M:%%S'))]"/>
+                    <filter name="present_future_events" string="Present Future Events" domain="[('event_start','&gt;=', time.strftime('%%Y-%%m-%%d %%H:%%M:%%S'))]"/>
+                </search>
+            </field>
+        </record>
+       
+        <!--action for timesheet pending ***only for one interpreter***-->
+        <record id="action_event_user_form_timesheet_language" model="ir.actions.act_window">
+            <field name="name">Pending Timesheet Interpreter</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">event</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="context">{"search_default_event_type":'language',"search_event_type":'language',"default_event_type":'language','default_past_events':1}</field>
+            <field name="domain">[('state','in', ('unbilled','confirmed','unauthorize')),('event_type','=', 'language'),('task_state','in',('draft',False))]</field>
+            <field name="search_view_id" ref="view_event_filter_portal"/>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                </p><p>
+                    There are no pending Timesheet for you.
+                </p>
+            </field>
+        </record>
+
+        <record id="action_lang_event_user_form_time_view" model="ir.actions.act_window.view">
+            <field eval="2" name="sequence"/>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="view_event_user_form"/>
+            <field name="act_window_id" ref="action_event_user_form_timesheet_language"/>
+        </record>
+
+        <record id="action_lang_event_user_tree_time_view" model="ir.actions.act_window.view">
+            <field name="sequence" eval="1"/>
+            <field name="view_mode">tree</field>
+            <field name="view_id" ref="view_event_user_tree"/>
+            <field name="act_window_id" ref="action_event_user_form_timesheet_language"/>
+        </record>
+
+        <!--action for job offerd event-->
+        <record id="action_event_user_form_job_offered_language" model="ir.actions.act_window">
+            <field name="name">Language Events</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">event</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="context">{"search_default_event_type":'language',"search_event_type":'language', "default_event_type":'language','default_past_events':1}</field>
+            <field name="domain">['|',('event_type','=', 'language'),('event_type','=', 'lang_trans'),('state','=', 'scheduled')]</field>
+            <field name="search_view_id" ref="view_event_filter_portal"/>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                </p><p>
+                    There are currently no jobs pending.
+                </p>
+            </field>
+        </record>
+
+        <record id="action_lang_event_user_form_job_view" model="ir.actions.act_window.view">
+            <field eval="2" name="sequence"/>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="view_event_user_form"/>
+            <field name="act_window_id" ref="action_event_user_form_job_offered_language"/>
+        </record>
+
+        <record id="action_lang_event_user_tree_job_view" model="ir.actions.act_window.view">
+            <field name="sequence" eval="1"/>
+            <field name="view_mode">tree</field>
+            <field name="view_id" ref="view_event_user_tree"/>
+            <field name="act_window_id" ref="action_event_user_form_job_offered_language"/>
+        </record>
+
+        <!--###################################################3-->
+        <record id="ir_actions_server_today_events_for_interpreter" model="ir.actions.server">
+            <field name="sequence" eval="6"/>
+            <field name="state">code</field>
+            <field name="type">ir.actions.server</field>
+            <field name="model_id" ref="model_event"/>
+            <field name="code">action = model.with_context(day_type='today').open_events_for_interpreter()</field>
+            <field name="condition">True</field>
+            <field name="name">Today's Events</field>
+       </record>
+
+       <record id="ir_actions_server_past_events_for_interpreter" model="ir.actions.server">
+            <field name="sequence" eval="6"/>
+            <field name="state">code</field>
+            <field name="type">ir.actions.server</field>
+            <field name="model_id" ref="model_event"/>
+            <field name="code">action = model.with_context(day_type='past').open_events_for_interpreter()</field>
+            <field name="condition">True</field>
+            <field name="name">Past Events</field>
+       </record>
+
+       <record id="ir_actions_server_future_events_for_interpreter" model="ir.actions.server">
+            <field name="sequence" eval="6"/>
+            <field name="state">code</field>
+            <field name="type">ir.actions.server</field>
+            <field name="model_id" ref="model_event"/>
+            <field name="code">action = model.with_context(day_type='future').open_events_for_interpreter()</field>
+            <field name="condition">True</field>
+            <field name="name">Future Events</field>
+       </record>
+
+       <record id="action_event_user_form_language" model="ir.actions.act_window">
+            <field name="name">Language Events</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">event</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="context">{"search_default_event_type":'language',"search_event_type":'language',"default_event_type":'language'}</field>
+            <field name="domain">['|',('event_type','=', 'language'),('event_type','=', 'lang_trans')]</field>
+            <field name="search_view_id" ref="view_event_filter_portal"/>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                </p><p>
+                    There are no events for you in this section.
+                </p>
+            </field>
+       </record>
+        
+       <record id="action_lang_event_user_form_view" model="ir.actions.act_window.view">
+            <field eval="2" name="sequence"/>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="view_event_user_form"/>
+            <field name="act_window_id" ref="action_event_user_form_language"/>
+       </record>
+        
+       <record id="action_lang_event_user_tree_view" model="ir.actions.act_window.view">
+            <field name="sequence" eval="1"/>
+            <field name="view_mode">tree</field>
+            <field name="view_id" ref="view_event_user_tree"/>
+            <field name="act_window_id" ref="action_event_user_form_language"/>
+       </record>
+        
+    </data>
+</odoo>
