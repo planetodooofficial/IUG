@@ -1,0 +1,9 @@
+<template>
+    <t t-name="FormRenderingSheet" t-extend="FormRenderingSheet">
+    	<t t-jquery="div.o_form_sheet_bg" t-operation="prepend">
+    		<div class="drop_window">
+    			<!--<span class="drop_body">drop here</span>-->
+    		</div>
+    	</t>
+    </t>
+</template>

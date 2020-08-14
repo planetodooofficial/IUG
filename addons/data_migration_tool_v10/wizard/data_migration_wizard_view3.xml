@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <record id="data_migration_wizard_form3" model="ir.ui.view">
+            <field name="name">data.migration.wizard.form3</field>
+            <field name="model">data.migration.wizard_last</field>
+            <field name="arch" type="xml">
+                <form string="Data Migration 3">
+                    <group>
+                        <field name="upload_file3" />
+                    </group>
+                    <group>
+                        <field name="upload_error3" filename="upload_error_file_name3" readonly="1"/>
+                        <field name="upload_error_file_name3" invisible="1"/>
+                    </group>
+                    <group status="MASTER DATA">
+                        <button name="import_translator_language" style="margin-bottom:10px;" string="Upload Translator Lang" type="object" class="btn btn-danger"/>
+                        <button name="import_translator_certification" style="margin-bottom:10px;" string="Upload Translator Certificate" type="object" class="btn btn-primary"/>
+                        <button name="import_software" style="margin-bottom:10px;" string="Upload Software" type="object" class="btn btn-secondary"/>
+                        <button name="import_interpreter_language" style="margin-bottom:10px;" string="Upload Interpreter Language" type="object" class="btn btn-warning"/>
+                        <button name="import_cancelled_event" style="margin-bottom:10px;" string="Upload Cancelled Event" type="object" class="btn btn-danger"/>
+                        <button name="import_phone_type" style="margin-bottom:10px;" string="Upload Phone Type" type="object" class="btn btn-primary"/>
+                        <button name="import_zip_time_zone" style="margin-bottom:10px;" string="Upload Zip Time Zone" type="object" class="btn btn-secondary"/>
+                        <button name="import_resource" style="margin-bottom:10px;" string="Upload Resource" type="object" class="btn btn-warning"/>
+                        <button name="import_affiliation" style="margin-bottom:10px;" string="Upload Affiliation" type="object" class="btn btn-danger"/>
+                        <button name="import_project_task" style="margin-bottom:10px;" string="Upload Project" type="object" class="btn btn-primary"/>
+                    </group>
+                    <group>
+                        <button name="map_zone_and_zipcode" style="margin-bottom:10px;" string="Map Zone M2M" type="object" class="btn btn-danger"/>
+                        <button name="import_event" style="margin-bottom:10px;" string="Upload Event" type="object" class="btn btn-primary"/>
+                        <button name="import_mail_messages" style="margin-bottom:10px;" string="Upload Mail Message" type="object" class="btn btn-secondary"/>
+                        <button name="import_event_interpreter_calendar" style="margin-bottom:10px;" string="Upload Upload Event Interpreter Calendar" type="object" class="btn btn-warning"/>
+                        <button name="import_res_title" style="margin-bottom:10px;" string="Upload Res Title " type="object" class="btn btn-danger"/>
+                        <button name="import_interpreter_alloc_history" style="margin-bottom:10px;" string="Upload Interpret Alloc History" type="object" class="btn btn-primary"/>
+                        <button name="import_twilio_sms_send" style="margin-bottom:10px;" string="Upload Twilio SMS Send" type="object" class="btn btn-primary"/>
+                        <button name="import_twilio_sms_received" style="margin-bottom:10px;" string="Upload Twilio SMS Received" type="object" class="btn btn-warning"/>
+                        <button name="import_select_interpreter_line" style="margin-bottom:10px;" string="Upload Interpreter Line" type="object" class="btn btn-primary"/>
+                        <button name="import_select_translator_line" style="margin-bottom:10px;" string="Upload Translator Line" type="object" class="btn btn-warning"/>
+                        <button name="import_project_task_work" style="margin-bottom:10px;" string="Upload Project Task Work" type="object" class="btn btn-warning"/>
+                    </group>
+                    <footer>
+                        <button string="Cancel" class="oe_highlight" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+        <act_window id="data_migration_wizard_action3"
+                    name="Data Migration Wizard-3"
+                    src_model="sale.order"
+                    res_model="data.migration.wizard_last"
+                    view_type="form" view_mode="form"
+                    key2="client_action_multi" target="new"/>
+        <menuitem id="data_migration_wizard_menu3" action="data_migration_wizard_action3" name="Data Migration Wizard 3"
+                  parent="migration_tool_base_menu" sequence="4"/>
+    </data>
+</odoo>

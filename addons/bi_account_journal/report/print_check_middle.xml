@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+<data>
+
+<template id="print_check_middle_receipt">
+    <t t-call="report.html_container">
+        <t t-foreach="docs" t-as="o">
+            <div t-foreach="pages(o)" t-as="page" class="page ckus_page ckus_middle_page" t-attf-style="top: {{ o.company_id.us_check_margin_top }}in; left: {{ o.company_id.us_check_margin_left }}in;">
+                <t t-call="bi_account_journal.ckus_stub"><t t-set="stub_num" t-value="1"/></t>
+                <t t-call="bi_account_journal.ckus_check" />
+                <t t-call="bi_account_journal.ckus_stub"><t t-set="stub_num" t-value="2"/></t>
+            </div>
+        </t>
+    </t>
+</template>
+
+
+     <report id="action_print_check_middle_receipt"
+            string="Print Check (Middle)"
+            model="bi.account.receipt"
+            name="bi_account_journal.print_check_middle_receipt"
+            file="bi_account_journal.print_check_middle_receipt"
+            report_type="qweb-pdf"
+            attachment_use="True"
+            attachment="'check_'+(object.customer and object.customer.name or 'Internal')+'_'+(object.name)+'_bottom.pdf'" />
+        <record id="bi_account_journal.action_print_check_middle_receipt" model="ir.actions.report.xml">
+            <field name="paperformat_id" ref="l10n_us_check_printing.paperformat_check_us"/>
+        </record>
+
+
+    <template id="print_check_middle_payment">
+    <t t-call="report.html_container">
+        <t t-foreach="docs" t-as="o">
+            <div t-foreach="pages(o)" t-as="page" class="page ckus_page ckus_middle_page" t-attf-style="top: {{ o.company_id.us_check_margin_top }}in; left: {{ o.company_id.us_check_margin_left }}in;">
+                <t t-call="bi_account_journal.ckus_stub"><t t-set="stub_num" t-value="1"/></t>
+                <t t-call="bi_account_journal.ckus_check" />
+                <t t-call="bi_account_journal.ckus_stub"><t t-set="stub_num" t-value="2"/></t>
+            </div>
+        </t>
+    </t>
+</template>
+
+
+     <report id="action_print_check_middle_payment"
+            string="Print Check (Middle)"
+            model="bi.account.payment"
+            name="bi_account_journal.print_check_middle_payment"
+            file="bi_account_journal.print_check_middle_payment"
+            report_type="qweb-pdf"
+            attachment_use="True"
+            attachment="'check_'+(object.customer and object.customer.name or 'Internal')+'_'+(object.name)+'_bottom.pdf'" />
+        <record id="bi_account_journal.action_print_check_middle_payment" model="ir.actions.report.xml">
+            <field name="paperformat_id" ref="l10n_us_check_printing.paperformat_check_us"/>
+        </record>
+</data>
+</odoo>

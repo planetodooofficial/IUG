@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="contactus_form_inherit" name="Contact Form" inherit_id="website.contactus" customize_show="True">
+        <xpath expr="//div[@class='form-group']" position="inside">
+            <a href="aboutus">Our Team</a>
+        </xpath>
+    </template>
+</odoo>

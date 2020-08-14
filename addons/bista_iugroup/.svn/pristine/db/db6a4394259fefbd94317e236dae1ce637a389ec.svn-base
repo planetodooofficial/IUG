@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="duplicate_interpreter_view" model="ir.ui.view">
+            <field name="name">Assign Interpreter</field>
+            <field name="model">duplicate.interpreter</field>
+            <field name="arch" type="xml">
+                <form string="Duplicate Interpreter">
+                    <group>
+                    	<field name="company_id"  widget="selection" class="oe_inline"/>
+                    </group>
+                    <footer>
+                    	<button name="get_company" type="object" icon="fa-mail-reply-all"/>
+                    	 or
+                        <button string="Cancel" class="oe_link" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+             
+		<record model="ir.actions.act_window" id="action_duplicate_interpreters">
+            <field name="name">Duplicate Interpreter</field>
+            <field name="res_model">duplicate.interpreter</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="duplicate_interpreter_view"/>
+            <field name="target">new</field>
+        </record>
+    </data>
+</odoo>

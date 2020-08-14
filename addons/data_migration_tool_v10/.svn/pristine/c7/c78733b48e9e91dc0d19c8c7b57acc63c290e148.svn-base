@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/../.idea/ANJ_cust.iml" filepath="$PROJECT_DIR$/../.idea/ANJ_cust.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../account_financial_report_qweb/.idea/account_financial_report_qweb.iml" filepath="$PROJECT_DIR$/../account_financial_report_qweb/.idea/account_financial_report_qweb.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../account_invoice_merge/.idea/account_invoice_merge.iml" filepath="$PROJECT_DIR$/../account_invoice_merge/.idea/account_invoice_merge.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../account_period/.idea/account_period.iml" filepath="$PROJECT_DIR$/../account_period/.idea/account_period.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../bista_iugroup/.idea/bista_iugroup.iml" filepath="$PROJECT_DIR$/../bista_iugroup/.idea/bista_iugroup.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/data_migration_tool_v10.iml" filepath="$PROJECT_DIR$/.idea/data_migration_tool_v10.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../date_range/.idea/date_range.iml" filepath="$PROJECT_DIR$/../date_range/.idea/date_range.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../../.idea/odoo-10.0.latest.iml" filepath="$PROJECT_DIR$/../../.idea/odoo-10.0.latest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../../../odoo_11.0.latest/.idea/odoo_11.0.latest.iml" filepath="$PROJECT_DIR$/../../../odoo_11.0.latest/.idea/odoo_11.0.latest.iml" />
+    </modules>
+  </component>
+</project>

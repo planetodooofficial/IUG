@@ -1,0 +1,142 @@
+<odoo>
+    <data>
+
+        <record model="ir.ui.view" id="inherited_res_company">
+            <field name="name">inherited.res.company</field>
+            <field name="model">res.company</field>
+            <field name="inherit_id" ref="base.view_company_form" />
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='phone']" position="before">
+                    |<field name="res_company_old_id"/>
+                </xpath>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="inherited_customer_group">
+            <field name="name">inherited.customer.group</field>
+            <field name="model">customer.group</field>
+            <field name="inherit_id" ref="bista_iugroup.view_customer_group_form" />
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='name']" position="after">
+                    |<field name="customer_group_old_id"/>
+                </xpath>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="inherited_document_status">
+            <field name="name">inherited.document.status</field>
+            <field name="model">document.status</field>
+            <field name="inherit_id" ref="bista_iugroup.view_document_status_form" />
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='doc_status_id']" position="after">
+                    |<field name="document_status_old_id"/>
+                </xpath>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="inherited_appointment_type_group">
+            <field name="name">inherited.appointment.type.group</field>
+            <field name="model">appointment.type.group</field>
+            <field name="inherit_id" ref="bista_iugroup.view_appointment_type_group_form" />
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='name']" position="after">
+                    <field name="appointment_type_group_old_id"/>
+                </xpath>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="inherited_fee_note_status_form">
+            <field name="name">inherited.fee.note.status.form</field>
+            <field name="model">fee.note.status</field>
+            <field name="inherit_id" ref="bista_iugroup.view_note_status_form" />
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='company_id']" position="after">
+                    <field name="fee_note_status_old_id"/>
+                </xpath>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="inherited_twilio_account_form">
+            <field name="name">inherited.twilio.account.form</field>
+            <field name="model">twilio.accounts</field>
+            <field name="inherit_id" ref="twilio_sms.twilio_accounts_form_view" />
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='active']" position="after">
+                    <field name="twilio_acc_old_id"/>
+                </xpath>
+            </field>
+        </record>
+        <record model="ir.ui.view" id="inherited_project_task_type_form">
+            <field name="name">inherited.project.task.type.form</field>
+            <field name="model">project.task.type</field>
+            <field name="inherit_id" ref="project.task_type_edit" />
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='sequence']" position="after">
+                    <field name="project_task_type_old_id"/>
+                </xpath>
+            </field>
+        </record>
+        <record model="ir.ui.view" id="inherited_coa">
+            <field name="name">inherited.coa</field>
+            <field name="model">account.account</field>
+            <field name="inherit_id" ref="account.view_account_form" />
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='code']" position="before">
+                    <field name="account_old_id"/>
+                </xpath>
+            </field>
+        </record>
+        <record model="ir.ui.view" id="inherited_acc_journal">
+            <field name="name">inherited.acc.journal</field>
+            <field name="model">account.journal</field>
+            <field name="inherit_id" ref="account.view_account_journal_form" />
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='type']" position="before">
+                    <field name="account_journal_old_id"/>
+                </xpath>
+            </field>
+        </record>
+        <record model="ir.ui.view" id="inherited_product">
+            <field name="name">inherited.product</field>
+            <field name="model">product.product</field>
+            <field name="inherit_id" ref="product.product_normal_form_view" />
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='type']" position="before">
+                    <field name="product_old_id"/>
+                </xpath>
+            </field>
+        </record>
+        <record model="ir.ui.view" id="inherited_invoice">
+            <field name="name">inherited.invoice</field>
+            <field name="model">account.invoice</field>
+            <field name="inherit_id" ref="account.invoice_form" />
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='partner_id']" position="before">
+                    <field name="invoice_old_number" readonly="1" attrs="{'invisible': [('state','=','draft')]}"/>
+                </xpath>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="inherited_supplier_invoice">
+            <field name="name">inherited.supplier.invoice</field>
+            <field name="model">account.invoice</field>
+            <field name="inherit_id" ref="account.invoice_supplier_form" />
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='partner_id']" position="before">
+                    <field name="invoice_old_number" readonly="1" attrs="{'invisible': [('state','=','draft')]}"/>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="view_invoice_old_number_search" model="ir.ui.view">
+            <field name="name">view.invoice.old.number.search</field>
+            <field name="model">account.invoice</field>
+            <field name="inherit_id" ref="account.view_account_invoice_filter" />
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='number']" position="after">
+                    <field name="invoice_old_number" filter_domain="[('invoice_old_number','ilike',self)]" string="Old Invoice Number"/>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

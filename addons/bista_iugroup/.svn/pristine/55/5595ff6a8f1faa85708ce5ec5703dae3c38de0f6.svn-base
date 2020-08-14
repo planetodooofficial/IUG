@@ -1,0 +1,174 @@
+.openerp .oe_form .oe_warning {
+         color: red;
+}
+
+.openerp .oe_form .oe_subtotal_footer label.oe_form_label_new_help {
+  font-weight: normal;
+}
+
+.openerp .oe_form .oe_form_label_new_help[for], .openerp .oe_form .oe_form_label_new[for] {
+  font-weight: normal;
+  white-space: nowrap;
+  padding-right: 8px;
+}
+.openerp .oe_form .oe_form_label_new_help[for] span, .openerp .oe_form .oe_form_label_new[for] span {
+  font-size: 80%;
+  color: darkGreen;
+  vertical-align: top;
+  position: relative;
+  top: -4px;
+  padding: 0 2px;
+}
+
+.openerp_ie .oe_form_label_new {
+  white-space: normal !important;
+}
+
+.openerp .oe_form .oe_form_embedded_html2 {
+  position: relative;
+  width: 240px;
+  margin-left: 30px;
+  margin-top: 32px;
+  margin-bottom: 32px;
+  text-align: justify;
+}
+
+.openerp .oe_form .oe_form_embedded_html {
+  position: relative;
+  width: 100%;
+  margin-left: 10px;
+  margin-top: 8px;
+  margin-bottom: 8px;
+  text-align: justify;
+}
+
+.openerp .oe_formview {
+    background: white;
+    position: relative;
+}
+/*.custom_integer {
+  position: relative;
+  max-width:  15%;
+  min-width: 15%;
+  
+}*/
+.openerp .oe_form .address_format .custom_character{
+    display: inline-block;
+    width: auto !important;
+}
+.openerp .oe_form .address_format .custom_character input{
+    position: relative;
+    width: 40px !important;
+    min-width: 10px;
+}
+.openerp .oe_form_field.oe_form_field_float.custom_integer {
+    width: auto;
+}
+.openerp .oe_form .address_format .custom_integer input {
+    position: relative;
+    width: 40px !important;
+    min-width: 10px;
+}
+
+/*.openerp .oe_list.oe_list_editable.oe_editing .oe_form_field.oe_form_view_integer .custom_integer_task input {
+    position: relative;
+    width: 40px !important;
+    min-width: 10px;
+}*/
+.openerp .main_table .custom_integer_task {
+    position: relative;
+    width: 50px !important;
+    min-width: 10px;
+    z-index: 1;
+}
+
+.openerp .main_table td[data-field="event_start_hr"] {
+    position: relative;
+    width: 40px !important;
+    min-width: 10px;
+}
+
+.openerp .main_table td[data-field="event_start_min"] {
+    position: relative;
+    width: 40px !important;
+    min-width: 10px;
+}
+
+.openerp .main_table td[data-field="event_end_hr"] {
+    position: relative;
+    width: 40px !important;
+    min-width: 10px;
+}
+
+.openerp .main_table td[data-field="event_end_min"] {
+    position: relative;
+    width: 40px !important;
+    min-width: 10px;
+}
+
+.openerp .main_table td[data-field="am_pm"] {
+    position: relative;
+    width: 40px !important;
+    min-width: 10px;
+}
+
+.openerp .main_table td[data-field="am_pm2"] {
+    position: relative;
+    width: 40px !important;
+    min-width: 10px;
+}
+
+.openerp .main_table td[data-field="total_mileage_covered"] {
+    position: relative;
+    width: 50px !important;
+    min-width: 20px;
+}
+
+.openerp .main_table td[data-field="hours"] {
+    position: relative;
+    width: 50px !important;
+    min-width: 20px;
+}
+
+.openerp .oe_list .oe_form .oe_form_field_boolean input {
+  margin: 1px 0 0 10px !important;
+}
+/* Increased width of sheet */
+.openerp .oe_form_sheet_width {
+  min-width: 700px;
+  max-width: 90%;
+  margin: 0 auto;
+}
+/*
+.openerp .oe_searchview .oe_searchview_drawer h3 {
+  margin: 6px 3px 3px 8px !important;
+  color: #7c7bad;
+  font-size: 3px !important;
+}
+
+.openerp .oe_form h1, .openerp .oe_form h2, .openerp .oe_form h3, .openerp .oe_form h4, .openerp .oe_form h5, .openerp .oe_form h6 {
+  margin: 0 0 2px 0;
+}
+*/
+
+
+.openerp .oe_form .address_format .custom_character2{
+    display: inline-block;
+    width: auto !important;
+}
+.openerp .oe_form .address_format .custom_character2 input{
+    position: relative;
+    width: 110px !important;
+    min-width: 70px;
+}
+
+
+.adv_search .o_view_manager_content {
+    display: block;
+    height: 230px;
+    overflow: auto;
+}
+.adv_search .o_view_manager_content .o_list_view {
+    display: block;
+}
+ 

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="view_task_work_form" model="ir.ui.view">
+            <field name="name">project.task.work.form</field>
+            <field name="model">project.task.work</field>
+            <field name="arch" type="xml">
+                <form string="Task Work">
+                    <group col="4">
+                        <field colspan="4" name="name"/>
+                        <field name="hours" widget="float_time"/>
+                        <field name="date"/>
+                        <field name="user_id" options='{"no_open": True}'/>
+                        <field name="company_id" groups="base.group_multi_company" widget="selection"/>
+                    </group>
+                </form>
+            </field>
+        </record>
+
+        <record id="view_task_work_tree" model="ir.ui.view">
+            <field name="name">project.task.work.tree</field>
+            <field name="model">project.task.work</field>
+            <field name="arch" type="xml">
+                <tree editable="top" string="Task Work">
+                    <field name="date"/>
+                    <field name="name"/>
+                    <field name="hours" widget="float_time"/>
+                    <field name="user_id"/>
+                </tree>
+            </field>
+        </record>
+
+
+
+
+    </data>
+</odoo>

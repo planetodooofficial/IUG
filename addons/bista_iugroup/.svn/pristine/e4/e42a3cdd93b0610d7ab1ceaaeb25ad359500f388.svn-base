@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- ############For Interpreters########### -->
+        <menuitem id="portal_main_menu_lang_event" name="Onsite Interpretation" sequence="1" groups="bista_iugroup.group_iu_portal"/>
+        <menuitem id="portal_sub_menu_lang_event" parent="portal_main_menu_lang_event" name="Events" sequence="1" groups="bista_iugroup.group_iu_portal"/>
+        <menuitem id="portal_sub_menu_today_event_form" parent="portal_sub_menu_lang_event" name="Today's Event" action="bista_iugroup.ir_actions_server_today_events_for_interpreter" sequence="2"
+                  groups="bista_iugroup.group_iu_portal" />
+        <menuitem id="portal_sub_menu_past_event_form" parent="portal_sub_menu_lang_event" name="Past Event" action="bista_iugroup.ir_actions_server_past_events_for_interpreter" sequence="3"
+                  groups="bista_iugroup.group_iu_portal" />
+        <menuitem id="portal_sub_menu_future_event_form" parent="portal_sub_menu_lang_event" name="Future Event" action="bista_iugroup.ir_actions_server_future_events_for_interpreter" sequence="4"
+                  groups="bista_iugroup.group_iu_portal" />
+        <menuitem id="portal_sub_menu_job_offered_event_form" parent="portal_sub_menu_lang_event" name="Job Offered" action="bista_iugroup.action_event_user_form_job_offered_language" sequence="1"
+                  groups="bista_iugroup.group_iu_portal" />
+        <menuitem id="portal_sub_menu_timesheet_event_form" parent="portal_sub_menu_lang_event" name="Pending Timesheet Events" action="bista_iugroup.action_event_user_form_timesheet_language" sequence="5"
+                  groups="bista_iugroup.group_iu_portal" />
+        <!-- ############For Customers########### -->
+        <menuitem id="portal_main_menu_cust_lang_event" name="Onsite Interpretation" sequence="1" groups="bista_iugroup.group_iu_customer"/>
+        <menuitem id="portal_sub_menu_cust_lang_event" parent="portal_main_menu_cust_lang_event" name="Events" sequence="1" groups="bista_iugroup.group_iu_customer" />
+        <menuitem id="portal_sub_menu_cust_today_event_form" parent="portal_sub_menu_cust_lang_event" name="Today's Event" action="bista_iugroup.ir_actions_server_today_events_for_customer" sequence="1"
+                  groups="bista_iugroup.group_iu_customer" />
+        <menuitem id="portal_sub_menu_cust_past_event_form" parent="portal_sub_menu_cust_lang_event" name="Past Event" action="bista_iugroup.ir_actions_server_past_events_for_customer" sequence="2"
+                  groups="bista_iugroup.group_iu_customer" />
+        <menuitem id="portal_sub_menu_cust_future_event_form" parent="portal_sub_menu_cust_lang_event" name="Future Event" action="bista_iugroup.ir_actions_server_future_events_for_customer" sequence="3"
+                  groups="bista_iugroup.group_iu_customer" />
+        <menuitem name="Tasks" id="portal_menu_main_pm" sequence="2" groups="bista_iugroup.group_iu_portal,bista_iugroup.group_iu_portal_transporter" />
+        <menuitem id="portal_menu_action_view_task" parent="portal_menu_main_pm" sequence="1" name="Tasks"
+                   groups="bista_iugroup.group_iu_portal,bista_iugroup.group_iu_portal_transporter" />
+        <menuitem action="bista_iugroup.action_task_portal" id="sub_portal_menu_action_view_task" parent="portal_menu_action_view_task" sequence="1"
+                  groups="bista_iugroup.group_iu_portal" />
+        <menuitem action="bista_iugroup.action_task_portal" id="sub_portal_transporter_menu_action_view_task" parent="portal_menu_action_view_task" sequence="1"
+                  groups="bista_iugroup.group_iu_portal_transporter" />
+    </data>
+</odoo>

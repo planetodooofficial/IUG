@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <record id="data_mappingcode_wizard_form" model="ir.ui.view">
+            <field name="name">data.voucher.wizard.form</field>
+            <field name="model">data.voucher.wizard</field>
+            <field name="arch" type="xml">
+                <form string="Data Migration">
+                    <group>
+                        <field name="upload_file" />
+                    </group>
+                    <group>
+                        <field name="upload_error" filename="upload_error_file_name" readonly="1"/>
+                        <field name="upload_error_file_name" invisible="1"/>
+                    </group>
+                    <group>
+                        <button name="map_voucher" style="margin-bottom:10px;" string="Voucher Migration" type="object" class="btn btn-danger"/>
+                        <button name="map_voucher_line" style="margin-bottom:10px;" string="Voucher line  Migration" type="object" class="btn btn-danger"/>
+                        <button name="map_voucher_memo" style="margin-bottom:10px;" string="Voucher memo" type="object" class="btn btn-danger"/>
+                        </group>
+
+                    <footer>
+                        <button string="Cancel" class="oe_highlight" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+        <act_window id="data_voucher_wizard_action"
+                    name="Data Mapping Code Wizard"
+                    src_model="account.invoice"
+                    res_model="data.voucher.wizard"
+                    view_type="form" view_mode="form"
+                    key2="client_action_multi" target="new"/>
+
+                <menuitem id="migration_voucher_base_menu_custom_inherit" name="Data Migration Voucher"  sequence="0" groups="base.group_no_one"/>
+
+
+        <menuitem id="data_mappingcode_wizard_menu" action="data_voucher_wizard_action" name="Data Mapping Code Wizard for Vocuher"
+                  parent="migration_voucher_base_menu_custom_inherit" />
+    </data>
+</odoo>

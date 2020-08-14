@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <record model="ir.actions.server" id="action_bi_account_print_payments">
+            <field name="name">Print Checks</field>
+            <field name="model_id" ref="bi_account_journal.model_bi_account_payment"/>
+            <field name="code">
+if records:
+    action = records.print_checks()
+            </field>
+        </record>
+
+        <record model="ir.values" id="bi_account_payment_print_checks">
+            <field name="model_id" ref="bi_account_journal.model_bi_account_payment" />
+            <field name="name">Print Checks</field>
+            <field name="key2">client_action_multi</field>
+            <field name="value" eval="'ir.actions.server,' +str(ref('action_bi_account_print_payments'))" />
+            <field name="key">action</field>
+            <field name="model">bi.account.payment</field>
+        </record>
+
+        <record model="ir.actions.server" id="action_bi_account_print_receipts">
+            <field name="name">Print Checks</field>
+            <field name="model_id" ref="bi_account_journal.model_bi_account_receipt"/>
+            <field name="code">
+if records:
+    action = records.print_checks()
+            </field>
+        </record>
+
+        <record model="ir.values" id="bi_account_receipt_print_checks">
+            <field name="model_id" ref="bi_account_journal.model_bi_account_receipt" />
+            <field name="name">Print Checks</field>
+            <field name="key2">client_action_multi</field>
+            <field name="value" eval="'ir.actions.server,' +str(ref('action_bi_account_print_receipts'))" />
+            <field name="key">action</field>
+            <field name="model">bi.account.receipt</field>
+        </record>
+
+    </data>
+</odoo>

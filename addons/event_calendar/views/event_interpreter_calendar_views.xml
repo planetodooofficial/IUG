@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <record id="event_calendar_tree_view" model="ir.ui.view">
+            <field name="name">event.calendar.tree.view</field>
+            <field name="model">event.interpreter.calendar</field>
+            <field name="arch" type="xml">
+                <tree string="Event Calendar Tree">
+                    <field name="name"/>
+                    <field name="partner_id"/>
+                    <field name="start_time"/>
+                    <field name="end_time"/>
+                    <field name="duration"/>
+                </tree>
+            </field>
+        </record>
+        <record id= "event_calendar_form_view" model="ir.ui.view">
+            <field name="name">event.calendar.form.view</field>
+            <field name="model">event.interpreter.calendar</field>
+            <field name="arch" type="xml">
+                <form string="Event Calendar Form" version="10.0" edit="false">
+                    <header>
+                        <button name="cancel_event" string="Cancel" type="object"
+                            attrs="{'invisible': ['|', '|', ('is_event', '=', True), ('cancelled', '=', True), ('past_time', '=', True)]}"/>
+                    </header>
+                    <sheet>
+                        <h1 class="oe_title">
+                            <!-- <label for="name" class="oe_edit_only"/> -->
+                            <field name="name" attrs="{'invisible': [('is_event', '=', True)]}"
+                                placeholder=""/>
+                            <field name="event_id" attrs="{'invisible': [('is_event', '=', False)],
+                                    'readonly': [('is_event', '=', True)]}"/>
+                        </h1>
+                        <group>
+                            <group>
+                                <field name="is_event" invisible="1"/>
+                                <field name="start_time"
+                                    attrs="{'readonly': [('is_event', '=', True)]}"/>
+                                <field name="end_time"
+                                    attrs="{'readonly': [('is_event', '=', True)]}"/>
+                                <field name="allday" invisible="1"/>
+                                <field name="duration" invisible="1"/>
+                                <field name="past_time" invisible="1"/>
+                            </group>
+                            <group>
+                                <field name="partner_id"
+                                    domain="[('cust_type', '=', 'interpreter')]"
+                                    attrs="{'readonly': [('is_event', '=', True)]}"
+                                     groups="bista_iugroup.group_iu_cust_service"/>
+                                <field name="location_id"
+                                    attrs="{'readonly': [('is_event', '=', True)]}"/>
+                                <field name="company_id" groups="base.group_multi_company" widget="selection" invisible = "1"/>
+                                <field name="cancelled" readonly="1"
+                                    attrs="{'invisible': [('is_event', '=', True)]}"/>
+                            </group>
+                        </group>
+                        <field name="note" placeholder='Note....' nolable="1"
+                            attrs="{'readonly': [('is_event', '=', True)]}"/>
+                    </sheet>
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids" widget="mail_followers" groups="base.group_user"/>
+                        <field name="message_ids" widget="mail_thread"/>
+                    </div>
+                </form>
+            </field>
+        </record>
+        <record id="event_calendar_calendar_view" model="ir.ui.view">
+            <field name="name">event.calendar.calendar.view</field>
+            <field name="model">event.interpreter.calendar</field>
+            <field name="priority" eval="2"/>
+            <field name="arch" type="xml">
+                <calendar string="Event Calendar" date_start="start_time" color="partner_id"
+                    date_delay="duration" mode="week">
+                    <field name="name" attrs="{'invisible': [('is_event', '=', False)]}"/>
+                    <field name="partner_id" attrs="{'invisible': [('is_event', '=', True)]}"/>
+                    <field name="location_id" attrs="{'invisible': [('is_event', '=', False)]}"/>
+                    <field name="is_event"/>
+                </calendar>
+            </field>
+        </record>
+
+        <!-- <record id="event_calendar_search_view" model="ir.ui.view">
+            <field name="name">event.calendar.search.view</field>
+            <field name="model">event.interpreter.calendar</field>
+            <field name="priority" eval="2"/>
+            <field name="arch" type="xml">
+
+
+                <search string="Event Search">
+                    <field name="start_time"/>
+                    <filter name="today" string="Today" domain="[
+                        ('start_time', '&gt;=', time.strftime('%%Y-%%m-%%d 00:00:00')),
+                        ('start_time', '&lt;=', time.strftime('%%Y-%%m-%%d 23:59:59'))]"/>
+                </search>
+            </field>
+        </record> -->
+
+
+        <!-- 
+            actions for the customer services
+        -->
+
+        <record id="action_cs_event_calendar" model="ir.actions.act_window">
+            <field name="name">Event Calendar</field>
+            <field name="res_model">event.interpreter.calendar</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">calendar</field>
+            <field name="domain">[('is_event', '=', True)]</field>
+        </record>
+            <!-- <field name="context">{'search_default_today': 1}</field> -->
+
+        <record id="action_cs_event_calendar_block" model="ir.actions.act_window">
+            <field name="name">Blocked By Interpreter</field>
+            <field name="res_model">event.interpreter.calendar</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">calendar</field>
+            <field name="domain">[('is_event', '=', False)]</field>
+        </record>
+            <!-- <field name="context">{'search_default_today': 1}</field> -->
+
+        <record id="action_cs_event_calendar_unavailable" model="ir.actions.act_window">
+            <field name="name">Unavailable for Job</field>
+            <field name="res_model">event.interpreter.calendar</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form,calendar</field>
+        </record>
+            <!-- <field name="context">{'search_default_today': 1}</field> -->
+            <!-- <field name="domain">[('is_event', '=', True)]</field> -->
+
+
+
+        <!--
+            menus for the Customer Service
+        -->
+
+        <menuitem id="menu_event_devider" name="Calendar" parent="bista_iugroup.main_menu_lang_event" sequence="2"
+            groups="bista_iugroup.group_iu_cust_service,bista_iugroup.group_record_manager"/>
+
+        <menuitem action="action_cs_event_calendar" id="menu_action_cs_event_calendar" parent="menu_event_devider"
+            groups="bista_iugroup.group_iu_cust_service,bista_iugroup.group_record_manager"
+            sequence="10"/>
+        <menuitem action="action_cs_event_calendar_block" id="menu_action_cs_event_calendar_block"
+            groups="bista_iugroup.group_iu_cust_service,bista_iugroup.group_record_manager"
+            parent="menu_event_devider"
+            sequence="20"/>
+        <menuitem action="action_cs_event_calendar_unavailable" id="menu_action_cs_event_calendar_unavailable"
+            groups="bista_iugroup.group_iu_cust_service,bista_iugroup.group_record_manager"
+            parent="menu_event_devider"
+            sequence="30"/>
+
+
+
+        <!-- 
+            actions for the interpreter
+        -->
+
+        <!-- <record id="action_ip_event_calendar" model="ir.actions.act_window">
+            <field name="name">Event Calendar</field>
+            <field name="res_model">event.interpreter.calendar</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">calendar</field>
+            <field name="domain">[('is_event', '=', True)]</field>
+        </record> -->
+            <!-- <field name="search_view_id" ref="event_calendar_search_view"/> -->
+            <!-- <field name="context">{'search_default_today': 1}</field> -->
+
+        <!-- <record id="action_ip_event_calendar_unavailable" model="ir.actions.act_window">
+            <field name="name">Unavailable for Jobs</field>
+            <field name="res_model">event.interpreter.calendar</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">calendar</field>
+            <field name="domain">[('is_event', '=', True)]</field>
+        </record> -->
+
+
+        <!--
+            menus for the Interpreter
+        -->
+
+        <!-- <menuitem action="action_ip_event_calendar" id="menu_action_ip_event_calendar"
+            parent="bista_iugroup.portal_sub_menu_lang_event" sequence="150"
+            groups="bista_iugroup.group_iu_portal"/>
+        <menuitem action="action_ip_event_calendar_unavailable" id="menu_action_ip_event_calendar_unavailable"
+            parent="bista_iugroup.portal_sub_menu_lang_event" sequence="160"
+            groups="bista_iugroup.group_iu_portal"/> -->
+
+        <menuitem action="action_cs_event_calendar" id="menu_action_ip_event_calendar"
+            parent="bista_iugroup.portal_sub_menu_lang_event"
+            groups="bista_iugroup.group_iu_portal"
+            sequence="10"/>
+        <menuitem action="action_cs_event_calendar_unavailable" id="menu_action_ip_event_calendar_unavailable"
+            parent="bista_iugroup.portal_sub_menu_lang_event"
+            groups="bista_iugroup.group_iu_portal"
+            sequence="10"/>
+
+    </data>
+</odoo>

@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+
+        <record id="network_audit_log_search_view" model="ir.ui.view">
+            <field name="name">network.audit.log.search</field>
+            <field name="model">network.audit.log</field>
+            <field name="type">search</field>
+            <field name="arch" type="xml">
+                <search string="Networking Logs">
+                    <filter string="January" name="January" icon="terp-personal" domain="[('month','=','1')]"/>
+                    <filter string="February" name="February" icon="terp-personal" domain="[('month','=','2')]"/>
+                    <filter string="March" name="March" icon="terp-personal" domain="[('month','=','3')]"/>
+                    <filter string="April" name="April" icon="terp-personal" domain="[('month','=','4')]"/>
+                    <filter string="May" name="May" icon="terp-personal" domain="[('month','=','5')]" />
+                    <filter string="June" name="June" icon="terp-personal" domain="[('month','=','6')]"/>
+                    <filter string="July" name="July" icon="terp-personal" domain="[('month','=','7')]"/>
+                    <filter string="August" name="August" icon="terp-personal" domain="[('month','=','8')]"/>
+                    <filter string="September" name="September" icon="terp-personal" domain="[('month','=','9')]"/>
+                    <filter string="October" name="October" icon="terp-personal" domain="[('month','=','10')]"/>
+                    <filter string="November" name="November" icon="terp-personal" domain="[('month','=','11')]"/>
+                    <filter string="December" name="December" icon="terp-personal" domain="[('month','=','12')]"/>
+
+                    <newline/>
+                    <field name="name"/>
+                    <field name="year" />
+                    <newline/>
+                    <!--<group expand="0" string="Group By...">
+                        <filter string="Day" name="name" icon="terp-stock_effects-object-colorize" domain="[]" context="{'group_by':'name'}"/>
+                        <separator orientation="vertical"/>
+                        <filter string="Month" name="month" icon="terp-stock_effects-object-colorize" domain="[]" context="{'group_by':'month'}"/>
+                        <separator orientation="vertical"/>
+                        <filter string="Year" name="year" icon="terp-stock_effects-object-colorize" domain="[]" context="{'group_by':'year'}"/>
+
+                    </group>-->
+                </search>
+            </field>
+        </record>
+
+
+        <record id='network_audit_log_tree_view' model='ir.ui.view'>
+            <field name="name">network.audit.log.tree</field>
+            <field name="model">network.audit.log</field>
+            <field name="type">tree</field>
+            <field name="arch" type="xml">
+                <tree string="Networking Logs" create="false" delete="false">
+                    <field name="name"/>
+                    <field name="month" invisible="1"/>
+                    <field name="year" invisible="1"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id='network_audit_log_form_view' model='ir.ui.view'>
+            <field name="name">network.audit.log.form</field>
+            <field name="model">network.audit.log</field>
+            <field name="type">form</field>
+            <field name="arch" type="xml">
+                <form string="Networking Logs" create="false" edit="false" delete="false">
+                    <group col="4" colspan="4">
+                        <field name="name"/>
+                        <field name="month" invisible="1"/>
+                        <field name="year" invisible="1"/>
+                        <newline/>
+                        <separator string="User Logs" colspan="4"/>
+                        <field name="log_line" mode="tree" nolabel="1" colspan="4" readonly="1">
+                            <tree string="Logs" editable="top">
+                                <field name="user_id"/>
+                                <field name="name"/>
+                                <field name="logout"/>
+                                <field name="user_ip"/>
+                                <field name="session_id" invisible="1"/>
+                            </tree>
+                        </field>
+                        <separator colspan="4"/>
+                    </group>
+
+                </form>
+            </field>
+        </record>
+
+        <record id="action_network_audit_log" model="ir.actions.act_window">
+            <field name="name">Networking Logs</field>
+            <field name="res_model">network.audit.log</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_type">form</field>
+            <field name="view_id" ref="network_audit_log_tree_view"/>
+            <field name="search_view_id" ref="network_audit_log_search_view"/>
+        </record>
+
+
+        <record id="network_audit_log_line_search_view" model="ir.ui.view">
+            <field name="name">network.audit.log.line.search</field>
+            <field name="model">network.audit.log.line</field>
+            <field name="type">search</field>
+            <field name="arch" type="xml">
+                <search string="Networking Logs">
+                    <filter string="January" name="January" icon="terp-personal" domain="[('month','=','1')]"/>
+                    <filter string="February" name="February" icon="terp-personal" domain="[('month','=','2')]"/>
+                    <filter string="March" name="March" icon="terp-personal" domain="[('month','=','3')]"/>
+                    <filter string="April" name="April" icon="terp-personal" domain="[('month','=','4')]"/>
+                    <filter string="May" name="May" icon="terp-personal" domain="[('month','=','5')]" />
+                    <filter string="June" name="June" icon="terp-personal" domain="[('month','=','6')]"/>
+                    <filter string="July" name="July" icon="terp-personal" domain="[('month','=','7')]"/>
+                    <filter string="August" name="August" icon="terp-personal" domain="[('month','=','8')]"/>
+                    <filter string="September" name="September" icon="terp-personal" domain="[('month','=','9')]"/>
+                    <filter string="October" name="October" icon="terp-personal" domain="[('month','=','10')]"/>
+                    <filter string="November" name="November" icon="terp-personal" domain="[('month','=','11')]"/>
+                    <filter string="December" name="December" icon="terp-personal" domain="[('month','=','12')]"/>
+
+                    <newline/>
+                    <field name="creation_date"/>
+                    <field name="year" />
+                    <newline/>
+                    <group expand="0" string="Group By...">
+                        <filter string="Day" name="creation_date" icon="terp-stock_effects-object-colorize" domain="[]" context="{'group_by':'creation_date'}"/>
+                        <separator orientation="vertical"/>
+                        <filter string="Month" name="month" icon="terp-stock_effects-object-colorize" domain="[]" context="{'group_by':'month'}"/>
+                        <separator orientation="vertical"/>
+                        <filter string="Year" name="year" icon="terp-stock_effects-object-colorize" domain="[]" context="{'group_by':'year'}"/>
+
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <record id='network_audit_log_line_tree_view' model='ir.ui.view'>
+            <field name="name">network.audit.log.line.tree</field>
+            <field name="model">network.audit.log.line</field>
+            <field name="type">tree</field>
+            <field name="arch" type="xml">
+                <tree string="Networking Logs" editable="top" create="false" delete="false">
+                    <field name="log_id" invisible="1"/>
+                    <field name="creation_date"/>
+                    <field name="name"/>
+                    <field name="logout"/>
+                    <!--<field name="user_ip"/>-->
+                    <field name="user_id"/>
+                    <!--<field name="session_id" invisible="1"/>-->
+                    <field name="month" invisible="1"/>
+                    <field name="year" invisible="1"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id='network_audit_log_line_form_view' model='ir.ui.view'>
+            <field name="name">network.audit.log.line.form</field>
+            <field name="model">network.audit.log.line</field>
+            <field name="type">form</field>
+            <field name="arch" type="xml">
+                <form string="Networking Logs" create="false" edit="false" delete="false">
+                    <field name="log_id"/>
+                    <field name="name"/>
+                    <field name="logout"/>
+                    <!--<field name="user_ip"/>-->
+                    <field name="user_id"/>
+                    <!--<field name="session_id" invisible="1"/>-->
+                    <field name="month" />
+                    <field name="year" />
+
+                </form>
+            </field>
+        </record>
+
+        <record id="action_network_audit_log_line" model="ir.actions.act_window">
+            <field name="name">Networking Logs Line</field>
+            <field name="res_model">network.audit.log.line</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_type">form</field>
+            <field name="view_id" ref="network_audit_log_line_tree_view"/>
+            <field name="search_view_id" ref="network_audit_log_line_search_view"/>
+        </record>
+
+        <menuitem  id="network_audit_menu" name="Network Auditting" parent="base.menu_custom" sequence="45" />
+        <menuitem  id="network_audit_log_menu" action="action_network_audit_log" parent="network_audit_menu" sequence="6" />
+        <menuitem  id="network_audit_log_line_menu" action="action_network_audit_log_line" parent="network_audit_menu" sequence="7" />
+
+    </data>
+</odoo>
+

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!--Customer-->
+    <record model="ir.ui.view" id="view_partner_form_inherit_iugroup">
+        <field name="name">view.partner.form.customer</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="bista_iugroup.view_partner_form_inherit_iu" />
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='user_id']" position="after">
+                <field name="globelink_id" readonly="1"/><!-- groups="base.group_no_one"-->
+            </xpath>
+        </field>
+    </record>
+    <!--Contacts-->
+    <record model="ir.ui.view" id="inherit_iugroup_view_contact_form">
+        <field name="name">view.partner.form.customer</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="bista_iugroup.view_contact_form" />
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='user_id']" position="after">
+                <field name="globelink_id" readonly="1"/><!-- groups="base.group_no_one"-->
+            </xpath>
+        </field>
+    </record>
+    <!--Interpreter-->
+    <record model="ir.ui.view" id="inherit_iugroup_view_interpreter_form">
+        <field name="name">view.partner.form.customer</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="bista_iugroup.view_interpreter_form" />
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='user_id']" position="after">
+                <field name="globelink_id" readonly="1"/><!-- groups="base.group_no_one"-->
+            </xpath>
+        </field>
+    </record>
+
+
+</odoo>

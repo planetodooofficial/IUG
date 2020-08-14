@@ -1,0 +1,8 @@
+.openerp .adv_search .oe_view_manager {
+    display: block;
+    height: 230px;
+    overflow: auto;
+}
+.openerp .adv_search .oe_view_manager .oe_view_manager_body {
+    display: block;
+}

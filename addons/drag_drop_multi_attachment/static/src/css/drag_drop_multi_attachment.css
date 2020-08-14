@@ -1,0 +1,32 @@
+.drop_window {
+  display: none;
+}
+.drop_window .drop_body {
+  position: absolute;
+  left: 0;
+  text-align: center;
+  color: red;
+  top: 45%;
+  right: 0;
+  font-size: 20px;
+}
+.hide_window {
+  height: 100%;
+  opacity: 0;
+  overflow: hidden;
+}
+.drop_window_show {
+  display: block;
+  margin: 10px;
+  height: 100%;
+  border: 2px solid black !important;
+  overflow: hidden;
+  position: absolute;
+  width: 100%;
+  z-index: 0;
+  background: orange;
+}
+.o_form_view .o_form_sheet_bg .o_form_sheet {   
+    max-width: 1500px !important;   
+}
+

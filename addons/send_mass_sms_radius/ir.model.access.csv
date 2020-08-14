@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_sms_mass_sms_radius1,sms.mass.radius,model_sms_mass_radius,bista_iugroup.group_record_manager,1,1,1,1
+access_sms_mass_sms_radius2,sms.mass.radius,model_sms_mass_radius,bista_iugroup.group_iu_cust_service,1,1,1,1
+access_sms_mass_sms_radius,sms.mass.radius,model_sms_mass_radius,bista_iugroup.group_iu_recruiter,1,1,1,1

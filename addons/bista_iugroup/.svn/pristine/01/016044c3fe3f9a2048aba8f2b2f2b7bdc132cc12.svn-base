@@ -1,0 +1,1096 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<openerp>
+    <data>
+        
+
+        <report
+            id="account.action_report_print_overdue"
+            model="res.partner"
+            report_type="qweb-pdf"
+            string="Due Payments"
+            name="account.report_overdue"
+            file="account.report_overdue"
+            groups="account.group_account_manager,account.group_account_user"
+            />
+
+        <report
+            id="account_invoices"
+            model="account.invoice"
+            string="Invoices"
+            report_type="qweb-pdf"
+            name="account.report_invoice"
+            file="account.report_invoice"
+            attachment_use="True"
+            attachment="(object.state in ('open','paid')) and ('INV'+(object.number or '').replace('/','')+'.pdf')"
+            groups="bista_iugroup.group_iu_admin"
+        />
+
+<!--        <report auto="False" id="account.account_3rdparty_ledger" menu="False" model="res.partner" name="account.third_party_ledger" rml="account/report/account_partner_ledger.rml" string="Partner Ledger"
+                groups="account.group_account_manager,account.group_account_user"/>
+        <report auto="False" id="account.account_3rdparty_ledger_other" menu="False" model="res.partner" name="account.third_party_ledger_other" rml="account/report/account_partner_ledger_other.rml" string="Partner Ledger"
+                groups="account.group_account_manager,account.group_account_user"/>-->
+        
+<!--        <menuitem icon="STOCK_PRINT"
+            name="Partner Ledger"
+            action="account.action_account_partner_ledger"
+            groups="group_iu_admin"
+            id="account.menu_account_partner_ledger"
+            parent="account.next_id_22"/>-->
+
+<!--        <record id="account.action_account_partner_ledger" model="ir.actions.act_window">
+             <field name="name">Partner Ledger</field>
+             <field name="res_model">account.partner.ledger</field>
+             <field name="type">ir.actions.act_window</field>
+             <field name="view_type">form</field>
+             <field name="view_mode">tree,form</field>
+             <field name="view_id" ref="account.account_partner_ledger_view"/>
+             <field name="context">{}</field>
+             <field name="target">new</field>
+        </record>
+       
+        <record model="ir.values" id="account.ir_values_account_partner_ledger">
+           <field name="key2" eval="'client_print_multi'"/>
+           <field name="model" eval="'res.partner'"/>
+           <field name="name">Print Partner Ledger</field>
+           <field name="value" eval="'ir.actions.act_window,%d'%action_account_partner_ledger"/>
+           <field name="res_id" ref="bista_iugroup.group_iu_admin"/>
+       </record>-->
+       
+       <record id="invoice_tree_iu" model="ir.ui.view">
+            <field name="name">account.invoice.tree</field>
+            <field name="model">account.invoice</field>
+            <field name="inherit_id" ref="account.invoice_tree"/>
+            <field name="arch" type="xml">
+                <xpath expr="/tree" position="attributes">
+                    <attribute name="decoration-info">"is_emailed == True or is_monthly == True or is_mailed == True or is_printed == True or is_faxed == True"</attribute>
+                </xpath>
+                <xpath expr="/tree/field[@name='date_invoice']" position="replace">
+                    <field name="date_invoice" invisible="1"/>
+                    <field name="event_start_date" string="Date of Service"/>
+                    <field name="patient_id" string="Patient Name"/>
+                    <field name="project_name_id" string="Project"/>
+                    <field name="ref" string="Ref"/>
+                    <field name="language_id" />
+                    <field name="is_emailed" invisible="1"/>
+                    <field name="is_mailed" invisible="1"/>
+                    <field name="is_monthly" invisible="1"/>
+                    <field name="is_faxed" invisible="1"/>
+                    <field name="is_printed" invisible="1"/>
+                </xpath>
+                <xpath expr="/tree/field[@name='user_id']" position="replace">
+                    <field name="user_id" invisible="1"/>
+                </xpath>
+            </field>
+        </record>
+        
+        <!--Added this record to add event date in move line-->
+        <record id="view_move_form_iug" model="ir.ui.view">
+            <field name="name">account.move.form.iug</field>
+            <field name="model">account.move</field>
+            <field name="inherit_id" ref="account.view_move_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='line_ids']/tree/field[@name='date_maturity']" position="after">
+                    <field name="event_date" string="Date of Service"/>
+                    <field name="patient_id" string="Patient"/>
+                    <field name="project_name_id" string="Project"/>
+                    <field name="reference" string="Reference"/>
+                </xpath>
+            </field>
+        </record>
+       <record id="view_invoice_iu_inherit" model="ir.ui.view">
+            <field name="name">view.invoice.iu.inherit.view</field>
+            <field name="model">account.invoice</field>
+            <field name="type">form</field>
+            <field name="priority" eval="20"/>
+            <field name="inherit_id" ref="account.invoice_form"/>
+            <field name="arch" type="xml">
+                <data>
+                    <xpath expr="/form/header/button[@name='invoice_print']" position="replace"/>
+                    <xpath expr="/form/header" position="inside">
+                        <style>.o_form_sheet{max-width:90% !important}</style>
+                        <button name="reset_to_draft_iu" string="Reset To Draft" type="object" states="open" groups="account.group_account_invoice"/>
+                        <!--script buttons commented-->
+                        <!--<button name="correct_move_date_period" string="Correct Move Date Period" type="object" groups="bista_iugroup.group_iu_admin"/>-->
+                        
+                        <!--<button name="correct_translation_invoices" string="Correct Translation Invoices" type="object" groups="bista_iugroup.group_iu_admin"/>-->
+                        <!--<button name="post_invoice" string="Post Invoice" type="object" groups="bista_iugroup.group_iu_admin"/>
+                        <button name="reset_to_draft" string="Reset To Draft" type="object" groups="bista_iugroup.group_iu_admin"/>
+                        <button name="set_amount_due" string="Set Amount Due" type="object" groups="bista_iugroup.group_iu_admin"/>-->
+                    </xpath>
+                    <xpath expr="/form/sheet/notebook" position="inside">
+                         <page string="Event Info">
+                            <group colspan="3" col="6" readonly="1">
+                                <field name="event_id" context="{'form_view_ref':'bista_iugroup.view_event_form'}" readonly="1"/>
+                                <button name="get_event_view" string="View Event" type="object" groups="account.group_account_invoice"/>
+                                <separator></separator>
+<!--                                <field name="interpreter_id" domain="[('cust_type','in',('interpreter','interp_and_transl'))]"
+                                       context="{'form_view_ref':'bista_iugroup.view_interpreter_form'}"
+                                       options="{'limit': 7, 'create': false, 'create_edit': false ,'always_reload': True}" />-->
+<!--                                <field name="transporter_id" context="{'form_view_ref':'bista_iugroup.view_transporter_form'}"
+                                       domain="[('cust_type','in',('transporter'))]"
+                                       options="{'limit': 7, 'create': false, 'create_edit': false ,'always_reload': True}" />
+                                <field name="translator_id" context="{'form_view_ref':'bista_iugroup.view_translator_form'}"
+                                       domain="[('cust_type','in',('translator','interp_and_transl'))]"
+                                       options="{'limit': 7, 'create': false, 'create_edit': false ,'always_reload': True}" />-->
+                                <field name="doctor_id" options="{'limit': 7, 'create': false, 'create_edit': false ,'always_reload': True}" readonly="1"/>
+                                <field name="location_id" options="{'limit': 7, 'create': false, 'create_edit': false ,'always_reload': True}" readonly="1"/>
+                                <field name="event_start_date"/>
+                                <field name="event_start"/>
+                                <field name="patient_id"/>
+                                <field name="is_monthly" />
+                                <field name="is_mailed" />
+                                <field name="is_emailed" />
+                                <field name="is_faxed" />
+                                <field name="is_printed" />
+                                <field name="quickbooks_id" />
+                           </group>
+                           <group>
+                               <field name="language_id" options="{'limit': 7, 'create': false, 'create_edit': false ,'always_reload': True}" 
+                                      domain="[('company_id','=',company_id]"/>
+                           </group>
+                     </page>
+                    <page string="Payments">
+                        <field name="payment_move_line_ids">
+                             <tree string="Payments">
+                                    <field name="date"/>
+                                    <field name="move_id"/>
+                                    <field name="ref"/>
+                                    <field name="name"/>
+                                    <field name="journal_id" groups="base.group_user"/>
+                                    <field name="debit"/>
+                                    <field name="credit"/>
+                                </tree>
+                        </field>
+                    </page>
+                </xpath>
+                <xpath expr="//field[@name='invoice_line_ids']/tree/field[@name='account_analytic_id']" position="replace"/>
+
+                <xpath expr="//field[@name='invoice_line_ids']/tree/field[@name='quantity']" position="replace">
+                     <field name="quantity" string="HR/Miles"/>
+                </xpath>
+                <xpath expr="//field[@name='invoice_line_ids']/tree/field[@name='price_subtotal']" position="after">
+                     <field name="total_editable" sum="total_editable" string="Edit Total"/>
+                </xpath>
+                <xpath expr="//field[@name='date_due']" position="replace">
+                     <field name="date_due" attrs="{'readonly':[('state','in',('open','paid','cancelled'))]}"/>
+                </xpath>
+                <!--<xpath expr="/form/sheet/notebook/page[@string='Payments']/field[@name='payment_ids']/tree/field[@name='name']" position="after">-->
+                     <!--<field name="check_number"/>-->
+                <!--</xpath>-->
+                <xpath expr="//field[@name='invoice_line_ids']/tree/field[@name='invoice_line_tax_ids']" position="replace">
+                    <field name="invoice_line_tax_ids" widget="many2many_tags" context="{'type':parent.type}"
+                                        domain="[('parent_id','=',False),('type_tax_use','=','sale'),('company_id', '=', parent.company_id)]" options="{'no_create': True}" invisible="1"/>
+                </xpath>
+<!--                 <xpath expr="/form/sheet/notebook/page[@string='Invoice Lines']/field[@name='invoice_line']/tree/field[@name='account_id']" position="replace">
+                     <field name="account_id" groups="account.group_account_user" options="{'limit': 7, 'create': false, 'create_edit': false ,'always_reload': True}"
+                            domain="[('company_id', '=', parent.company_id), ('journal_id', '=', parent.journal_id), ('type', '=', 'other')]"
+                            on_change="onchange_account_id(product_id, parent.partner_id, parent.type, parent.fiscal_position,account_id)" invisible="1"/>
+                </xpath>-->
+
+                <xpath expr="//field[@name='invoice_line_ids']/tree/field[@name='price_unit']" position="replace">
+<!--                     <field name="actual_time"  invisible="1"/>-->
+                     <field name="price_unit" string="Rate"/>
+                     <field name="travel_time" />
+                     <field name="travelling_rate" />
+                     <field name="miles_driven"/>
+                     <field name="mileage"/>
+                     <field name="mileage_rate"/>
+                     <field name="miscellaneous_bill" invisible="1"/>
+<!--                     <field name="discount" groups="sale.group_discount_per_so_line"/>-->
+                </xpath>
+
+                <xpath expr="//field[@name='partner_id']" position="replace">
+                    <field string="Customer" name="partner_id"
+                           context="{'default_customer': 1, 'search_default_customer': 1, 'default_supplier': 0, 'show_address': 1,'form_view_ref':'bista_iugroup.view_partner_form_inherit_iu'}"
+                           domain="[('customer', '=', 1),('cust_type', '=', 'customer'),('company_id', '=',company_id)]" options='{"always_reload": True}'/>
+                    <field name="cust_gpuid" attrs="{'invisible': ['|',('cust_gpuid','=',False)]}" options="{'limit': 7, 'create': false, 'create_edit': false ,'always_reload': True}"/>
+                    <field name="cust_csid" attrs="{'invisible': ['|',('cust_csid','=',False)]}"/>
+                    <field name="contact_id" domain="[('customer', '=', 1),('cust_type', '=', 'contact'),('company_id','=',company_id),('parent_id','=',partner_id )]"
+                           options="{'limit': 7, 'create': false, 'create_edit': false ,'always_reload': True}" context="{ 'form_view_ref':'bista_iugroup.view_contact_form'}"/>
+                    <field name="check_no" readonly="0"/>
+                </xpath>
+                <xpath expr="//field[@name='date_invoice']" position="before">
+                    <field name="ordering_partner_id" domain="[('customer', '=', 1),('cust_type', '=', 'customer'),('company_id', '=',company_id)]"
+                           options="{'limit': 7, 'create': false, 'create_edit': false ,'always_reload': True}"
+                           context="{'default_customer': 0, 'search_default_supplier': 1, 'default_supplier': 1, 'show_address': 1,'form_view_ref':'bista_iugroup.view_partner_form_inherit_iu'}" />
+                    <field name="ordering_contact_id" domain="[('customer', '=', 1),('cust_type', '=', 'contact'),('company_id','=',company_id),('parent_id','=',ordering_partner_id )]"
+                           options="{'limit': 7, 'create': false, 'create_edit': false ,'always_reload': True}" context="{ 'form_view_ref':'bista_iugroup.view_contact_form'}"/>
+                </xpath>
+                <xpath expr="//field[@name='date_invoice']" position="attributes">
+                    <attribute name="attrs">{'readonly':[('state','in',('open','paid','cancelled'))]}</attribute>
+                 </xpath>
+                <xpath expr="/form/sheet/group" position="after">
+                    <group colspan="4">
+                        <h3>
+                            <field name="invoice_ref" context="{'form_view_ref':'account.invoice_supplier_form'}"/>
+                        </h3>
+                    </group>
+                </xpath>
+                <xpath expr="//field[@name='comment']" position="after">
+                    <div class="oe_clear">
+                        <label for="internal_comment"/>
+                    </div>
+                    <field name="internal_comment" class="oe_inline" placeholder="Internal notes..."/>
+                </xpath>
+                </data>
+            </field>
+        </record>
+        
+        <record id="account.invoice_supplier_form" model="ir.ui.view">
+            <field name="name">account.invoice.supplier.form</field>
+            <field name="model">account.invoice</field>
+            <field name="priority">2</field>
+            <field name="arch" type="xml">
+              <form string="Vendor Invoice" version="7.0">
+                <header>
+                    <button name="action_invoice_open" states="draft,proforma2" type="object" string="Validate" class="oe_highlight" groups="account.group_account_invoice"/>
+                    <button name="%(account.action_account_invoice_payment)d" type="action" states="open" string="Register Payment" groups="account.group_account_invoice" class="oe_highlight"/>
+                    <button name="%(account.action_account_invoice_refund)d" type='action' string='Ask Refund' states='open,paid' groups="account.group_account_invoice"/>
+                    <button name="action_invoice_cancel" states="draft,proforma2" string="Cancel Invoice" groups="account.group_account_invoice" type="object"/>
+                    <button name="action_cancel_draft" states="cancel" string="Set to Draft" type="object" groups="account.group_account_invoice"/>
+
+                    <field name="state" widget="statusbar" statusbar_visible="draft,open,paid" statusbar_colors='{"proforma":"blue","proforma2":"blue"}'/>
+                    <button name="reset_to_draft_iu" string="Reset To Draft" type="object" states="open" groups="account.group_account_invoice"/>
+                                            <!--script buttons commented-->
+                    
+                    <!--<button name="post_invoice_supplier" string="Post Invoice" type="object" groups="bista_iugroup.group_iu_admin"/>
+                    <button name="reset_to_draft" string="Reset To Draft" type="object" groups="bista_iugroup.group_iu_admin"/>-->
+                </header>
+                <sheet string="Vendor Invoice">
+                    <style>.o_form_sheet{max-width:90% !important}</style>
+                    <div class="oe_title">
+                        <h1>
+                            <label string="Draft Invoice" attrs="{'invisible': ['|',('state','&lt;&gt;','draft'), ('type','&lt;&gt;','in_invoice')]}"/>
+                            <label string="Draft Refund" attrs="{'invisible': ['|',('state','&lt;&gt;','draft'), ('type','&lt;&gt;','in_refund')]}"/>
+                            <label string="Invoice" attrs="{'invisible': ['|',('state', '=', 'draft'), ('type','&lt;&gt;','in_invoice')]}"/>
+                            <label string="Refund" attrs="{'invisible': ['|',('state', '=', 'draft'), ('type','&lt;&gt;','in_refund')]}"/>
+                            <field name="number" class="oe_inline"  attrs="{'invisible': [('state', '=', 'draft')]}"/>
+                        </h1>
+                    </div>
+                    <field name="type" invisible="1"/>
+                    <group>
+                        <group>
+                            <field string="Vendor" name="partner_id"
+
+                                   context="{'default_customer': 0, 'search_default_supplier': 1, 'default_supplier': 1, 'show_address': 1,'form_view_ref':'bista_iugroup.view_interpreter_form'}"
+                                   domain="[('supplier', '=',1),('customer','=',0),('company_id', '=',company_id)]"
+                                   options="{'limit': 7, 'create': false, 'create_edit': false ,'always_reload': True}"/>
+                            <newline/>
+                            <field name="cust_gpuid" attrs="{'invisible': ['|',('cust_gpuid','=',False)]}"/>
+                            <field name="cust_csid" attrs="{'invisible': ['|',('cust_csid','=',False)]}"/>
+                            <field name="contact_id" domain="[('customer', '=', 1),('cust_type', '=', 'contact'),('company_id','=',company_id),('parent_id','=',partner_id )]"
+                                   options="{'limit': 7, 'create': false, 'create_edit': false ,'always_reload': True}" context="{ 'form_view_ref':'bista_iugroup.view_contact_form'}"/>
+                            <field name="fiscal_position_id" widget="selection"/>
+                            <field name="origin"/>
+                            <field name="reference" string="Vendor Reference"/>
+                        </group>
+                        <group>
+                            <field name="date_invoice" attrs="{'readonly':[('state','in',('open','paid','cancelled'))]}" />
+                            <field name="ordering_partner_id" domain="[('customer', '=', 1),('cust_type', '=', 'customer'),('company_id', '=',company_id)]"
+                                   options="{'limit': 7, 'create': false, 'create_edit': false ,'always_reload': True}"
+                                   context="{'default_customer': 0, 'search_default_supplier': 1, 'default_supplier': 1, 'show_address': 1,'form_view_ref':'bista_iugroup.view_partner_form_inherit_iu'}"/>
+                            <field name="ordering_contact_id" domain="[('customer', '=', 1),('cust_type', '=', 'contact'),('company_id','=',company_id),('parent_id','=',ordering_partner_id )]"
+                                   options="{'limit': 7, 'create': false, 'create_edit': false ,'always_reload': True}" context="{'form_view_ref':'bista_iugroup.view_contact_form'}"/>
+                            <field name="date_due" attrs="{'readonly':[('state','in',('open','paid','cancelled'))]}"/>
+                            <field domain="[('company_id', '=', company_id), ('internal_type', '=', 'payable')]"
+                                   name="account_id" groups="account.group_account_user"/>
+                            <field name="journal_id" groups="account.group_account_user"
+                                    widget="selection"/>
+                            <field name="currency_id" groups="base.group_multi_currency"/>
+                        </group>
+                    </group>
+                    <h3>
+                        <group colspan="4" col="4" >
+                            <group>
+                                <field name="invoice_ref" context="{'form_view_ref':'view_invoice_iu_inherit'}"/>
+                            </group>
+                            <group>
+                            </group>
+                        </group>
+                    </h3>
+                    <notebook>
+                        <page string="Invoice">
+                            <field context="{'partner_id': partner_id, 'price_type': context.get('price_type') or False, 'type': type}" name="invoice_line_ids">
+                                <tree string="Invoice lines" editable="bottom">
+                                    <field name="sequence" widget="handle" />
+                                    <field name="product_id" options="{'limit': 7, 'create': false, 'create_edit': false ,'always_reload': True}"
+                                           />
+                                    <field name="name"/>
+                                    <field name="company_id" invisible="1"/>
+                                    <field name="account_id" groups="account.group_account_user" options="{'limit': 7, 'create': false, 'create_edit': false ,'always_reload': True}"
+                                           domain="[('company_id', '=', parent.company_id), ('internal_type', '=', 'other')]"
+                                            />
+                                    <field name="account_analytic_id" groups="analytic.group_analytic_accounting"
+                                           domain="[('type','!=','view'), ('company_id', '=', parent.company_id)]" invisible="1"/>
+                                    <field name="quantity" string="HR/Miles"/>
+                                    <field name="uom_id" groups="product.group_uom" options="{'limit': 7, 'create': false, 'create_edit': false ,'always_reload': True}"
+                                           />
+                                    <field name="price_unit" string="Rate"/>
+                                    <field name="travel_time" />
+                                    <field name="travelling_rate" />
+                                    <field name="miles_driven"/>
+                                    <field name="mileage"/>
+                                    <field name="mileage_rate"/>
+                                    <field name="miscellaneous_bill" invisible="1"/>
+                                    <field name="discount" groups="sale.group_discount_per_so_line"/>
+                                    <field name="invoice_line_tax_ids" widget="many2many_tags" context="{'type':parent.type}"
+                                           domain="[('parent_id','=',False),('company_id', '=', parent.company_id)]" invisible="1"/>
+                                    <field name="price_subtotal"/>
+                                    <field name="total_editable" sum="total_editable" string="Edit Total"/>
+                                </tree>
+                            </field>
+                            <group class="oe_subtotal_footer oe_right">
+                                <field name="amount_untaxed" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                                <div>
+                                    <label for="amount_tax"/>
+                                    <button name="button_reset_taxes" states="draft,proforma2"
+                                        string="(update)" class="oe_link oe_edit_only"
+                                        type="object" help="Recompute taxes and total"/>
+                                </div>
+                                <field name="amount_tax" nolabel="1" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                                <field name="amount_total" class="oe_subtotal_footer_separator" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                                <field name="residual" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                                <field name="reconciled" invisible="1"/>
+                            </group>
+                            <div style="width:50%">
+                                <field name="tax_line_ids">
+                                    <tree editable="bottom" string="Taxes">
+                                        <field name="name"/>
+                                        <field name="account_id" groups="account.group_account_invoice"/>
+                                        <field name="account_analytic_id" domain="[('type','&lt;&gt;','view'), ('company_id', '=', parent.company_id)]" groups="analytic.group_analytic_accounting"/>
+                                        <field name="amount"/>
+                                    </tree>
+                                </field>
+                            </div>
+                            <div class="oe_clear">
+                                <label for="comment"/>
+                            </div>
+                            <field name="comment" nolabel="1" colspan="4" widget="html"/>
+                            <div class="oe_clear">
+                                <label for="internal_comment"/>
+                            </div>
+                            <field name="internal_comment" class="oe_inline" placeholder="Internal notes..."/>
+                        </page>
+                        <page string="Other Info">
+                            <group>
+                                <group>
+                                    <field domain="[('partner_id', '=', partner_id)]" name="partner_bank_id" />
+                                    <field name="user_id" domain="[('company_id', '=', company_id)]" options="{'limit': 7, 'create': false, 'create_edit': false, 'no_open': True}"/>
+                                    <field name="sales_representative_id"/>
+                                    <field name="name" invisible="1"/>
+                                    <field name="payment_term_id" widget="selection"/>
+                                    <field name="state_name_related" invisible="1"/>
+                                </group>
+                                <group>
+                                    <field name="move_id" groups="account.group_account_user"/>
+                                    <field name="period_id" domain="[('state', '=', 'draft'), ('company_id', '=', company_id)]" groups="account.group_account_user"/>
+                                    <field name="company_id" />
+                                </group>
+                            </group>
+                        </page>
+                        <!--<page string="Payments">-->
+                            <!--<field name="payment_ids">-->
+                                <!--<tree string="Payments">-->
+                                    <!--<field name="date" string="Payment Date"/>-->
+                                    <!--<field name="move_id"/>-->
+                                    <!--<field name="ref"/>-->
+                                    <!--<field name="name"/>-->
+                                    <!--<field name="check_number" />-->
+                                    <!--<field name="journal_id"/>-->
+                                    <!--<field name="debit"/>-->
+                                    <!--<field name="credit"/>-->
+                                    <!--<field name="amount_currency"/>-->
+                                    <!--<field name="currency_id" groups="base.group_multi_currency"/>-->
+                                <!--</tree>-->
+                            <!--</field>-->
+                        <!--</page>-->
+                        <page string="Event Info" >
+                            <group colspan="3" col="6" readonly="1">
+                                <field name="event_id" options="{'limit': 7, 'create': false, 'create_edit': false ,'always_reload': True}"
+                                       context="{'form_view_ref':'bista_iugroup.view_event_form'}" readonly="1"/>
+                                <field name="project_name_id" options="{'limit': 7, 'create': false, 'create_edit': false ,'always_reload': True}"/>
+<!--                                <field name="transporter_id" context="{'form_view_ref':'bista_iugroup.view_transporter_form'}"
+                                       domain="[('cust_type','in',('transporter'))]"
+                                       options="{'limit': 7, 'create': false, 'create_edit': false ,'always_reload': True}" />
+                                <field name="translator_id" context="{'form_view_ref':'bista_iugroup.view_translator_form'}"
+                                       domain="[('cust_type','in',('translator','interp_and_transl'))]"
+                                       options="{'limit': 7, 'create': false, 'create_edit': false ,'always_reload': True}" />-->
+                                <field name="doctor_id" options="{'limit': 7, 'create': false, 'create_edit': false ,'always_reload': True}" />
+                                <field name="location_id" options="{'limit': 7, 'create': false, 'create_edit': false ,'always_reload': True}" />
+                                <field name="language_id" options="{'limit': 7, 'create': false, 'create_edit': false ,'always_reload': True}" />
+                                <field name="event_start_date"/>
+                                <field name="patient_id"/>
+                                <field name="is_monthly" />
+                                <field name="is_mailed" />
+                                <field name="is_emailed" />
+                                <field name="is_faxed" />
+                                <field name="is_printed" />
+                                <field name="quickbooks_id"/>
+                           </group>
+                     </page>
+                     <page string="Payments">
+                        <field name="payment_move_line_ids">
+                             <tree string="Payments">
+                                    <field name="date"/>
+                                    <field name="move_id"/>
+                                    <field name="ref"/>
+                                    <field name="name"/>
+                                    <field name="journal_id" groups="base.group_user"/>
+                                    <field name="debit"/>
+                                    <field name="credit"/>
+                                </tree>
+                        </field>
+                    </page>
+<!--                     <page string="Customer Invoice Info">
+                            <group>
+                              <field name="invoice_line_ids" nolabel="1">
+                                <tree string="Customer Invoice lines" >
+                                    <field name="sequence" widget="handle" />
+                                    <field name="product_id" options="{'limit': 7, 'create': false, 'create_edit': false ,'always_reload': True}"
+                                           on_change="product_id_change(product_id, uos_id, quantity, name, parent.type, parent.partner_id, parent.fiscal_position, price_unit, parent.currency_id, context, parent.company_id)"/>
+                                    <field name="name"/>
+                                    <field name="company_id" invisible="1"/>
+                                    <field name="account_id" groups="account.group_account_user" options="{'limit': 7, 'create': false, 'create_edit': false ,'always_reload': True}"
+                                           domain="[('company_id', '=', parent.company_id), ('journal_id', '=', parent.journal_id), ('type', '=', 'other')]"
+                                           on_change="onchange_account_id(product_id, parent.partner_id, parent.type, parent.fiscal_position,account_id)" invisible="1"/>
+                                    <field name="account_analytic_id" groups="analytic.group_analytic_accounting"
+                                           domain="[('type','!=','view'), ('company_id', '=', parent.company_id)]" invisible="1"/>
+                                    <field name="quantity" string="HR/Miles"/>
+                                    <field name="1" groups="product.group_uom" options="{'limit': 7, 'create': false, 'create_edit': false ,'always_reload': True}"
+                                           on_change="uos_id_change(product_id, uos_id, quantity, name, parent.type, parent.partner_id, parent.fiscal_position, price_unit, parent.currency_id, context, parent.company_id)"/>
+                                    <field name="price_unit" string="Rate"/>
+                                    <field name="travel_time" />
+                                    <field name="travelling_rate" />
+                                    <field name="miles_driven"/>
+                                    <field name="mileage"/>
+                                    <field name="mileage_rate"/>
+                                    <field name="miscellaneous_bill" invisible="1"/>
+                                    <field name="discount" groups="sale.group_discount_per_so_line"/>
+                                    <field name="invoice_line_tax_id" widget="many2many_tags" context="{'type':parent.type}"
+                                           domain="[('parent_id','=',False),('company_id', '=', parent.company_id)]" invisible="1"/>
+                                    <field name="price_subtotal"/>
+                                </tree>
+                            </field>
+                           </group>
+                        </page>-->
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids" widget="mail_followers"/>
+                    <field name="message_ids" widget="mail_thread"/>
+                </div>
+                </form>
+            </field>
+        </record>
+
+        <record id="customer_transport_invoice_form" model="ir.ui.view">
+            <field name="name">account.invoice.form.transporter</field>
+            <field name="model">account.invoice</field>
+            <field name="arch" type="xml">
+                <form string="Customer Transport Invoice" version="7.0">
+                <header>
+                                                <!--script buttons commented-->
+
+		    <!--<button name="post_invoice" string="Post Invoice" type="object" groups="bista_iugroup.group_iu_admin"/>
+                    <button name="reset_to_draft" string="Reset To Draft" type="object" groups="bista_iugroup.group_iu_admin"/>-->
+                    <button name="action_invoice_sent" type="object" string="Send by Email" attrs="{'invisible':['|',('sent','=',True), ('state', '!=', 'open')]}" class="oe_highlight" groups="base.group_user"/>
+                    <button name="invoice_print" string="Print" type="object" attrs="{'invisible':['|',('sent','=',True), ('state', '!=', 'open')]}" class="oe_highlight" groups="base.group_user"/>
+                    <button name="action_invoice_sent" type="object" string="Send by Email" attrs="{'invisible':['|',('sent','=',False), ('state', '!=', 'open')]}" groups="base.group_user"/>
+                    <button name="invoice_print" string="Print Invoice" type="object" attrs="{'invisible':['|',('sent','=',False), ('state', '!=', 'open')]}" groups="base.group_user"/>
+                    <button name="action_invoice_open" states="draft" string="Validate" class="oe_highlight" groups="base.group_user" type="object"/>
+                    <button name="action_invoice_open" states="proforma2" string="Validate" groups="base.group_user" type="object"/>
+                    <button name="action_invoice_proforma2" states="draft" string="PRO-FORMA" groups="account.group_proforma_invoices" type="object"/>
+                    <button name="%(account.action_account_invoice_refund)d" type='action' string='Refund Invoice' states='open,proforma2,paid' groups="base.group_user"/>
+                    <button name="action_invoice_cancel" states="draft,proforma2,open" string="Cancel Invoice" groups="base.group_no_one" type="object"/>
+                    <button name="action_cancel_draft" states="cancel" string="Reset to Draft" type="object" groups="base.group_user"/>
+
+                    <button name="reset_to_draft_iu" string="Reset To Draft" type="object" states="open" groups="account.group_account_invoice"/>
+                    <field name="state" widget="statusbar" nolabel="1" statusbar_visible="draft,open,paid" statusbar_colors='{"proforma":"blue","proforma2":"blue"}'/>
+                </header>
+                <sheet string="Invoice">
+                    <style>.o_form_sheet{max-width:90% !important}</style>
+                    <h1>
+                        <label string="Draft Invoice " attrs="{'invisible': ['|',('state','not in',('draft',)), ('type','&lt;&gt;','out_invoice')]}"/>
+                        <label string="Draft Refund " attrs="{'invisible': ['|',('state','not in',('draft',)), ('type','&lt;&gt;','out_refund')]}"/>
+                        <label string="Pro Forma Invoice " attrs="{'invisible': [('state','not in',('proforma','proforma2'))]}"/>
+                        <label string="Invoice " attrs="{'invisible': ['|',('state','in',('draft','proforma','proforma2')), ('type','&lt;&gt;','out_invoice')]}"/>
+                        <label string="Refund " attrs="{'invisible': ['|',('state','in',('draft','proforma','proforma2')), ('type','&lt;&gt;','out_refund')]}"/>
+                        <field name="number" readonly="1" class="oe_inline"/>
+                    </h1>
+                    <field name="type" invisible="1"/>
+                    <group>
+                        <group>
+                            <field string="Customer" name="partner_id"
+                                   context="{'default_customer': 1, 'search_default_customer': 1, 'default_supplier': 0, 'show_address': 1,'form_view_ref':'bista_iugroup.view_partner_form_inherit_iu'}"
+                                   domain="[('customer', '=', 1),('cust_type', '=', 'customer'),('company_id', '=',company_id)]" />
+                            <field name="cust_gpuid" attrs="{'invisible': ['|',('cust_gpuid','=',False)]}" options="{'limit': 7, 'create': false, 'create_edit': false ,'always_reload': True}"/>
+                            <field name="cust_csid" attrs="{'invisible': ['|',('cust_csid','=',False)]}"/>
+                            <field name="contact_id" domain="[('customer', '=', 1),('cust_type', '=', 'contact'),('company_id','=',company_id),('parent_id','=',partner_id )]"
+                                       options="{'limit': 7, 'create': false, 'create_edit': false ,'always_reload': True}" context="{ 'form_view_ref':'bista_iugroup.view_contact_form'}"/>
+
+                            <field name="fiscal_position_id" widget="selection" />
+                        </group>
+                        <group>
+                            <field name="ordering_partner_id" domain="[('customer', '=', 1),('cust_type', '=', 'customer'),('company_id', '=',company_id)]"
+                                   options="{'limit': 7, 'create': false, 'create_edit': false ,'always_reload': True}"
+                                   context="{'default_customer': 0, 'search_default_supplier': 1, 'default_supplier': 1, 'show_address': 1,'form_view_ref':'bista_iugroup.view_partner_form_inherit_iu'}" />
+                            <field name="ordering_contact_id" domain="[('customer', '=', 1),('cust_type', '=', 'contact'),('company_id','=',company_id),('parent_id','=',ordering_partner_id )]"
+                                            options="{'limit': 7, 'create': false, 'create_edit': false ,'always_reload': True}" context="{ 'form_view_ref':'bista_iugroup.view_contact_form'}"/>
+
+                            <field name="date_invoice" attrs = "{'readonly':[('state','in',('open','paid','cancelled'))]}" />
+                            <field name="journal_id" groups="account.group_account_user" widget="selection"/>
+                            <field domain="[('company_id', '=', company_id),('internal_type','=', 'receivable')]"
+                                   name="account_id" groups="account.group_account_user"/>
+
+                            <label for="currency_id" groups="base.group_multi_currency"/>
+                            <div groups="base.group_multi_currency">
+                                <field name="currency_id" class="oe_inline"/>
+                                
+                            </div>
+                        </group>
+                    </group>
+                    <group colspan="4">
+                        <h3>
+                            <field name="invoice_ref" context="{'form_view_ref':'invoice_supplier_transporter_form'}"/>
+                        </h3>
+                    </group>
+                    <field name="sent" invisible="1"/>
+                    <notebook colspan="4">
+                        <page string="Invoice Lines">
+                            <field name="invoice_line_ids" nolabel="1" widget="one2many_list" context="{'type': type}">
+                                <tree string="Invoice Lines" editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="product_id"
+                                           />
+                                    <field name="name"/>
+                                    <field name="company_id" invisible="1"/>
+                                    <field name="account_id" groups="account.group_account_user" options="{'limit': 7, 'create': false, 'create_edit': false ,'always_reload': True}"
+                                           domain="[('company_id', '=', parent.company_id),('internal_type', '=', 'other')]"
+                                           invisible="1"/>
+
+                                    <field name="quantity" string="HR/Miles"/>
+                                    <field name="uom_id" groups="product.group_uom"
+                                           />
+                                    <field name="price_unit" string="Rate"/>
+                                    <field name="travel_time" />
+                                    <field name="travelling_rate" />
+                                    <field name="miles_driven"/>
+                                    <field name="mileage" invisible="1"/>
+                                    <field name="mileage_rate" invisible="1"/>
+                                    <field name="wait_time"/>
+                                    <field name="pickup_fee"/>
+                                    <field name="gratuity"/>
+                                    <field name="after_hours"/>
+                                    <field name="miscellaneous_bill" invisible="1"/>
+                                    <field name="discount" groups="sale.group_discount_per_so_line"/>
+                                    <field name="invoice_line_tax_ids" widget="many2many_tags" context="{'type':parent.type}"
+                                           domain="[('parent_id','=',False),('company_id', '=', parent.company_id)]" invisible="1"/>
+                                    <field name="price_subtotal"/>
+                                </tree>
+                            </field>
+                            <group class="oe_subtotal_footer oe_right">
+                                <field name="amount_untaxed" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                                <div>
+                                    <label for="amount_tax"/>
+                                </div>
+                                <field name="amount_tax" nolabel="1" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                                <field name="amount_total" class="oe_subtotal_footer_separator" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                                <field name="residual" groups="account.group_account_user" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                                <field name="reconciled" invisible="1"/>
+                            </group>
+                            <group>
+                                    <field name="payment_term_id" class="oe_inline"/>
+                            </group>
+                            <div class="oe_clear">
+                                <label for="comment"/>
+                            </div>
+                            <field name="comment" class="oe_inline" placeholder="Additional notes..."/>
+                            <div class="oe_clear">
+                                <label for="internal_comment"/>
+                            </div>
+                            <field name="internal_comment" class="oe_inline" placeholder="Internal notes..."/>
+                        </page>
+                        <page string="Other Info">
+                            <group col="4">
+                                <group>
+                                    <field name="company_id"  widget="selection" groups="base.group_multi_company"/>
+                                    <field name="user_id" groups="base.group_user"/>
+                                    <field domain="[('partner_id.ref_companies', 'in', [company_id])]" name="partner_bank_id"/>
+                                    <field name="period_id" domain="[('state', '=', 'draft'), ('company_id', '=', company_id)]"
+                                           groups="account.group_account_manager" string="Accounting Period"
+                                           placeholder="force period"/>
+                                    <field name="date_due" attrs="{'readonly':[('state','in',('open','paid','cancelled'))]}"/>
+                                </group>
+                                <group>
+                                    <field name="origin" groups="base.group_user"/>
+                                    <field name="name" string="Customer Reference"/>
+                                    <field name="move_id" groups="account.group_account_user"/>
+                                </group>
+                            </group>
+                            <field name="tax_line_ids">
+                                <tree editable="bottom" string="Taxes">
+                                    <field name="name"/>
+                                    <field name="account_id" groups="account.group_account_user"/>
+                                    <field name="amount" />
+                                </tree>
+                            </field>
+                        </page>
+                        <!--<page string="Payments" groups="base.group_user">-->
+                            <!--<field name="payment_ids">-->
+                                <!--<tree string="Payments">-->
+                                    <!--<field name="date"/>-->
+                                    <!--<field name="move_id"/>-->
+                                    <!--<field name="ref"/>-->
+                                    <!--<field name="name"/>-->
+                                    <!--<field name="journal_id" groups="base.group_user"/>-->
+                                    <!--<field name="debit"/>-->
+                                    <!--<field name="credit"/>-->
+                                    <!--<field name="amount_currency" groups="base.group_multi_currency"/>-->
+                                    <!--<field name="currency_id" groups="base.group_multi_currency"/>-->
+                                <!--</tree>-->
+                            <!--</field>-->
+                        <!--</page>-->
+                        <page string="Event Info">
+                            <group colspan="3" col="6" readonly="1">
+                                <field name="event_id" context="{'form_view_ref':'bista_iugroup.view_event_form'}" readonly="1"/>
+                                <field name="project_name_id" options="{'limit': 7, 'create': false, 'create_edit': false ,'always_reload': True}"/>
+<!--                                <field name="interpreter_id" domain="[('cust_type','in',('interpreter','interp_and_transl'))]"
+                                       context="{'form_view_ref':'bista_iugroup.view_interpreter_form'}"
+                                       options="{'limit': 7, 'create': false, 'create_edit': false ,'always_reload': True}" />-->
+<!--                                <field name="transporter_id" context="{'form_view_ref':'bista_iugroup.view_transporter_form'}"
+                                       domain="[('cust_type','in',('transporter'))]"
+                                       options="{'limit': 7, 'create': false, 'create_edit': false ,'always_reload': True}" />
+                                <field name="translator_id" context="{'form_view_ref':'bista_iugroup.view_translator_form'}"
+                                       domain="[('cust_type','in',('translator','interp_and_transl'))]"
+                                       options="{'limit': 7, 'create': false, 'create_edit': false ,'always_reload': True}" />-->
+                                <field name="doctor_id" options="{'limit': 7, 'create': false, 'create_edit': false ,'always_reload': True}" />
+                                <field name="location_id" options="{'limit': 7, 'create': false, 'create_edit': false ,'always_reload': True}" />
+                                <field name="language_id" options="{'limit': 7, 'create': false, 'create_edit': false ,'always_reload': True}" />
+                                <field name="event_start_date"/>
+                                <field name="is_monthly" />
+                                <field name="is_mailed" />
+                                <field name="is_emailed" />
+                                <field name="is_faxed" />
+                                <field name="is_printed" />
+                                <field name="quickbooks_id" />
+                           </group>
+                       </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids" widget="mail_followers" groups="base.group_user"/>
+                    <field name="message_ids" widget="mail_thread"/>
+                </div>
+                </form>
+            </field>
+        </record>
+
+        <record id="invoice_supplier_transporter_form" model="ir.ui.view">
+            <field name="name">account.invoice.supplier.transporter.form</field>
+            <field name="model">account.invoice</field>
+            <field name="priority">3</field>
+            <field name="arch" type="xml">
+              <form string="Vendor Transport Invoice" version="7.0">
+                <header>
+                    <button name="action_invoice_open" states="draft,proforma2" string="Validate" class="oe_highlight" groups="account.group_account_invoice" type="object"/>
+                    <button name="%(account.action_account_invoice_refund)d" type='action' string='Ask Refund' states='open,paid' groups="account.group_account_invoice"/>
+                    <button name="action_invoice_cancel" states="draft,proforma2" string="Cancel Invoice" groups="account.group_account_invoice" type="object"/>
+                    <button name="action_cancel_draft" states="cancel" string="Set to Draft" type="object" groups="account.group_account_invoice"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,open,paid" statusbar_colors='{"proforma":"blue","proforma2":"blue"}'/>
+                    <button name="reset_to_draft_iu" string="Reset To Draft" type="object" states="open" groups="account.group_account_invoice"/>
+                                            <!--script buttons commented-->
+
+                    <!--<button name="post_invoice_supplier" string="Post Invoice" type="object" groups="bista_iugroup.group_iu_admin"/>
+                    <button name="reset_to_draft" string="Reset To Draft" type="object" groups="bista_iugroup.group_iu_admin"/>-->
+                </header>
+                <sheet string="Vendor Invoice">
+                    <style>.o_form_sheet{max-width:90% !important}</style>
+                    <div class="oe_title">
+                        <h1>
+                            <label string="Draft Invoice" attrs="{'invisible': ['|',('state','&lt;&gt;','draft'), ('type','&lt;&gt;','in_invoice')]}"/>
+                            <label string="Draft Refund" attrs="{'invisible': ['|',('state','&lt;&gt;','draft'), ('type','&lt;&gt;','in_refund')]}"/>
+                            <label string="Invoice" attrs="{'invisible': ['|',('state', '=', 'draft'), ('type','&lt;&gt;','in_invoice')]}"/>
+                            <label string="Refund" attrs="{'invisible': ['|',('state', '=', 'draft'), ('type','&lt;&gt;','in_refund')]}"/>
+                            <field name="number" class="oe_inline"  attrs="{'invisible': [('state', '=', 'draft')]}"/>
+                        </h1>
+                    </div>
+                    <field name="type" invisible="1"/>
+                    <group>
+                        <group>
+                            <field string="Vendor" name="partner_id"
+                                   context="{'default_customer': 0, 'search_default_supplier': 1, 'default_supplier': 1, 'show_address': 1,'form_view_ref':'bista_iugroup.view_interpreter_form'}"
+                                   domain="[('supplier', '=',1),('cust_type', 'in',('interpreter','transporter','translator','interp_and_transl')),('company_id', '=',company_id)]"
+                                   options="{'limit': 7, 'create': false, 'create_edit': false ,'always_reload': True}"/>
+                            <newline/>
+                            <field name="cust_gpuid" attrs="{'invisible': ['|',('cust_gpuid','=',False)]}"/>
+                            <field name="cust_csid" attrs="{'invisible': ['|',('cust_csid','=',False)]}"/>
+                            <field name="contact_id" domain="[('customer', '=', 1),('cust_type', '=', 'contact'),('company_id','=',company_id),('parent_id','=',partner_id )]"
+                                   options="{'limit': 7, 'create': false, 'create_edit': false ,'always_reload': True}" context="{ 'form_view_ref':'bista_iugroup.view_contact_form'}"/>
+                            <field name="fiscal_position_id" widget="selection"/>
+                            <field name="origin"/>
+                            <field name="reference" class="oe_inline"/>
+
+                        </group>
+                        <group>
+                            <field name="date_invoice" attrs = "{'readonly':[('state','in',('open','paid','cancelled'))]}" />
+                            <field name="ordering_partner_id" domain="[('customer', '=', 1),('cust_type', '=', 'customer'),('company_id', '=',company_id)]"
+                                   options="{'limit': 7, 'create': false, 'create_edit': false ,'always_reload': True}"
+                                   context="{'default_customer': 0, 'search_default_supplier': 1, 'default_supplier': 1, 'show_address': 1,'form_view_ref':'bista_iugroup.view_partner_form_inherit_iu'}"/>
+                            <field name="ordering_contact_id" domain="[('customer', '=', 1),('cust_type', '=', 'contact'),('company_id','=',company_id),('parent_id','=',ordering_partner_id )]"
+                                   options="{'limit': 7, 'create': false, 'create_edit': false ,'always_reload': True}" context="{'form_view_ref':'bista_iugroup.view_contact_form'}"/>
+                            <field name="date_due" attrs="{'readonly':[('state','in',('open','paid','cancelled'))]}"/>
+                            <field domain="[('company_id', '=', company_id), ('internal_type', '=', 'payable')]"
+                                   name="account_id" groups="account.group_account_user"/>
+                            <field name="journal_id" groups="account.group_account_user"
+                                    widget="selection"/>
+                            <field name="currency_id" groups="base.group_multi_currency"/>
+
+                        </group>
+                    </group>
+                    <h3>
+                        <group colspan="4" col="4" >
+                            <group>
+                                <field name="invoice_ref" context="{'form_view_ref':'customer_transport_invoice_form'}"/>
+                            </group>
+                            <group>
+                            </group>
+                        </group>
+                    </h3>
+                    <notebook>
+                        <page string="Invoice">
+                            <field context="{'partner_id': partner_id, 'price_type': context.get('price_type') or False, 'type': type}" name="invoice_line_ids">
+                                <tree string="Invoice lines" editable="bottom">
+                                    <field name="sequence" widget="handle" />
+                                    <field name="product_id" options="{'limit': 7, 'create': false, 'create_edit': false ,'always_reload': True}"
+                                           />
+                                    <field name="name"/>
+                                    <field name="company_id" invisible="1"/>
+                                    <field name="account_id" groups="account.group_account_user" options="{'limit': 7, 'create': false, 'create_edit': false ,'always_reload': True}"
+                                           domain="[('company_id', '=', parent.company_id), ('internal_type', '=', 'other')]"
+                                            invisible="1"/>
+                                    <field name="account_analytic_id" groups="analytic.group_analytic_accounting"
+                                           domain="[('type','!=','view'), ('company_id', '=', parent.company_id)]" invisible="1"/>
+                                    <field name="quantity" string="HR/Miles"/>
+                                    <field name="uom_id" groups="product.group_uom" options="{'limit': 7, 'create': false, 'create_edit': false ,'always_reload': True}"
+                                           />
+                                    <field name="price_unit" string="Rate"/>
+<!--                                    <field name="actual_time" invisible="1"/>-->
+                                    <field name="travel_time" />
+                                    <field name="travelling_rate" />
+                                    <field name="miles_driven"/>
+                                    <field name="mileage" invisible="1"/>
+                                    <field name="mileage_rate" invisible="1"/>
+                                    <field name="wait_time"/> <!-- fields added for catching values from rates table of transponder-->
+                                    <field name="pickup_fee"/>
+                                    <field name="after_hours"/>
+                                    <field name="gratuity"/>
+                                    <field name="miscellaneous_bill" invisible="1"/>
+                                    <field name="discount" groups="sale.group_discount_per_so_line"/>
+                                    <field name="invoice_line_tax_ids" widget="many2many_tags" context="{'type':parent.type}"
+                                           domain="[('parent_id','=',False),('company_id', '=', parent.company_id)]" invisible="1"/>
+                                    <field name="price_subtotal"/>
+                                </tree>
+                            </field>
+                            <group class="oe_subtotal_footer oe_right">
+                                <field name="amount_untaxed" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                                <div>
+                                    <label for="amount_tax"/>
+                                </div>
+                                <field name="amount_tax" nolabel="1" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                                <field name="amount_total" class="oe_subtotal_footer_separator" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                                <field name="residual" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                                <field name="reconciled" invisible="1"/>
+                            </group>
+                            <div style="width: 50%%">
+                                <field name="tax_line_ids">
+                                    <tree editable="bottom" string="Taxes">
+                                        <field name="name"/>
+                                        <field name="account_id" groups="account.group_account_invoice"/>
+                                        <field name="account_analytic_id" domain="[('type','&lt;&gt;','view'), ('company_id', '=', parent.company_id)]" groups="analytic.group_analytic_accounting"/>
+                                    </tree>
+                                </field>
+                            </div>
+                            <div class="oe_clear">
+                                <label for="comment"/>
+                            </div>
+                            <field name="comment" nolabel="1" colspan="4" widget="html"/>
+                            <div class="oe_clear">
+                                <label for="internal_comment"/>
+                            </div>
+                            <field name="internal_comment" class="oe_inline" placeholder="Internal notes..."/>
+                        </page>
+                        <page string="Other Info">
+                            <group>
+                                <group>
+                                    <field domain="[('partner_id', '=', partner_id)]" name="partner_bank_id" />
+                                    <field name="user_id" domain="[('company_id', '=', company_id)]" options="{'limit': 7, 'create': false, 'create_edit': false, 'no_open': True}"/>
+                                    <field name="sales_representative_id"/>
+                                    <field name="name" invisible="1"/>
+                                    <field name="payment_term_id" widget="selection"/>
+                                </group>
+                                <group>
+                                    <field name="move_id" groups="account.group_account_user"/>
+                                    <field name="period_id" domain="[('state', '=', 'draft'), ('company_id', '=', company_id)]" groups="account.group_account_user"/>
+                                    <field name="company_id"  widget="selection" groups="base.group_multi_company"/>
+                                </group>
+                            </group>
+                        </page>
+                        <!--<page string="Payments">-->
+                            <!--<field name="payment_ids">-->
+                                <!--<tree string="Payments">-->
+                                    <!--<field name="date" string="Payment Date"/>-->
+                                    <!--<field name="move_id"/>-->
+                                    <!--<field name="ref"/>-->
+                                    <!--<field name="name"/>-->
+                                    <!--<field name="journal_id"/>-->
+                                    <!--<field name="debit"/>-->
+                                    <!--<field name="credit"/>-->
+                                    <!--<field name="amount_currency"/>-->
+                                    <!--<field name="currency_id" groups="base.group_multi_currency"/>-->
+                                <!--</tree>-->
+                            <!--</field>-->
+                        <!--</page>-->
+                        <page string="Event Info" >
+                            <group colspan="3" col="6" readonly="1">
+                                <field name="event_id" options="{'limit': 7, 'create': false, 'create_edit': false ,'always_reload': True}"
+                                       context="{'form_view_ref':'bista_iugroup.view_event_form'}" readonly="1"/>
+                                <field name="project_name_id" options="{'limit': 7, 'create': false, 'create_edit': false ,'always_reload': True}"/>
+<!--                                <field name="interpreter_id" domain="[('cust_type','in',('interpreter','interp_and_transl'))]"
+                                       context="{'form_view_ref':'bista_iugroup.view_interpreter_form'}"
+                                       options="{'limit': 7, 'create': false, 'create_edit': false ,'always_reload': True}" />-->
+<!--                                <field name="transporter_id" context="{'form_view_ref':'bista_iugroup.view_transporter_form'}"
+                                       domain="[('cust_type','in',('transporter'))]"
+                                       options="{'limit': 7, 'create': false, 'create_edit': false ,'always_reload': True}" />
+                                <field name="translator_id" context="{'form_view_ref':'bista_iugroup.view_translator_form'}"
+                                       domain="[('cust_type','in',('translator','interp_and_transl'))]"
+                                       options="{'limit': 7, 'create': false, 'create_edit': false ,'always_reload': True}" />-->
+                                <field name="doctor_id" options="{'limit': 7, 'create': false, 'create_edit': false ,'always_reload': True}" />
+                                <field name="location_id" options="{'limit': 7, 'create': false, 'create_edit': false ,'always_reload': True}" />
+                                <field name="language_id" options="{'limit': 7, 'create': false, 'create_edit': false ,'always_reload': True}" />
+                                <field name="event_start_date"/>
+                                <field name="is_monthly" />
+                                <field name="is_mailed" />
+                                <field name="is_emailed" />
+                                <field name="is_faxed" />
+                                <field name="is_printed" />
+                                <field name="quickbooks_id" />
+                           </group>
+                     </page>
+                   </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids" widget="mail_followers"/>
+                    <field name="message_ids" widget="mail_thread"/>
+                </div>
+                </form>
+            </field>
+       </record>
+
+
+      
+      <record id="view_account_invoice_filter_iug" model="ir.ui.view">
+            <field name="model">account.invoice</field>
+            <field name="inherit_id" ref="account.view_account_invoice_filter"/>
+            <field name="arch" type="xml">
+                <xpath expr="/search/filter[@name='unpaid']" position="replace">
+                    <field name="language_id"/>
+                    <filter name="unpaid" string="Open" domain="[('state','=','open')]" help="Open Invoices"/>
+                    <filter name="paid" string="Paid" domain="[('state','=','paid')]" help="Paid Invoices"/>
+                    <filter name="emailed" string="Emailed" domain="[('is_emailed','=',True)]" help="Emailed Invoices"/>
+                    <filter name="mailed" string="Mailed" domain="[('is_mailed','=',True)]" help="Mailed Invoices"/>
+                    <filter name="faxed" string="Faxed" domain="[('is_faxed','=',True)]" help="Faxed Invoices"/>
+                    <filter name="printed" string="Printed" domain="[('is_printed','=',True)]" help="Printed Invoices"/>
+                    <filter name="is_monthly" string="Monthly" domain="[('is_monthly','=',True)]" help="Monthly Invoices"/>
+                    <filter name="no_action" string="No Action" help="No Action taken on this invoice"
+                            domain="[('is_monthly','=',False),('is_emailed','=',False),('is_mailed','=',False),('is_faxed','=',False),('is_printed','=',False)]" />
+                    
+                    <filter name="language" string="Language" domain="[('event_type','=','language')]" />
+                    <filter name="translation" string="Translation" domain="[('event_type','=','translation')]" />
+                    <filter name="transport" string="Transport" domain="[('event_type','=','transport')]" />
+                    <filter name="lang_trans" string="Language &amp; Transport" domain="[('event_type','=','lang_trans')]" />
+                    
+                </xpath>
+           </field>
+      </record>
+
+        <record id="account.action_invoice_tree2" model="ir.actions.act_window">
+            <field name="name">Vendor Invoices</field>
+            <field name="res_model">account.invoice</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form,calendar,graph</field>
+            <field eval="False" name="view_id"/>
+            <field name="domain">[('type','=','in_invoice'),('invoice_for','!=','transporter']</field>
+            <field name="context">{'default_type': 'in_invoice', 'type': 'in_invoice', 'journal_type': 'purchase'}</field>
+            <field name="search_view_id" ref="account.view_account_invoice_filter"/>
+            <field name="help" type="html">
+              <p class="oe_view_nocontent_create">
+                Click to record a new vendor invoice.
+              </p><p>
+                You can control the invoice from your supplier according to
+                what you purchased or received. Odoo can also generate
+                draft invoices automatically from purchase orders or receipts.
+              </p>
+            </field>
+        </record>
+
+        <record id="action_transport_invoice" model="ir.actions.act_window">
+            <field name="name">Transport Invoices</field>
+            <field name="res_model">account.invoice</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field eval="False" name="view_id"/>
+            <field name="domain">[('type','=','in_invoice'),('invoice_for','=','transporter')]</field>
+            <field name="context">{'default_type': 'in_invoice', 'type': 'in_invoice', 'journal_type': 'purchase'}</field>
+            <field name="view_id" ref="account.invoice_tree"/>
+            <field name="help" type="html">
+              <p class="oe_view_nocontent_create">
+                Click to record a new vendor transport invoice.
+              </p><p>
+                You can control the invoice from your supplier according to
+                what you purchased or received. Odoo can also generate
+                draft invoices automatically from purchase orders or receipts.
+              </p>
+            </field>
+        </record>
+        <record id="action_transport_invoice_tree2" model="ir.actions.act_window.view">
+            <field eval="1" name="sequence"/>
+            <field name="view_mode">tree</field>
+            <field name="view_id" ref="account.invoice_tree"/>
+            <field name="act_window_id" ref="action_transport_invoice"/>
+        </record>
+        <record id="action_transport_invoice_form2" model="ir.actions.act_window.view">
+            <field eval="2" name="sequence"/>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="invoice_supplier_transporter_form"/>
+            <field name="act_window_id" ref="action_transport_invoice"/>
+        </record>
+		
+        <record id="action_transport_invoice2" model="ir.actions.act_window">
+            <field name="name">Customer Transport Invoices</field>
+            <field name="res_model">account.invoice</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field eval="False" name="view_id"/>
+            <field name="domain">[('type','=','out_invoice'),('invoice_for','=','transporter')]</field>
+            <field name="context">{'default_type': 'out_invoice', 'type': 'out_invoice'}</field>
+            <field name="view_id" ref="account.invoice_tree"/>
+        </record>
+        <record id="action_customer_transport_invoice_tree" model="ir.actions.act_window.view">
+            <field eval="1" name="sequence"/>
+            <field name="view_mode">tree</field>
+            <field name="view_id" ref="account.invoice_tree"/>
+            <field name="act_window_id" ref="action_transport_invoice2"/>
+        </record>
+        <record id="action_customer_transport_invoice_form" model="ir.actions.act_window.view">
+            <field eval="2" name="sequence"/>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="customer_transport_invoice_form"/>
+            <field name="act_window_id" ref="action_transport_invoice2"/>
+        </record>
+
+        <record id="account.action_invoice_tree2" model="ir.actions.act_window">
+            <field name="name">Supplier Invoices</field>
+            <field name="res_model">account.invoice</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form,calendar,graph</field>
+            <field eval="False" name="view_id"/>
+            <field name="domain">[('type','in',('in_invoice', 'in_refund')),('invoice_for','!=','transporter')]</field>
+            <field name="context">{'default_type': 'in_invoice', 'type': 'in_invoice', 'journal_type': 'purchase'}</field>
+            <field name="search_view_id" ref="account.view_account_invoice_filter"/>
+            <field name="help" type="html">
+              <p class="oe_view_nocontent_create">
+                Click to record a new supplier invoice.
+              </p><p>
+                You can control the invoice from your supplier according to
+                what you purchased or received. Odoo can also generate
+                draft invoices automatically from purchase orders or receipts.
+              </p>
+            </field>
+        </record>
+        
+        <record id="account.action_invoice_tree1" model="ir.actions.act_window">
+            <field name="name">Customer Invoices</field>
+            <field name="res_model">account.invoice</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form,calendar,graph</field>
+            <field eval="False" name="view_id"/>
+            <field name="domain">[('type','in',('out_invoice', 'out_refund')),('invoice_for','!=','transporter')]</field>
+            <field name="context">{'default_type':'out_invoice', 'type':'out_invoice', 'journal_type': 'sale',}</field>
+            <field name="search_view_id" ref="account.view_account_invoice_filter"/>
+            <field name="help" type="html">
+              <p class="oe_view_nocontent_create">
+                Click to create a customer invoice.
+              </p><p>
+                Odoo's electronic invoicing allows to ease and fasten the
+                collection of customer payments. Your customer receives the
+                invoice by email and he can pay online and/or import it
+                in his own system.
+              </p><p>
+                The discussions with your customer are automatically displayed at
+                the bottom of each invoice.
+              </p>
+            </field>
+        </record>
+
+        <record id="action_open_invoices_tree" model="ir.actions.act_window">
+            <field name="name">Open Invoices</field>
+            <field name="res_model">account.invoice</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form,calendar,graph</field>
+            <field eval="False" name="view_id"/>
+            <field name="domain">[('type','=','in_invoice'),('state','=','open'),('invoice_for','!=','transporter')]</field>
+            <field name="context">{'default_type': 'in_invoice', 'type': 'in_invoice', 'journal_type': 'purchase'}</field>
+            <field name="search_view_id" ref="account.view_account_invoice_filter"/>
+            <field name="view_id" ref="account.invoice_tree"/>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                Click to record a new supplier invoice.
+              </p><p>
+                You can control the invoice from your supplier according to
+                what you purchased or received. OpenERP can also generate
+                draft invoices automatically from purchase orders or receipts.
+              </p>
+            </field>
+        </record>
+        
+    <menuitem action="account.action_invoice_tree1" id="account.menu_action_invoice_tree1" parent="account.menu_finance_receivables"
+          sequence="1"/>
+    <menuitem name="Vendor Invoices" action="account.action_invoice_tree2" id="account.menu_action_invoice_tree2"
+              parent="account.menu_finance_payables" sequence="1"/>
+    <menuitem name="Open Invoices" action="action_open_invoices_tree" id="menu_action_open_invoices_tree"
+              parent="account.menu_finance_payables" sequence="3"/>
+    <menuitem name="Transport Invoices" action="action_transport_invoice" id="account.menu_action_transporter_invoice"
+              parent="account.menu_finance_payables" sequence="2"/>
+    <menuitem name="Customer Transport Invoices" action="action_transport_invoice2" id="menu_action_transporter_invoice2"
+              parent="account.menu_finance_receivables" sequence="2"/>
+    <menuitem id="account.menu_finance_payables" name="Vendors" parent="account.menu_finance" sequence="3"/>
+
+    <!--menuitems for language events-->
+
+    <menuitem id="sub_menu_language_invoicing" parent="account.menu_finance" sequence="3" name="Language Events"
+              groups="bista_iugroup.group_record_manager,bista_iugroup.group_iu_cust_service,bista_iugroup.group_iu_recruiter"/>
+
+
+    <menuitem id="menu_language_invoicing_unbilled" parent="sub_menu_language_invoicing" action="action_lang_event_form_unbilled" sequence="1"
+              groups="bista_iugroup.group_record_manager,bista_iugroup.group_iu_cust_service,bista_iugroup.group_iu_recruiter"/>
+
+    <menuitem id="menu_language_invoicing_invoiced" parent="sub_menu_language_invoicing" action="action_lang_event_form_invoiced" sequence="2"
+              groups="bista_iugroup.group_record_manager,bista_iugroup.group_iu_cust_service,bista_iugroup.group_iu_recruiter"/>
+
+    <!--menuitems for transport events-->
+    <menuitem id="sub_menu_transport_invoicing" parent="account.menu_finance" sequence="3" name="Transport Events"
+              groups="bista_iugroup.group_record_manager,bista_iugroup.group_iu_cust_service,bista_iugroup.group_iu_recruiter"/>
+    
+    <!--menuitems for Translation events-->
+
+    <menuitem id="menu_translation_invoiced" parent="account.menu_finance" sequence="3" name="Translation Events"
+              groups="bista_iugroup.group_record_manager,bista_iugroup.group_iu_cust_service,bista_iugroup.group_iu_recruiter"/>
+
+    <menuitem id="sub_menu_translation_invoicing_confirmed" parent="menu_translation_invoiced" name="Unbilled Events" action="action_translation_form_confirmed" sequence="5"
+              groups="bista_iugroup.group_record_manager,bista_iugroup.group_iu_cust_service,bista_iugroup.group_iu_recruiter" />
+    <menuitem id="sub_menu_translation_invoicing_invoiced" parent="menu_translation_invoiced" name="Invoiced Events" action="action_translation_event_form_invoiced" sequence="7"
+              groups="bista_iugroup.group_record_manager,bista_iugroup.group_iu_cust_service,bista_iugroup.group_iu_recruiter"/>
+    
+   </data>
+</openerp>
+

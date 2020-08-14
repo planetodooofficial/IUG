@@ -1,0 +1,121 @@
+import xlrd
+import base64
+from odoo.tools.translate import _
+from odoo import fields,models,api
+from odoo.exceptions import UserError
+import logging
+_logger = logging.getLogger(__name__)
+
+class import_mileage_rate(models.TransientModel):
+    """ Import Mileage Rate Excel sheet to corresponding rates """
+    _name = "import.mileage.rate"
+    _description = "Import Mileage Rates"
+
+    company_id=fields.Many2one('res.company', 'Company', index=1, required=True)
+    excel_file=fields.Binary('Excel file', required=True)
+    file_name = fields.Char('Attachment Name', size=64)
+
+    @api.model
+    def get_test_file_path(self):
+        """Return the test file path"""
+        proxy = self.env['ir.config_parameter']
+        file_path = proxy.get_param('test_file_path')
+        if not file_path:
+            raise UserError(_('Please configure test_file_path as "/home/openerp/" in config parameters.'))
+        if file_path.endswith('/'):
+            file_path += 'test.xls'
+        else:
+            file_path += '/test.xls'
+        return file_path
+
+    @api.multi
+    def get_mileage_rate(self):
+        ''' Function to import mileage rate for customers'''
+        data = self
+        if not data.excel_file:
+            raise UserError(_('Please select a Excel file'))
+        if data.file_name:
+            if not data.file_name.lower().endswith(('.xls', '.xlsx')):
+                raise UserError(_('Unsupported File Format.'))
+        module_data = data.excel_file
+        file = base64.decodestring(module_data)
+        part_ids = []
+        interpreter_fail_ids = []
+        customer_fail_ids = []
+        
+        partner_obj = self.env['res.partner']
+        file_path = self.get_test_file_path()
+        fp = open(file_path,'wb')
+        fp.write(file)
+        fp.close()
+        book = xlrd.open_workbook(file_path ,encoding_override='utf8')
+        sh = book.sheet_by_index(0)
+        
+        part_id = 0
+        rate = 1
+        bill_miles_after = 2
+        if not self._context.get('cust_type',False):
+            return True
+        cust_type = self._context.get('cust_type','interpreter')
+        company_id = data.company_id.id
+        _logger.info("Total Rows : %d",sh.nrows)
+        if cust_type == 'interpreter':
+            for line in range (1,sh.nrows):
+                print "line.........",line
+                row = sh.row_values(line)
+                print  "row.......",row
+                if row != '':
+                    partner_ids = []
+                    partner_id = row[part_id]
+                    try:
+                        partner_id = int(float(partner_id))
+                    except Exception:
+                        _logger.info("Partner Id is not present in line : %d",line)
+                        continue
+    #          ++++++++++ For Interpreter +++++++++++++++++
+                    partner_ids = partner_obj.search([('vendor_id','=',int(partner_id)),('company_id','=',company_id),('active','in',('False','True'))])
+                    _logger.info("line: %s",partner_ids)
+                    if partner_ids != []:
+                        part_ids.append(partner_ids[0].id)
+                        partner_ids[0].write({'rate': row[rate]})#'bill_miles_after': row[bill_miles_after]
+                    else:
+                        interpreter_fail_ids.append(line)
+                    if int(line) % 100 == 0:
+                        _logger.info("line: %d",line)
+                        self._cr.commit()
+        elif cust_type == 'customer':
+            for line in range (1,sh.nrows):
+                print "line.........",line
+                row = sh.row_values(line)
+                if row != '':
+                    partner_ids = []
+                    partner_id = row[part_id]
+                    try:
+                        partner_id = int(float(partner_id))
+                    except Exception:
+                        _logger.info("Partner Id is not present in line : %d",line)
+                        continue
+    #          ++++++++++ For Customer +++++++++++++++++
+                    partner_ids = partner_obj.search([('customer_id','=',int(partner_id)),('company_id','=',company_id),('active','in',('False','True'))])
+                    _logger.info("line: %s",partner_ids)
+                    if partner_ids != []:
+                        part_ids.append(partner_ids[0].id)
+                        partner_ids[0].write({'rate': row[rate], })#'bill_miles_after': row[bill_miles_after]
+                    else:
+                        customer_fail_ids.append(line)
+                    if int(line) % 100 == 0:
+                        _logger.info("line: %d",line)
+                        self._cr.commit()
+        _logger.info("interpreter_fail_ids: %s",interpreter_fail_ids)
+        _logger.info("customer_fail_ids: %s",customer_fail_ids)
+        res = {
+            'domain': str([('id','in',part_ids)]),
+            'name': 'Customers',
+            'view_type': 'form',
+            'view_mode': 'tree,form',
+            'res_model': 'res.partner',
+            'view_id': False,
+            'type': 'ir.actions.act_window',
+        }
+        return res
+    

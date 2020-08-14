@@ -1,0 +1,199 @@
+# -*- coding: utf-8 -*-
+import pytz
+from datetime import datetime, timedelta, date
+from operator import itemgetter
+from odoo import SUPERUSER_ID
+from odoo import api, models, fields
+# from odoo.osv.orm import except_orm
+from odoo.tools.translate import _
+from odoo.exceptions import UserError, RedirectWarning, ValidationError
+
+
+class event_interpreter_calendar(models.Model):
+    _name = 'event.interpreter.calendar'
+    _inherit = ['mail.thread']
+    _description = 'Event Interpreter Calendar'
+
+    @api.depends('start_time')
+    def _past_time(self):
+        for record in self:
+            if record.start_time <= datetime.now().strftime('%Y-%m-%d %H:%M:%S'):
+                record.past_time = True
+            else:
+                record.past_time = False
+
+    name = fields.Char('Name', required=True, track_visibility='onchange')
+    partner_id = fields.Many2one('res.partner', 'Interpreter', track_visibility='onchange',default=lambda self:self.env.user.partner_id.id)
+    company_id = fields.Many2one('res.company', 'Company')
+    start_time = fields.Datetime('Start Time', required=True, track_visibility='onchange',default=lambda self: fields.Datetime.now())
+    end_time = fields.Datetime('End Time', required=True, track_visibility='onchange')
+    duration = fields.Float('Duration', required=True)
+    allday = fields.Boolean('All Day')
+    event_id = fields.Many2one('event', 'Event')
+    is_event = fields.Boolean('Is Event')
+    note = fields.Text('Description')
+    location_id = fields.Many2one('location',related='event_id.location_id', string='Location',track_visibility='onchange')
+    cancelled = fields.Boolean('Cancelled')
+    past_time = fields.Boolean( 'Past Time',compute='_past_time')
+
+    @api.onchange('start_time','end_time')
+    def onchange_datetime(self):
+        value = {}
+        if not self.start_time:
+            return value
+        if not self.end_time and not self.duration:
+            duration = 1.00
+            value['duration'] = duration
+        start = datetime.strptime(self.start_time, "%Y-%m-%d %H:%M:%S")
+        if self.allday: # For all day event
+            duration = 24.0
+            value['duration'] = duration
+            # change start_date's time to 00:00:00 in the user's timezone
+            user = self.env.user
+            tz = pytz.timezone(user.tz) if user.tz else pytz.utc
+            start = pytz.utc.localize(start).astimezone(tz)     # convert start in user's timezone
+            start = start.replace(hour=0, minute=0, second=0)   # change start's time to 00:00:00
+            start = start.astimezone(pytz.utc)                  # convert start back to utc
+            start_date = start.strftime("%Y-%m-%d %H:%M:%S")
+            value['start_time'] = start_date
+
+        if self.end_time and not self.duration:
+            end = datetime.strptime(self.end_time, "%Y-%m-%d %H:%M:%S")
+            diff = end - start
+            duration = float(diff.days)* 24 + (float(diff.seconds) / 3600)
+            value['duration'] = round(duration, 2)
+        elif not self.end_time:
+            end = start + timedelta(hours=duration)
+            value['end_time'] = end.strftime("%Y-%m-%d %H:%M:%S")
+        elif self.end_time and self.duration and not self.allday:
+            # we have both, keep them synchronized:
+            # set duration based on end_time (arbitrary decision: this avoid
+            # getting dates like 06:31:48 instead of 06:32:00)
+            end = datetime.strptime(self.end_time, "%Y-%m-%d %H:%M:%S")
+            diff = end - start
+            duration = float(diff.days)* 24 + (float(diff.seconds) / 3600)
+            value['duration'] = round(duration, 2)
+
+        return {'value': value}
+
+    @api.model
+    def get_duration(self, start_time, end_time):
+        ''' find the duration from starting and ending date time.
+
+            str start_time: starting date time in string
+            str end_time: ending date time in string
+
+            return float duration : return duration
+        '''
+        start = datetime.strptime(start_time, "%Y-%m-%d %H:%M:%S")
+        end = datetime.strptime(end_time, "%Y-%m-%d %H:%M:%S")
+        diff = end - start
+        duration = float(diff.days)* 24 + (float(diff.seconds) / 3600)
+        return round(duration, 2)
+
+    @api.multi
+    def write(self,vals):
+        if vals.get('cancelled') == True and len(vals) == 1:
+            return super(event_interpreter_calendar, self).write(vals)
+        raise UserError(_('You cant edit record!'))
+
+    @api.model
+    def create(self,vals):
+        if not vals.get('duration'):
+            vals['duration'] = self.get_duration(vals['start_time'], vals['end_time'])
+        if vals['duration'] < 0:
+            raise UserError(_('End time should be greater then start time!'))
+        return super(event_interpreter_calendar, self).create(vals)
+
+    @api.multi
+    def cancel_event(self):
+        vals = {'cancelled': True}
+        return self.write(vals)
+
+
+class event_event(models.Model):
+    _inherit = 'event'
+
+    calender_ids = fields.One2many('event.interpreter.calendar', 'event_id', 'Calendar Events')
+
+    @api.multi
+    def reschedule_event(self):
+        rec = super(event_event, self).reschedule_event()
+        event_calender = self.env['event.interpreter.calendar']
+        cal_event_ids = event_calender.sudo().search([('event_id', 'in', self.ids)])
+        cal_event_ids.sudo().unlink()
+        return rec
+
+    @api.multi
+    def import_interpreter_new(self):
+        ''' overwrite search interpreter for event
+        '''
+        res = super(event_event, self).import_interpreter_new()
+        event_obj = self.env['event']
+        int_line_obj = self.env['select.interpreter.line']
+        event = self
+        interpreter_ids = tuple([intp.interpreter_id.id for intp in event.interpreter_ids])
+        if len(interpreter_ids) == 1:
+            interpreter_ids=str(interpreter_ids).replace(",","")
+        if interpreter_ids:
+            stime, etime = event.event_start, event.event_end
+            query = '''
+                SELECT
+                    sline.id AS id
+                FROM
+                    event_interpreter_calendar AS ev_cal
+                    LEFT JOIN select_interpreter_line AS sline ON ev_cal.partner_id = sline.interpreter_id
+                WHERE
+                    sline.event_id = %s AND
+                    (
+                        (ev_cal.start_time >= '%s' AND ev_cal.start_time <= '%s') OR
+                        (ev_cal.end_time >= '%s' AND ev_cal.end_time <= '%s') OR
+                        (ev_cal.start_time <= '%s' AND ev_cal.end_time >= '%s')
+                    ) AND
+                    ev_cal.partner_id in %s
+            ''' % (event.id, stime, etime, stime, etime, stime, etime, interpreter_ids)
+            self._cr.execute(query)
+            unlink_ids = map(itemgetter(0), self._cr.fetchall())
+            int_line_ids=int_line_obj.browse(unlink_ids)
+            int_line_ids.sudo().unlink()
+        return res
+
+
+class cancel_event_wizard(models.TransientModel):
+    _inherit = 'cancel.event.wizard'
+
+    @api.multi
+    def cancel_event(self):
+        rec = super(cancel_event_wizard, self).cancel_event()
+        event_id = self.event_id
+        event_calender = self.env['event.interpreter.calendar']
+        cal_event_ids = event_calender.search([('event_id', '=', event_id.id)])
+        cal_event_ids.sudo().unlink()
+        return rec
+
+
+class assign_interp_wizard_inherit(models.TransientModel):
+    _inherit = 'assign.interp.wizard'
+
+    @api.multi
+    def update_interpreter(self):
+        '''Event calendar gets created for event,once an interpreter accepts a job
+        '''
+        rec = super(assign_interp_wizard_inherit, self).update_interpreter()
+        event_obj = self.env['event']
+        event= self.event_id
+        event_calender = self.env['event.interpreter.calendar']
+        for partner in event.assigned_interpreters:
+            calender_vals = {
+                'name': event.name,
+                'start_time': event.event_start,
+                'end_time': event.event_end,
+                'partner_id': partner.id,
+                'event_id': event.id,
+                'is_event': True,
+                'company_id': event.company_id.id
+            }
+            event_calender.sudo().create(calender_vals)
+
+        return rec
+

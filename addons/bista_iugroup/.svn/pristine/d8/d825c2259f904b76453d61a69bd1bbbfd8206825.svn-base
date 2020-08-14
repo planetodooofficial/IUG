@@ -1,0 +1,377 @@
+# -*- coding: utf-8 -*-
+##############################################################################
+#
+#    OpenERP, Open Source Management Solution
+#    Copyright (C) 2004-2010 Tiny SPRL (<http://tiny.be>).
+#
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU Affero General Public License as
+#    published by the Free Software Foundation, either version 3 of the
+#    License, or (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU Affero General Public License for more details.
+#
+#    You should have received a copy of the GNU Affero General Public License
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+##############################################################################
+
+import time
+from odoo.report import report_sxw
+import textwrap
+import re
+import math
+from decimal import *
+
+
+def round_up(n, decimals=0):
+    multiplier = 10 ** decimals
+    return math.ceil(n * multiplier) / multiplier
+
+
+
+def round_up(n, decimals=0):
+    multiplier = 10 ** decimals
+    return math.ceil(n * multiplier) / multiplier
+
+def num_after_point(x):
+    s = str(x)
+    if not '.' in s:
+        return 0
+    return len(s) - s.index('.') - 1
+
+
+class account_invoice(report_sxw.rml_parse):
+#    _inherit='account.invoice'
+#    _name = 'account.invoice'
+    def __init__(self, cr, uid, name, context):
+        super(account_invoice, self).__init__(cr, uid, name, context=context)
+        self.localcontext.update({
+            'time': time,
+            'print_fun': self.print_fun,
+            'print_comp': self.print_company_data,
+            'print_comp_mail': self.print_company_data_mail,
+            'print_mileage': self.print_mileage,
+            'notes': self.notes,
+            'partner_add': self.partner_add,
+            'partner_name': self.partner_name,
+            'line_cal': self.line_cal,
+            'mileage': self.mileage,
+            'base': self.base,
+            'get_customer_comment': self.get_customer_comment,
+            'get_location': self.get_location,
+            'get_time':self.get_time,
+            'travel_rate': self.get_travel_rate,
+            'get_event_outcome':self.get_event_outcome,
+        })
+
+    def line_cal(self,model_id):
+        res=[]
+        for i in model_id.invoice_line_ids:
+            vals = {'quantity': i.quantity, 'price_unit': i.price_unit, 'mileage': i.mileage,
+                    'mileage_rate': i.mileage_rate, 'discount': i.discount, 'travel_time': i.travel_time,
+                    'travelling_rate': i.travelling_rate}
+            res.append(vals)
+        return res
+
+    def base(self, model_id):
+        base_sum = []
+        for line in model_id.invoice_line_ids:
+
+            #taxes = line.invoice_line_tax_ids.compute_all(line.price_unit, line.currency_id, line.quantity,
+            #                                              product=line.product_id, partner=line.invoice_id.partner_id)
+            #total = taxes['total'] * (1 - (line.discount or 0.0) / 100.0)
+            #base_sum.append(total)
+            total=line.price_unit * line.quantity *(1-(line.discount or 0.0)/100.0)
+#            base_sum.append(round_up(total,2))
+	    base_sum.append(total)
+
+            taxes = line.invoice_line_tax_ids.compute_all(line.price_unit, line.currency_id, line.quantity,
+                                                          product=line.product_id, partner=line.invoice_id.partner_id)
+            total = taxes['total'] * (1 - (line.discount or 0.0) / 100.0)
+            base_sum.append(total)
+
+            #taxes = line.invoice_line_tax_ids.compute_all(line.price_unit, line.currency_id, line.quantity,
+            #                                              product=line.product_id, partner=line.invoice_id.partner_id)
+            #total = taxes['total'] * (1 - (line.discount or 0.0) / 100.0)
+            #base_sum.append(total)
+            total=line.price_unit * line.quantity *(1-(line.discount or 0.0)/100.0)
+            if num_after_point(total) > 2:
+                base_sum.append(round_up(total,2))
+            else:
+                base_sum.append(total)
+
+        #            base_sum.append(line.price_unit * line.quantity *(1-(line.discount or 0.0)/100.0))
+        result = sum(base_sum)
+        if not result:
+            result = 0.0
+        return result
+
+    def mileage(self,model_id):
+
+        vals=self.line_cal(model_id)
+        mileage_sum = []
+        for each_line in vals:
+            mileage_sum.append(round(each_line['mileage']*each_line['mileage_rate'],2))
+        result = sum(mileage_sum)
+        if result:
+            result = '$ ' + format(result, '.2f')
+        else:
+            result = 0.0
+        return result
+
+    def get_travel_rate(self,model_id):
+        vals=self.line_cal(model_id)
+        travel_sum = []
+        for each_line in vals:
+            travel_sum.append(round(each_line['travel_time']*each_line['travelling_rate'],2))
+        result = sum(travel_sum)
+        if result:
+            result = '$ ' + format(result, '.2f')
+        else:
+            result = 0.0
+        return result
+
+    def get_time(self, model_id):
+        base_sum = []
+        time_spent=False
+        for line in model_id.invoice_line_ids:
+            task = line.task_line_id
+            if task and task.event_out_come_id:
+                if 'no show' in task.event_out_come_id.name.lower() or \
+                        'late xl' in task.event_out_come_id.name.lower():
+                    return ''
+            time_spent = task.hours
+        if not time_spent:
+            time_spent = '00'
+            result = '00 Hours 00 Minutes'
+        else:
+            #            min = math.floor((time_spent - math.floor(time_spent))*100)
+            min = str(time_spent % 1).split('.')[1]
+            if len(min) == 1:
+                min += '0'
+            hr = math.floor(time_spent)
+            result = '%d Hours %s Minutes' % (hr, min)
+        if model_id.event_id and model_id.event_id.event_type == 'translation':
+            result = ''
+        return result
+    
+    def get_event_outcome(self,model_id):
+        for line in model_id.invoice_line_ids:
+            task = line.task_line_id
+            if task and task.event_out_come_id:
+                if 'no show' in task.event_out_come_id.name.lower(): 
+                    return 'No Show'
+                if 'late xl' in task.event_out_come_id.name.lower():
+                    return 'Late Cancellation'
+                else:
+                    return ''
+
+    def print_mileage(self,model_id):
+#        mileage=str(invoice_line.mileage*invoice_line.mileage_rate)
+        mileage = '00'
+        vals=self.line_cal(model_id)
+        if vals:
+            mileage = vals[0]['mileage']
+        return mileage
+
+    # def print_inv_line(self,model_id):
+    #     res=[]
+    #     if model_id.invoice_line:
+    #         base=model_id.invoice_line.quantity[0]*model_id.invoice_line.price_unit[0]
+    #         if not base:
+    #             base=0.00
+    #         mileage=str(model_id.invoice_line.mileage[0]*model_id.invoice_line.mileage_rate[0])
+    #         if not mileage:
+    #             mileage=0.00
+    #         travel,misc=str(0.00),str(0.00)
+    #         res.extend([base,mileage,travel,misc])
+    #         return [res[1]]
+    #     else:
+    #         return []
+
+    def print_company_data(self,model_id):
+
+        tagline='Payment reminder Please include invoice number that your are paying on your check.Thank you we are going green please provide us with your contact address {}of payment details to receive future invoice with email'.format(model_id.company_id.partner_id.email)
+        return [tagline]
+
+    def print_company_data_mail(self,model_id):
+        #import ipdb;ipdb.set_trace()
+#        tagline=model_id.company_id.partner_id.email or ''
+        tagline = 'info@iugroup.com'
+        return tagline
+
+    def print_fun(self,model_id):
+
+        res={}
+        medical_file_no, birthdate = 'Medical file no: ', 'DOB: '
+        try:
+            if model_id.date_invoice != 'False' or False:
+                date_invoice=model_id.date_invoice
+                res['date_invoice'] = date_invoice
+            else:
+                res['date_invoice'] = ''
+        except Exception as e:
+            res['date_invoice'] = ''
+        try:
+            if model_id.event_id:
+                res['reference'] = model_id.event_id.ref or ''
+            else:
+                res['reference'] = ''
+        except Exception as e:
+            res['reference'] = ''
+        try:
+            if model_id.event_id:
+                res['medical_no'] = model_id.event_id.medical_no or ''
+            else:
+                res['medical_no'] = ''
+        except Exception as e:
+            res['medical_no'] = ''
+        try:
+            if model_id.event_id and model_id.event_id.appointment_type_id:
+                res['appointment_type'] = model_id.event_id.appointment_type_id.name or ''
+            else:
+                res['appointment_type'] = ''
+        except Exception as e:
+            res['appointment_type'] = ''
+        try:
+            if model_id.event_id and model_id.event_id.patient_id != 'False' or False:
+                interpreter=model_id.event_id.patient_id.complete_name
+                res['interpreter'] = interpreter
+            else:
+                res['interpreter'] = ''
+        except Exception as e:
+            res['interpreter'] = ''
+        try:
+            pat_id = model_id.event_id and model_id.event_id.patient_id  or False
+            res['medical_file_no'] = ''
+            res['birthdate'] = ''
+            if pat_id:
+#                if claims_val.get('claim_number'):
+#                    res['medical_file_no']=claims_val.get('claim_number')
+#                elif claims_val.get('claim_no'):
+#                    res['medical_file_no']=claims_val.get('claim_no')
+#                elif claims_val.get('claim_no2'):
+#                    res['medical_file_no']=claims_val.get('claim_no2')
+#                else:
+#                    res['medical_file_no']= ''
+
+                if pat_id.birthdate:
+                    res['birthdate']=pat_id.birthdate
+        except Exception as e:
+            res['medical_file_no']= ''
+            res['birthdate']=''
+        try:
+            res['language'] = model_id.language_id and model_id.language_id.name or model_id.event_id and model_id.event_id.language_id.name or ''
+        except Exception as e:
+            res['language'] = ''
+        try:
+            res['language2'] = model_id.event_id and model_id.event_id.language_id2.name or ''
+        except Exception as e:
+            res['language2'] = ''
+        try:
+            res['date_of_service'] = model_id.event_id and model_id.event_id.event_start_date +' at '+model_id.event_id.event_start_hr+':'+model_id.event_id.event_start_min+' '+model_id.event_id.am_pm.upper() or ''
+        except Exception as e:
+            res['date_of_service'] = ''
+        try:
+            srvc_dict = {'conf_call': 'Conf Call', 'medical': 'Medical',
+                        'other': 'Other', 'deposition': 'depositions', 'normal': 'Legal'}
+            if model_id.event_id.event_purpose != 'False' or False:
+                res['service']=srvc_dict.get(model_id.event_id.event_purpose)
+            else:
+                res['service']=''
+        except Exception as e:
+            res['service']=''
+        try:
+            if model_id.event_id and model_id.event_id.ordering_contact_id:
+                res['requested_by'] = str(model_id.event_id.ordering_contact_id.name)+' '+str(model_id.event_id.ordering_contact_id.last_name)
+            elif model_id.event_id and model_id.event_id.ordering_partner_id:
+                res['requested_by'] = model_id.event_id.ordering_partner_id.name
+            else:
+                res['requested_by'] = ''
+        except Exception as e:
+            res['requested_by'] = ''
+        try:
+            res['department'] = model_id.event_id and model_id.event_id.department or ''
+        except Exception as e:
+            res['department'] = ''
+        try:
+            res['project_name'] =  model_id.event_id and model_id.event_id.project_name_id and model_id.event_id.project_name_id.name or ''
+        except Exception as e:
+            res['project_name']= ''
+        try:
+            res['event_type'] =  model_id.event_id and model_id.event_id.event_type or ''
+        except Exception as e:
+            res['event_type']= ''
+        return [res]
+
+    def notes(self,o):
+        ''' Function to get Invoice Note and extract String out of html tags'''
+        tag_re = re.compile(r'<[^>]+>')
+        note = False
+        if o.comment:
+            note = textwrap.fill(tag_re.sub(' ', str(o.comment)), width=60)
+    #        note = re.sub("<!--.*?-->", "", note)
+            note = note.replace('&nbsp;','')
+            note = note[0:385]
+        if note:
+            return note
+        else:
+            return ''
+
+    def get_location(self, o):
+        ''' Function to get Location '''
+        loc = ''
+        name = o.location_id.name if o.location_id and o.location_id.name else ''
+        street = o.location_id.street if o.location_id and o.location_id.street else ''
+        city = o.location_id.city if o.location_id and o.location_id.city else ''
+        state = o.location_id.state_id.name if o.location_id and o.location_id.state_id and o.location_id.state_id.name else ''
+        zip = o.location_id.zip if o.location_id and o.location_id.zip else ''
+        loc = (str(name) if name else '') +(', ' if name else '') +(str(street) if street else '')+(', ' if street else '') + \
+            '\n' +(str(city) if city else '' )+(', ' if city else '')+ (str(state) if state else '')+ ', ' +(str(zip) if zip else '')
+        if o.event_id and o.event_id.event_type and o.event_id.event_type == 'translation':
+            loc = ''
+        return loc
+    
+    def get_customer_comment(self, o):
+        ''' Function to get Rubrik Note '''
+#        tag_re = re.compile(r'<[^>]+>')
+        customer_comment = ''
+        if o.partner_id and o.partner_id.rubrik:
+#            customer_comment = tag_re.sub(' ', str(o.partner_id.rubrik))
+            customer_comment = o.partner_id.rubrik
+            customer_comment = customer_comment[0:100]
+#        customer_comment = customer_comment.replace('&nbsp;','')
+        return customer_comment #customer_comment
+
+    def partner_name(self,o):
+        name = ''
+        name = o.partner_id.name
+        if o.partner_id.last_name:
+            name += ' ' + o.partner_id.last_name
+        return name
+
+    def partner_add(self,o):
+        addres_li=[];complete_address=''
+        street=o.partner_id.street; street2=o.partner_id.street2; state=o.partner_id.state_id.code ; zip=o.partner_id.zip;\
+        city=o.partner_id.city
+        country=o.partner_id.country_id.name
+        if street:addres_li.append(street)
+        if street2:addres_li.append(street2)
+        if city: addres_li.append(city)
+        if state:addres_li.append(state)
+        if zip:addres_li.append(zip)
+#        if country:addres_li.append(country)
+        add = (str(street) if street else '') +(', ' if street else '') + '\n' + (str(street2) if street2 else '')+(', ' if street2 else '') + '\n' +(str(city) if city else '' )+(', ' if city else '')+ (str(state) if state else '')+ ', ' +(str(zip) if zip else '')
+#        complete_address=', '.join(addres_li)
+#        address=textwrap.fill(complete_address,width=80)
+        return add
+#report_sxw.report_sxw( 'report.account.invoice.custom', 'account.invoice',
+#    'custom_addons/bista_iugroup/report/account_print_custom_invoice.rml', parser=account_invoice )
+
+report_sxw.report_sxw( 'report.account.invoice.custom.asit', 'account.invoice',
+    'custom_addons/bista_iugroup/report/account_print_asit_invoice.rml', parser=account_invoice )
+# vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:

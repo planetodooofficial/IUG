@@ -1,0 +1,337 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <record id="view_event_lang_trans_form" model="ir.ui.view">
+            <field name="name">event.form</field>
+            <field name="model">event</field>
+            <field eval="22" name="priority"/>
+            <field name="arch" type="xml">
+                <form string="Events" >
+                    <header>
+                        <button string="Confirm" name="confirm_lang_trans_event" states="allocated,unauthorize" type="object" class="oe_highlight"
+                            groups="bista_iugroup.group_record_manager,bista_iugroup.group_iu_portal,bista_iugroup.group_iu_cust_service,bista_iugroup.group_iu_recruiter"/>
+                        <button string="Enter Timesheet" name="enter_timesheet" states="confirmed" type="object" class="oe_highlight"
+                            groups="bista_iugroup.group_record_manager,bista_iugroup.group_iu_portal,bista_iugroup.group_iu_cust_service,bista_iugroup.group_iu_recruiter"/>
+                        <button string="View Timesheet" name="view_timesheet" states="unbilled" type="object" class="oe_highlight"
+                            groups="bista_iugroup.group_record_manager,bista_iugroup.group_iu_portal,bista_iugroup.group_iu_cust_service,bista_iugroup.group_iu_recruiter"/>
+                        <button string="Reschedule" name="reschedule_event" states="scheduled,allocated,confirmed,cancel" type="object"
+                            groups="bista_iugroup.group_record_manager,bista_iugroup.group_iu_cust_service,bista_iugroup.group_iu_recruiter"/>
+                        <button string="Mark As Done" name="mark_as_done" states="unbilled" type="object" invisible="1"
+                            groups="bista_iugroup.group_record_manager" />
+                        <button name="cancel_event" string="Cancel Event" type="object" attrs="{'invisible': [('state','in',('cancel','done'))]}"
+                            groups="bista_iugroup.group_record_manager,bista_iugroup.group_iu_cust_service,bista_iugroup.group_iu_recruiter"
+                            confirm="Are you sure, you want to cancel this Event? "/>
+                        <button name="follow_up" string="Follow Up" type="object" />
+                        <button type="action" name="%(bista_iugroup.action_recurring_event)d" icon="fa-check"
+                            groups="bista_iugroup.group_record_manager,bista_iugroup.group_iu_cust_service,bista_iugroup.group_iu_recruiter" string="Recurring"/>
+                        <field name="state" widget="statusbar" statusbar_visible="draft,scheduled,confirmed,unauthorize,unbilled,done"/>
+                    </header>
+                    <group colspan="2" col="4">
+                        <group>
+                            <h3>
+                                <field name="name" string="Event Id" readonly="1"/>
+                            </h3>
+                        </group>
+                        <group>
+                            <field name="event_type" string="Event Type" readonly="1"/>
+                        </group>
+                    </group>
+                    <group colspan="4" col="6">
+                        <group>
+                            <notebook colspan="2">
+                                <page string="Billing Info">
+                                    <div class="oe_list_content">
+                                        <group colspan="2">
+                                            <field name="partner_id" default_focus="1" required="1" domain="[('customer', '=', 1),('is_company', '=',0),('cust_type', '=', 'customer'),('company_id','=',company_id)]"
+                                                   string="Billing Customer" options="{'limit': 7, 'create': false, 'create_edit': false,'always_reload': True}"
+                                                   context="{ 'show_address': 1,'form_view_ref':'bista_iugroup.view_partner_form_inherit_iu'}" attrs="{'readonly':[('state','in',('confirmed','unbilled','invoiced','cancel','done'))]}"/>
+                                            <field name="contact_id" domain="[('customer', '=', 1),('cust_type', '=', 'contact'),('is_company', '=',0),('company_id','=',company_id),('parent_id','=',partner_id)]"
+                                                   context="{ 'form_view_ref':'bista_iugroup.view_contact_form'}" options="{'limit': 7, 'create': false, 'create_edit': false,'always_reload': True}" string="Billing Contact"
+                                                   attrs="{'readonly':[('state','in',('confirmed','unbilled','invoiced','cancel','done'))]}" />
+                                        </group>
+                                        <group colspan="2" col="4" invisible="1" >
+                                            <group>
+                                                <field name="quickbooks_id" invisible="1"/>
+                                                <field name="suppress_email" />
+                                            </group>
+                                            <group>
+                                                <field name="is_insurance_claim" />
+                                            </group>
+                                        </group>
+                                        <h3>
+                                            <group>
+                                                <field name="patient_id"  style="color: #5F9EA0;" domain="[('company_id','=',company_id)]" context="{'default_company_id': company_id}"/>
+                                            </group>
+                                        </h3>
+                                    </div>
+                                    <group>
+                                        <field name="employer" placeholder="Employer Name" attrs="{'readonly':[('state','in',('confirmed','unbilled','invoiced','cancel','done'))]}"/>
+                                    </group>
+                                    <group colspan="2" col="4">
+                                        <group>
+                                            <field name="zone_id" attrs="{'readonly':[('state','in',('confirmed','unbilled','invoiced','cancel','done'))]}" domain="[('company_id','=',company_id)]"/>
+                                        </group>
+                                        <group>
+                                            <field name="company_id" groups="base.group_multi_company" widget="selection" attrs="{'readonly':[('state','in',('confirmed','unbilled','invoiced','cancel','done'))]}"/>
+                                            <field name="claim_no" attrs="{'invisible': [('is_insurance_claim','=',False)]}" invisible="1"/>
+                                        </group>
+                                    </group>
+                                    <separator />
+                                    <div class="oe_title" >
+                                        <group >
+                                            <field name="special_discount" />
+                                        </group>
+                                    </div>
+                                    <newline/>
+                                    <group colspan="2">
+                                        <field name="language_id" domain="[('company_id','=',company_id)]" required="1"
+                                            options="{'limit': 7, 'create': false, 'create_edit': false}" attrs="{'readonly':[('state','in',('confirmed','unbilled','invoiced','cancel','done'))]}"/>
+                                        <field name="project_name_id" attrs="{'readonly':[('state','in',('confirmed','unbilled','invoiced','cancel','done'))]}"
+                                                context="{'default_company_id': company_id}"/>
+                                        <field name="task_id" readonly="1"/>
+                                        <field name="user_id" domain="[('company_id','=',company_id)]" options="{'limit': 7, 'create': false, 'create_edit': false}"/>
+                                        <field name="scheduler_id" domain="[('company_id','=',company_id)]" options="{'limit': 7, 'create': false, 'create_edit': false}"
+                                              required="1" attrs="{'readonly':[('state','in',('confirmed','unbilled','invoiced','cancel','done'))]}"/>
+                                        <field name="sales_representative_id" options="{'limit': 7, 'create': false, 'create_edit': false}" domain="[('company_id','=',company_id)]"
+                                                attrs="{'readonly':[('state','in',('confirmed','unbilled','invoiced','cancel','done'))]}"/>
+                                        <field name="km" string="Distance" invisible="1"/>
+                                    </group>
+                                    <button name="import_interpreter_new" string="Search Interpreter" type="object" attrs="{'invisible': ['|',('event_type','in',('transport','translator'))]}"
+                                            groups="bista_iugroup.group_record_manager,bista_iugroup.group_iu_cust_service,bista_iugroup.group_iu_recruiter" />
+                                    <separator string="List of Interpreters" attrs="{'invisible': ['|',('event_type','in',('transport','translator'))]}"/>
+                                    <field name="interpreter_ids" readonly="1" attrs="{'readonly':[('state','in',('confirmed','unbilled','invoiced','cancel','done'))],'invisible': ['|',('event_type','in',('transport','translator'))]}"
+                                           options="{'reload_on_button': true}" colspan="2">
+                                        <tree  string="List of Interpreters">
+                                            <field name="select" invisible="1"/>
+                                            <field name="name" readonly="1"/>
+                                            <field name="middle_name" readonly="1" invisible="1"/>
+                                            <field name="last_name" readonly="1"/>
+                                            <field name="visited" readonly="1"/>
+                                            <field name="visited_date" readonly="1" string="Visit Date"/>
+                                            <field name="zip" readonly="1" invisible="1"/>
+                                            <field name="rate" readonly="1" />
+                                            <field name="duration" readonly="1"/>
+                                            <field name="distance" readonly="1"/>
+                                            <field name="parent_state" invisible="1"/>
+                                            <button name="get_direction" type="object" icon="fa-search" attrs="{'invisible': [('parent_state','in',('done','cancel'))]}"
+                                                    groups="bista_iugroup.group_record_manager,bista_iugroup.group_iu_cust_service,bista_iugroup.group_iu_recruiter"/>
+                                            <button  name="leave_voicemail" type="object" icon="gtk-go-forward"
+                                                    groups="bista_iugroup.group_record_manager,bista_iugroup.group_iu_cust_service,bista_iugroup.group_iu_recruiter"
+                                                    attrs="{'invisible': ['|',('parent_state','in',('done','cancel'))]}"/>
+                                            <field name="voicemail_msg" invisible="1"/>
+                                            <button type="action" name="%(bista_iugroup.action_assign_wizard1)d" icon="fa-check" attrs="{'invisible': [('state','in',('cancel'))]}"
+                                                    groups="bista_iugroup.group_record_manager" invisible="1" />
+                                            <field name="state"  invisible="1"/>
+                                        </tree>
+                                    </field>
+                                    <button name="import_transporter_new" string="Search Transporters" type="object" attrs="{'invisible': [('event_type','in',('language','translation'))]}"
+                                            groups="bista_iugroup.group_record_manager,bista_iugroup.group_iu_cust_service,bista_iugroup.group_iu_recruiter" />
+                                    <separator string="List of Transporters" attrs="{'invisible': ['|',('event_type','=','language')]}"/>
+                                    <field name="transporter_ids" readonly="1" attrs="{'readonly':[('state','in',('confirmed','unbilled','invoiced','cancel','done'))],'invisible': ['|',('event_type','=','language')]}"
+                                            options="{'reload_on_button': true}" colspan="2">
+                                        <tree  string="List of Transporters">
+                                            <field name="select" invisible="1"/>
+                                            <field name="name" readonly="1"/>
+                                            <field name="middle_name" readonly="1" invisible="1"/>
+                                            <field name="last_name" readonly="1"/>
+                                            <field name="visited" readonly="1"/>
+                                            <field name="visited_date" readonly="1" string="Visit Date"/>
+                                            <field name="zip" readonly="1" invisible="1"/>
+                                            <field name="rate" readonly="1" />
+                                            <field name="duration" readonly="1"/>
+                                            <field name="distance" readonly="1"/>
+                                            <field name="parent_state" invisible="1"/>
+                                            <button  name="leave_voicemail" type="object" icon="fa-step-forward" invisible="1"
+                                                    groups="bista_iugroup.group_record_manager" />
+                                            <field name="voicemail_msg" invisible="1"/>
+                                            <button type="action" name="%(bista_iugroup.action_assign_transp_wizard1)d" attrs="{'invisible': ['|',('parent_state','in',('done','cancel')),('state','in',('cancel'))]}"
+                                                    groups="bista_iugroup.group_record_manager,bista_iugroup.group_iu_portal,bista_iugroup.group_iu_cust_service,bista_iugroup.group_iu_recruiter" icon="terp-camera_test"/>
+                                            <field name="state"  invisible="1"/>
+                                        </tree>
+                                    </field>
+                                    <separator string="Job Note"/>
+                                    <field name="comment" placeholder="Put a note..." nolabel="1" colspan="2" widget="html"
+                                            attrs="{'readonly':[('state','in',('confirmed','unbilled','invoiced','cancel','done'))]}"/>
+                                </page>
+                            </notebook>
+                        </group>
+                        <group>
+                            <notebook colspan="2">
+                                <page string="Order Info">
+                                    <div class="oe_list_content">
+                                        <separator string=""/>
+                                        <group>
+                                            <field name="ordering_partner_id" required="1" domain="[('customer', '=', 1),('cust_type', '=', 'customer'),('is_company', '=',0),('company_id','=',company_id)]"
+                                                options="{'limit': 7, 'create': false, 'create_edit': false,'always_reload': True}"
+                                                context="{ 'show_address': 1,'form_view_ref':'bista_iugroup.view_partner_form_inherit_iu'}" attrs="{'readonly':[('state','in',('confirmed','unbilled','invoiced','cancel','done'))]}"/>
+                                            <field name="ordering_contact_id" domain="[('customer', '=', 1),('cust_type', '=', 'contact'),('is_company', '=',0),('company_id','=',company_id),('parent_id','=',partner_id)]"
+                                                string="Ordering Contact Id"  context="{'form_view_ref':'bista_iugroup.view_contact_form'}" options="{'limit': 7, 'create': false, 'create_edit': false,'always_reload': True}"
+                                                attrs="{'readonly':[('state','in',('confirmed','unbilled','invoiced','cancel','done'))]}" />
+	                                    </group>
+                                        <group colspan="2">
+                                            <field name="is_authorized" attrs="{'readonly':[('state','in',('confirmed','unbilled','invoiced','cancel','done'))]}"/>
+                                        </group>
+                                    </div>
+                                    <group>
+                                        <field name="event_start_date" attrs="{'readonly':[('state','in',('confirmed','unbilled','invoiced','cancel','done'))]}"/>
+                                    </group>
+                                    <div class="address_format">
+                                        <label for="event_start_hr" style="width: 50%%" string="Start Time" />
+                                        <field name="event_start_hr" class="custom_character" attrs="{'readonly':[('state','in',('confirmed','unbilled','invoiced','cancel','done'))]}"/>
+                                        : <field name="event_start_min" class="custom_character" attrs="{'readonly':[('state','in',('confirmed','unbilled','invoiced','cancel','done'))]}"/>
+                                        <field name="am_pm" style="width: 10%%" attrs="{'readonly':[('state','in',('confirmed','unbilled','invoiced','cancel','done'))]}"/>
+                                        <field name="customer_timezone" style="width: 30%%" attrs="{'readonly':[('state','in',('confirmed','unbilled','invoiced','cancel','done'))]}"/>
+                                    </div>
+                                    <div class="address_format">
+                                        <label for="event_end_hr" style="width: 50%%" string="End Time" />
+                                        <field name="event_end_hr" class="custom_character" attrs="{'readonly':[('state','in',('confirmed','unbilled','invoiced','cancel','done'))]}"/>
+                                        : <field name="event_end_min" class="custom_character" attrs="{'readonly':[('state','in',('confirmed','unbilled','invoiced','cancel','done'))]}"/>
+                                        <field name="am_pm2" style="width: 10%%" attrs="{'readonly':[('state','in',('confirmed','unbilled','invoiced','cancel','done'))]}"/>
+                                    </div>
+                                    <div class="oe_title" >
+                                        <group>
+                                            <field name="event_start" readonly="1"/>
+                                            <field name="event_end" readonly="1"/>
+                                        </group>
+                                    </div>
+                                    <separator />
+                                    <group>
+                                        <field name="appointment_type_id" options="{'limit': 7, 'create': false, 'create_edit': false}" attrs="{'readonly':[('state','in',('confirmed','unbilled','invoiced','cancel','done'))]}"/>
+                                        <field name="certification_level_id" options="{'limit': 7, 'create': false, 'create_edit': false}" attrs="{'readonly':[('state','in',('confirmed','unbilled','invoiced','cancel','done'))]}"/>
+                                        <field name="event_purpose" attrs="{'readonly':[('state','in',('confirmed','unbilled','invoiced','cancel','done'))]}"/>
+                                    </group>
+                                    <separator />
+                                    <separator />
+                                    <group>
+                                        <field name="interpreter_id" readonly="1" domain="[('cust_type','in',('interpreter','interp_and_transl'))]"
+                                            attrs="{'readonly':[('state','in',('confirmed','unbilled','invoiced','cancel','done'))],'required': [('state','not in',('draft','scheduled','allocated','cancel'))],'invisible': ['|',('event_type','=','transport')]}"
+                                            context="{'form_view_ref':'bista_iugroup.view_interpreter_form'}"/>
+                                        <field name="transporter_id" readonly="1" context="{'form_view_ref':'bista_iugroup.view_transporter_form'}"
+                                            domain="[('cust_type','in',('transporter'))]" attrs="{'readonly':[('state','in',('confirmed','unbilled','invoiced','cancel','done'))]}"/>
+                                    </group>
+                                    <separator />
+                                    <separator />
+                                    <group>
+                                        <field name="doctor_id"  domain="[('company_id','=',company_id)]"
+                                            options="{'limit': 7, 'create': false, 'create_edit': false}" attrs="{'readonly':[('state','in',('confirmed','unbilled','invoiced','cancel','done'))]}"/>
+                                        <field name="location_id" required="1" domain="[('company_id','=',company_id)]" context="{'show_address':1,'default_company_id': company_id}"
+                                         attrs="{'readonly':[('state','in',('confirmed','unbilled','invoiced','cancel','done'))]}"/>
+                                    </group>
+                                    <group>
+                                        <button name="open_map_new" string="Get Directions" type="object" icon="fa-search-plus" class="oe_left" attrs="{'invisible': ['|',('event_type','=','transport')]}"/>
+                                    </group>
+                                    <separator string="Interpreters - Job Offered To " />
+                                    <field name="interpreter_ids2"  colspan="2" readonly="1"
+                                            options="{'reload_on_button': true}" attrs="{'readonly':[('state','in',('confirmed','unbilled','invoiced','cancel','done'))]}">
+                                        <tree string="Job Offered To"  decoration-muted="state=='cancel'" >
+                                            <field name="select" invisible="1"/>
+                                            <field name="name" readonly="1"/>
+                                            <field name="middle_name" readonly="1" invisible="1"/>
+                                            <field name="last_name" readonly="1"/>
+                                            <field name="visited" readonly="1"/>
+                                            <field name="visited_date" readonly="1" string="Visit Date" />
+                                            <field name="zip" readonly="1" invisible="1"/>
+                                            <field name="rate" readonly="1"/>
+                                            <field name="parent_state" invisible="1"/>
+                                            <field name="voicemail_msg" invisible="1"/>
+                                            <button type="action" name="%(bista_iugroup.action_assign_wizard1)d" icon="fa-check" attrs="{'invisible': ['|',('parent_state','in',('done','cancel')),('state','in',('cancel'))]}"
+                                                groups="bista_iugroup.group_record_manager,bista_iugroup.group_iu_portal,bista_iugroup.group_iu_cust_service,bista_iugroup.group_iu_recruiter"/>
+                                            <button  name="cancel_appointment" type="object" icon="fa-times-circle" attrs="{'invisible': ['|',('parent_state','in',('done','cancel')),('state','in',('cancel'))]}"
+                                                groups="bista_iugroup.group_record_manager,bista_iugroup.group_iu_portal,bista_iugroup.group_iu_cust_service,bista_iugroup.group_iu_recruiter" />
+                                            <field name="state"  invisible="1"/>
+                                        </tree>
+                                    </field>
+                                    <separator string="Event Note"/>
+                                    <field name="event_note" placeholder="Put an Event note..." nolabel="1" colspan="2" widget="html"
+                                        attrs="{'readonly':[('state','in',('confirmed','unbilled','invoiced','cancel','done'))]}"/>
+                                </page>
+                            </notebook>
+                        </group>
+                        <group>
+                            <notebook colspan="2">
+                                <page string="Authorize Info" colspan="2">
+                                    <div class="oe_list_content">
+                                        <separator string=""/>
+                                        <div class="oe_title" >
+                                            <group>
+                                                <field name="authorize_contact_id" string="Authorize Contact" domain="[('customer', '=', 1),('is_company', '=',0),('company_id','=',company_id)]"
+                                                        attrs="{'readonly':['|',('state','in',('confirmed','unbilled','invoiced','cancel','done')),('is_authorized','=',False)],'required': [('is_authorized','=',True)]}"
+                                                        options="{'limit': 7, 'create': false, 'create_edit': false,'always_reload': True}"
+                                                        context="{ 'show_address': 1,'form_view_ref':'bista_iugroup.view_adjuster_form'}" />
+                                                <field name="authorize_date" attrs="{'readonly':['|',('state','in',('confirmed','unbilled','invoiced','cancel','done')),('is_authorized','=',False)],'required': [('is_authorized','=',True)]}"/>
+                                            </group>
+                                        </div>
+                                    </div>
+                                    <separator string=""/>
+                                    <div class="oe_title" >
+                                        <group>
+                                            <field name="fee_note_status_id" attrs="{'readonly':[('state','in',('confirmed','unbilled','invoiced','cancel','done'))]}" domain="[('company_id','=',company_id)]"/>
+                                            <field name="cancel_reason_id" attrs="{'readonly':[('state','in',('cancel','done'))]}" domain="[('company_id','=',company_id)]" readonly="1"/>
+                                        </group>
+                                    </div>
+                                </page>
+                            </notebook>
+                        </group>
+                    </group>
+                    <field name="event_follower_ids" colspan="2" invisible="1"/>
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids" widget="mail_followers"/>
+                        <field name="message_ids" widget="mail_thread"/>
+                   </div>
+                </form>
+            </field>
+        </record>
+
+        <record id="view_event_lang_trans_tree" model="ir.ui.view">
+            <field name="name">event.tree</field>
+            <field name="model">event</field>
+            <field eval="8" name="priority"/>
+            <field name="arch" type="xml">
+                <tree string="Events"  decoration-muted="state=='unbilled'" decoration-info="state=='confirmed'" decoration-success="state in ('scheduled')" decoration-danger="state in ('cancel',)">
+                    <field name="name" string="Event Id"/>
+                    <field name="language_id" />
+                    <field name="event_start" />
+                    <field name="interpreter_id" />
+                    <field name="doctor_id" />
+                    <field name="state" />
+                    <field name="event_type" invisible="1" />
+                </tree>
+            </field>
+        </record>
+        
+        <record id="action_event_lang_trans_form" model="ir.actions.act_window">
+            <field name="name">Language and Transport Events</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">event</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="context">{"search_default_event_type":'lang_trans',"default_event_type":'lang_trans'}</field>
+            <field name="domain">[('event_type','=', 'lang_trans')]</field>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Click to add a Event in your address book.
+                </p><p>
+                    OpenERP helps you easily track all activities related to
+                    a event; discussions, history of business opportunities,
+                    documents, etc.
+                </p>
+            </field>
+        </record>
+        
+        <record id="action_event_lang_trans_form_view" model="ir.actions.act_window.view">
+            <field eval="2" name="sequence"/>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="view_event_lang_trans_form"/>
+            <field name="act_window_id" ref="action_event_lang_trans_form"/>
+        </record>
+        <record id="action_event_lang_trans_tree_view" model="ir.actions.act_window.view">
+            <field name="sequence" eval="1"/>
+            <field name="view_mode">tree</field>
+            <field name="view_id" ref="view_event_lang_trans_tree"/>
+            <field name="act_window_id" ref="action_event_lang_trans_form"/>
+        </record>
+
+        <menuitem id="menu_lang_trans_event_form" parent="bista_iugroup.sub_menu_trans_event" name="Language &amp;Transport Events" action="action_event_lang_trans_form" sequence="7"/>
+
+    </data>
+</odoo>

@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+
+        <record id="ir_cron_feedback_emails_report" model="ir.cron">
+           <field name="name">Feedback Emails</field>
+           <field name="interval_number">14</field>
+           <field name="interval_type">days</field>
+           <field name="numbercall">-1</field>
+           <field name="doall" eval="False"/>
+           <field name="model">event</field>
+           <field eval="'send_feedback_emails'" name="function"/>
+           <field name="args">()</field>
+           <field name="active" eval="True"/>
+       </record>
+
+        <record model="ir.ui.view" id="view_mail_form_1">
+            <field name="name">mail.mail.form.1</field>
+            <field name="model">mail.mail</field>
+            <field name="inherit_id" ref="mail.view_mail_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='message_id']" position="before">
+                    <field name="events"/>
+                </xpath>
+            </field>
+        </record>
+
+<record id="event_automated_feedback_email_template_1" model="mail.template">
+            <field name="name">Automated feedback email #1</field>
+            <field name="model_id" ref="bista_iugroup.model_event"/>
+            <field name="email_from" >donotreply@iugroup.com</field>
+            <field name="email_to" >${(object.ordering_contact_id.email or object.ordering_contact_id.user_id.email or '')|safe}</field>
+            <field name="subject">${("Thank you for your recent appointment Re: Event # " + str(object.name))|safe}</field>
+            <field name="body_html"><![CDATA[
+               Hello ${(object.ordering_contact_id.name or '')|safe},<br/>
+
+<p>Thank you for your recent appointment! We continuously aim to improve the quality of service to our clients. As part of making sure you are satisfied, we would appreciate your feedback.  Would you mind completing a brief questionnaire about your recent experience? It will only take about two minutes to submit your feedback.</p><br/>
+
+<a href="https://interpretersunlimited.wishpond.com/auto-erp-feedback-08-2017/">Submit Feedback Here</a>
+<br/>
+Thank you very much for your time and have a great day!
+<br/>
+<b>Your IU Group Team</b><br/>
+<a href="mailto:yourteam@iugroup.com">yourteam@iugroup.com</a><br/>
+                (800) 726-9891
+            <% set signup_url = object.get_signup_url() %>
+    % if signup_url:
+    <p>
+    To Unsubscribe Click on:
+    </p>
+        <a style="display:block; width: 150px; height:20px; margin-left: 120px; color: #DDD; font-family: 'Lucida Grande', Helvetica, Arial, sans-serif; font-size: 13px; font-weight: bold; text-align: center; text-decoration: none !important; line-height: 1; padding: 5px 0px 0px 0px; background-color: #8E0000; border-radius: 5px 5px; background-repeat: repeat no-repeat;"
+           href="${signup_url}">Unsubscribe</a>
+    % else:
+    <p>
+    This link requires a login to our system.  Don't have one?  Call us at 1-800-726-9891 to unsubscribe.
+    </p>
+    % endif
+            ]]>
+            </field>
+        </record>
+
+        <record id="event_automated_feedback_email_template_2" model="mail.template">
+            <field name="name">Automated feedback email #2</field>
+            <field name="model_id" ref="bista_iugroup.model_event"/>
+            <field name="email_from" >donotreply@iugroup.com</field>
+            <field name="email_to" >${(object.ordering_contact_id.email or object.ordering_contact_id.user_id.email or '')|safe}</field>
+            <field name="subject">Thank you for your recent appointments</field>
+            <field name="body_html"><![CDATA[
+               Hello ${(object.ordering_contact_id.name or '')|safe},<br/>
+
+<p>Thank you for your recent appointments! We continuously aim to improve the quality of service to our clients. As part of making sure you are satisfied, we would appreciate your feedback.  Would you mind completing a brief questionnaire about your recent experience? It will only take about two minutes to submit your feedback.</p><br/>
+
+<a href="https://interpretersunlimited.wishpond.com/auto-erp-feedback-08-2017/">Submit Feedback Here</a>
+<br/>
+Thank you very much for your time and have a great day!
+<br/>
+<b>Your IU Group Team</b><br/>
+<a href="mailto:yourteam@iugroup.com">yourteam@iugroup.com</a><br/>
+                (800) 726-9891
+    <% set signup_url = object.get_signup_url() %>
+    % if signup_url:
+    <p>
+    To Unsubscribe Click on:
+    </p>
+        <a style="display:block; width: 150px; height:20px; margin-left: 120px; color: #DDD; font-family: 'Lucida Grande', Helvetica, Arial, sans-serif; font-size: 13px; font-weight: bold; text-align: center; text-decoration: none !important; line-height: 1; padding: 5px 0px 0px 0px; background-color: #8E0000; border-radius: 5px 5px; background-repeat: repeat no-repeat;"
+           href="${signup_url}">Unsubscribe</a>
+    % endif
+            ]]>
+
+            </field>
+        </record>
+
+        <record id="action_feedback_emails_template" model="ir.actions.act_window">
+            <field name="name">Email Templates</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">mail.template</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="mail.email_template_tree" />
+            <field name="search_view_id" ref="mail.view_email_template_search"/>
+            <field name="domain">[('name','in', ['Automated feedback email #2','Automated feedback email #1'])]</field>
+        </record>
+
+        <record id="action_feedback_emails_logs" model="ir.actions.act_window">
+            <field name="name">Email Logs</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">mail.mail</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="search_view_id" ref="mail.view_mail_search"/>
+            <field name="domain">[('subject','ilike', 'Thank you for your recent appointment')]</field>
+        </record>
+
+        <!--<record id="view_res_partner_opt_out_form" model="ir.ui.view">-->
+            <!--<field name="name">res.partner.optout.form</field>-->
+            <!--<field name="model">res.partner</field>-->
+            <!--<field name="arch" type="xml">-->
+                <!--<form string="Opt Out" version="7.0">-->
+                    <!--<group>-->
+                        <!--<field name="opt_out_of_feedback_emails"/>-->
+                    <!--</group>-->
+                <!--</form>-->
+            <!--</field>-->
+        <!--</record>-->
+
+
+        <record id="view_res_partner_opt_out_form_1" model="ir.ui.view">
+            <field name="name">res.partner.form.view.1</field>
+            <field name="model">res.partner</field>
+            <field eval="50" name="priority"/>
+            <field name="arch" type="xml">
+                <form string="Opt Out">
+                    <field  name="opt_out_of_feedback_emails"/>
+                </form>
+            </field>
+        </record>
+
+        <record id="action_res_partner_unsubscribe" model="ir.actions.act_window">
+            <field name="name">Opt out of feedback emails</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">res.partner</field>
+            <field name="view_id" ref="view_res_partner_opt_out_form_1"/>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+        </record>
+
+        <menuitem id="feedback_emails_parent_menu" parent="bista_iugroup.main_menu_lang_event" name="Feedback Emails" sequence="100"
+                 groups="bista_iugroup.group_record_manager,bista_iugroup.group_iu_cust_service,bista_iugroup.group_iu_recruiter"/>
+        <menuitem id="feedback_emails_template_menu" parent="feedback_emails_parent_menu" name="Email Templates" sequence="2" action="action_feedback_emails_template"
+                 groups="bista_iugroup.group_record_manager,bista_iugroup.group_iu_cust_service,bista_iugroup.group_iu_recruiter" />
+        <menuitem id="feedback_emails_logs_menu" parent="feedback_emails_parent_menu" name="Email Logs" sequence="1" action="action_feedback_emails_logs"
+                 groups="bista_iugroup.group_record_manager,bista_iugroup.group_iu_cust_service,bista_iugroup.group_iu_recruiter" />
+
+
+ </data>
+</odoo>

@@ -1,0 +1,15 @@
+{
+    'name': 'Bista Logs',
+    'version': '1.2',
+    'description': """ Rahul Malve """,
+    'author': 'Bista Solutions Pvt. Ltd',
+    'website': 'http://www.bistasolutions.com',
+    'depends': ['mail'],
+    'category': 'Mail',
+    'sequence': 18,
+    'data': ['bista_logs_view.xml'],
+    'qweb':['static/src/xml/mail-base.xml'],
+    'installable': True,
+    'auto_install': False,
+    'application': True,
+}

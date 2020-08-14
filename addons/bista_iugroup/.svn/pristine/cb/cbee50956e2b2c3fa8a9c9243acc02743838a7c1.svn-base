@@ -1,0 +1,262 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <!-- +++++++++++ Claiment ++++++++++++++++++++++++++++++ -->
+        <record id="view_simplified_claimant_form" model="ir.ui.view">
+            <field name="name">patient.simple.form</field>
+            <field name="model">patient</field>
+            <field eval="100" name="priority"/>
+            <field name="arch" type="xml">
+                <form string="Patient"  delete="false">
+                    <header>
+                    </header>
+                    <sheet>
+                        <notebook colspan="4">
+                            <page string="General Info">
+                                <group colspan="4" col="6" >
+                                    <group>
+                                        <field name="name" readonly="1" string="First Name" default_focus="1" placeholder="First Name" colspan="1" widget="linkedin"/>
+                                        <field name="complete_name" string="Complete Name" invisible="1"/>
+                                    </group>
+                                    <group>
+                                        <field name="last_name" readonly="1"  placeholder="Last Name" colspan="1" widget="linkedin" />
+                                    </group>
+                                </group>
+                                <group invisible="1">
+                                    <field name="ordering_partner_id" />
+                                    <field name="active" />
+                                    <field name="company_id" />
+                                </group>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+        
+        <record id="view_claimant_form" model="ir.ui.view">
+            <field name="name">Patient.form</field>
+            <field name="model">patient</field>
+            <field eval="20" name="priority"/>
+            <field name="arch" type="xml">
+                <form string="Claimants">
+                    <header>
+                    </header>
+                    <sheet>
+                        <div class="oe_title">
+                            <div class="oe_edit_only">
+                                <label for="ref" string="Reference"/>
+                            </div>
+                            <h1>
+                                <field name="ref"  placeholder="Reference" string="Reference" readonly="1"/>
+                            </h1>
+		                </div>
+                        <notebook colspan="4">
+                            <page string="General">
+                                <separator string="Personal Information"/>
+                                <group>
+                                    <group>
+                                        <field name="complete_name" string="Complete Name" invisible="1"/>
+                                        <field name="name" string="First Name"/>
+                                        <field name="last_name" attrs="{'required':[('ordering_partner_id','=',186303)]}"/>
+                                        <field name="birthdate" attrs="{'required':[('ordering_partner_id','=',186303)]}"/>
+                                        <field name="gender"/>
+                                        <field name="street" placeholder="Street 1..."/>
+                                        <field name="street2"  placeholder="Street 2..."/>
+                                        <field name="city" placeholder="City"/>
+                                        <button name="open_map_new" string="Map" type="object" icon="fa-search-plus"/>
+                                    </group>
+                                    <group>
+                                        <field name="company_id" groups="base.group_multi_company" widget="selection" required="1"/>
+                                        <field name="state_id" class="oe_no_button" placeholder="State"  options='{"no_open": "True"}'/>
+                                        <field name="country_id" placeholder="Country" class="oe_no_button" options='{"no_open": "True"}'/>
+                                        <field name="zip" placeholder="ZIP"/>
+                                        <field name="active"/>
+                                        <field name="employer"/>
+                                        <field name="employer_contact"/>
+                                        <field name="ssnid" groups="bista_iugroup.group_iu_cust_service,bista_iugroup.group_iu_recruiter,bista_iugroup.group_record_manager"/>
+                                        <field name="sinid" string="SIN" placeholder="Social Insurance Number" groups="bista_iugroup.group_iu_cust_service,bista_iugroup.group_iu_recruiter,bista_iugroup.group_record_manager"/>
+                                    </group>
+                                </group>
+                                <separator string="Contact Information"/>
+                                <group>
+                       	            <group>
+                                        <field name="phone" string="AM Phone"  placeholder="e.g. +32.81.81.37.00"/>
+                                        <field name="phone2" string="PM Phone" placeholder="e.g. +32.81.81.37.00"/>
+                                        <field name="mobile" string="Cell Phone"/>
+                                        <field name="fax"/>
+                                    </group>
+                                    <group >
+                                        <field name="email" widget="email" placeholder="Email 1.." string="Email 1"/>
+                                        <field name="email2" widget="email" placeholder="Email 2.."/>
+                                        <field name="website" widget="url" placeholder="e.g. www.odoo.com"/>
+                                    </group>
+                                </group>
+                                <separator string="Locations"/>
+                                <field name="location_ids" nolabel="1" context="{'default_is_pat_loc': 1, 'company_id': company_id,'form_view_ref':'bista_iugroup.view_location_form'}" domain="[('company_id','=', company_id)]">
+                                    <tree>
+                                        <field name="name"/>
+                                        <field name="phone"/>
+                                        <field name="street"/>
+                                        <field name="street2"/>
+                                        <field name="city"/>
+                                        <field name="state_id"/>
+                                        <field name="country_id"/>
+                                    </tree>
+                                </field>
+                                <separator string="Note" groups="bista_iugroup.group_iu_cust_service,bista_iugroup.group_iu_recruiter,bista_iugroup.group_record_manager"/>
+                                <field name="comment" placeholder="Put an internal note..." nolabel="1" colspan="4" widget="html"
+                                       groups="bista_iugroup.group_iu_cust_service,bista_iugroup.group_iu_recruiter,bista_iugroup.group_record_manager"/>
+                                <group invisible="1">
+                                    <group>
+                                        <field name="date"/>
+                                    </group>
+                                </group>
+                            </page>
+                            <page string="Billing" groups="bista_iugroup.group_iu_cust_service,bista_iugroup.group_iu_recruiter,bista_iugroup.group_record_manager">
+                                <group>
+                                    <group>
+                                        <field name="billing_partner_id" domain="[('customer', '=', 1),('cust_type', '=','customer'),('is_company', '=',0),('company_id','=',company_id)]"
+                                            context="{ 'form_view_ref':'bista_iugroup.view_partner_form_inherit_iu'}"
+                                            string="Payer" options="{'limit': 7, 'create': false, 'create_edit': false, 'no_open': True}"/>
+                                        <field name="billing_contact_id" context="{ 'form_view_ref':'bista_iugroup.view_contact_form'}" string="Adjuster"
+                                            domain="[('customer', '=', 1),('cust_type', '=', 'contact'),('is_company', '=',0),('company_id','=',company_id),('parent_id','=',billing_partner_id )]" />
+                                        <field name="case_manager_id" domain="[('company_id', '=', company_id)]"/>
+                                        <field name="claim_no"/>
+                                        <field name="ordering_partner_id" domain="[('customer', '=', 1),('cust_type', '=','customer'),('is_company', '=',0),('company_id','=',company_id)]"
+                                            context="{ 'form_view_ref':'bista_iugroup.view_partner_form_inherit_iu'}" options="{'limit': 7, 'create': false, 'create_edit': false, 'no_open': True}"
+                                            string="Related Customer" groups="bista_iugroup.group_record_manager,bista_iugroup.group_iu_cust_service,bista_iugroup.group_iu_recruiter"/>
+                                    </group>
+                                    <group>
+                                        <field name="field_case_mgr_id"/>
+                                        <field name="referrer"/>
+                                        <field name="claim_number" invisible="1"/>
+                                        <field name="claim_no2"/>
+                                    </group>
+                                </group>
+                            </page>
+                            <page string="Other" groups="bista_iugroup.group_iu_cust_service,bista_iugroup.group_iu_recruiter,bista_iugroup.group_record_manager">
+                                <group>
+                                    <group>
+                                        <field name="interpreter_id" string="Prefered Interpreter" context="{'form_view_ref':'bista_iugroup.view_interpreter_form'}"
+                                            domain="[('cust_type','in',('interpreter','interp_and_transl')),('is_interpretation_active','=',1),('company_id','=',company_id)]"
+                                            options="{'limit': 7, 'create': false, 'create_edit': false ,'always_reload': True}"/>
+                                        <field name="company_name" />
+                                        <field name="function" />
+                                    </group>
+                                    <group>
+                                        <field name="injury_date"/>
+                                        <field name="latitude"/>
+                                        <field name="longitude"/>
+                                    </group>
+                                </group>
+                            </page>
+                            <page string="Patient History" groups="bista_iugroup.group_iu_cust_service,bista_iugroup.group_iu_recruiter,bista_iugroup.group_record_manager">
+                                <group colspan="4" col="6">
+                                    <group>
+                                        <button string="Past Appointments" style="margin:10px" name="view_past_appointments" type="object" class="oe_highlight"
+                                            groups="bista_iugroup.group_iu_cust_service,bista_iugroup.group_iu_recruiter,bista_iugroup.group_record_manager"/>
+                                    </group>
+                                    <group>
+                                        <button string="Todays Appointments" style="margin:10px" name="view_today_appointments" type="object" class="oe_highlight"
+                                            groups="bista_iugroup.group_iu_cust_service,bista_iugroup.group_iu_recruiter,bista_iugroup.group_record_manager"/>
+                                    </group>
+                                    <group>
+                                        <button string="Future Appointments" style="margin:10px" name="view_future_appointments" type="object" class="oe_highlight"
+                                            groups="bista_iugroup.group_iu_cust_service,bista_iugroup.group_iu_recruiter,bista_iugroup.group_record_manager"/>
+                                    </group>
+                                </group>
+                                <field name="patient_history" readonly="1">
+                                    <tree string="Patient History">
+                                        <field name="event_id" />
+                                        <field name="event_date" />
+                                        <field name="injury_date" />
+                                        <field name="claim_no" />
+                                        <field name="company_id" groups="base.group_multi_company" widget="selection"/>
+                                    </tree>
+                                </field>
+                            </page>
+                        </notebook>
+		            </sheet>
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids" widget="mail_followers"/>
+                        <field name="message_ids" widget="mail_thread"/>
+                    </div>
+                </form>
+            </field>
+        </record>
+
+        <record id="view_claimant_tree" model="ir.ui.view">
+            <field name="name">patient.tree</field>
+            <field name="model">patient</field>
+            <field eval="8" name="priority"/>
+            <field name="arch" type="xml">
+                <tree string="Claimant">
+                    <field name="name" string="First Name"/>
+                    <field name="last_name"/>
+                    <field name="complete_name" invisible="1"/>
+                    <field name="claim_no" groups="bista_iugroup.group_record_manager,bista_iugroup.group_iu_cust_service"/>
+                    <field name="claim_no2" groups="bista_iugroup.group_record_manager,bista_iugroup.group_iu_cust_service"/>
+                    <field name="billing_partner_id" groups="bista_iugroup.group_record_manager,bista_iugroup.group_iu_cust_service"/>
+                    <field name="billing_contact_id" invisible="1"/>
+                    <field name="fax"/>
+                    <field name="phone"/>
+                    <field name="city"/>
+                    <field name="zip" invisible="1"/>
+                    <field name="user_id" invisible="1"/>
+                    <field name="country_id" invisible="1"/>
+                </tree>
+            </field>
+        </record>
+        
+        <record id="view_claimant_filter_inherit_iu" model="ir.ui.view">
+            <field name="name">patient.select</field>
+            <field name="model">patient</field>
+            <field name="arch" type="xml">
+                <search string="Search Claimant">
+                      <field name="complete_name"/>
+                      <field name="name" string="First Name" filter_domain="[('name','ilike',self)]"/>
+                      <field name="last_name"/>
+                      <field name="claim_no"/>
+                      <field name="claim_no2"/>
+                      <field name="billing_partner_id" />
+                      <field name="billing_contact_id" />
+                      <field name="phone"/>
+                      <field name="email"/>
+                      <field name="fax"/>
+                      <field name="city"/>
+                      <field name="zip"/>
+                      <field name="country_id"/>
+                      <filter help="My Contacts" icon="fa-user" domain="[('user_id','=',uid)]"/>
+                      <separator/>
+                      <field name="user_id"/>
+                      <group expand="0" string="Group By...">
+                            <filter string="Salesperson" icon="fa-user" domain="[]" context="{'group_by' : 'user_id'}" />
+                            <filter string="Country" context="{'group_by': 'country_id'}"/>
+                            <filter string="Companies" icon="fa-user" domain="[]" context="{'group_by' : 'company_id'}" />
+                      </group>
+                </search>
+            </field>
+        </record>
+
+        <record id="action_claimant_form_iu" model="ir.actions.act_window">
+            <field name="name">Claimants</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">patient</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="search_view_id" ref="view_claimant_filter_inherit_iu"/>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Click to add a Claimant in your address book.
+                </p><p>
+                    Odoo helps you easily track all activities related to
+                    a Claimants discussions, history of business opportunities,
+                    documents, etc.
+                </p>
+            </field>
+        </record>
+        <menuitem id="menu_claimant_iu5448" parent="menu_contacts" action="action_claimant_form_iu" sequence="7"
+                  groups="bista_iugroup.group_record_manager,bista_iugroup.group_iu_cust_service,bista_iugroup.group_iu_recruiter" />
+    </data>
+</odoo>

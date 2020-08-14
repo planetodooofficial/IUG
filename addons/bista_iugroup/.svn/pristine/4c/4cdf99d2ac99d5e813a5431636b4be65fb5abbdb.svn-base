@@ -1,0 +1,485 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <!-- Interpreter -->
+        <record id="view_interpreter_tree" model="ir.ui.view">
+            <field name="name">interpreter.tree</field>
+            <field name="model">res.partner</field>
+            <field eval="8" name="priority"/>
+            <field name="arch" type="xml">
+                <tree string="Interpreters">
+                    <field name="name" string="First Name"/>
+                    <field name="middle_name"/>
+                    <field name="last_name"/>
+                    <field name="complete_name" invisible="1"/>
+                    <field name="phone"/>
+                    <field name="email"/>
+                    <field name="zip"/>
+                    <field name="city"/>
+                    <field name="zone_id"/>
+                    <field name="meta_zone_id" invisible="1" />
+                    <field name="ref" invisible="1"/>
+                    <field name="user_id" invisible="1"/>
+                    <field name="language_id" invisible="1"/>
+                    <field name="country_id" invisible="1"/>
+                    <field name="parent_id" invisible="1"/>
+                    <field name="company_id" groups="base.group_multi_company" widget="selection"/>
+                </tree>
+            </field>
+        </record>
+        <!--Employee form view -->
+        <record id="view_interpreter_form" model="ir.ui.view">
+            <field name="name">interpreter.form</field>
+            <field name="model">res.partner</field>
+            <field eval="41" name="priority"/>
+            <field name="arch" type="xml">
+                <form string="Interpreters"  delete="false" duplicate="0">
+                    <header>
+                        <button string="Upload Attachment" name="upload_attachment" type="object" class="oe_highlight"
+                                groups="bista_iugroup.group_record_manager,bista_iugroup.group_iu_cust_service,bista_iugroup.group_iu_recruiter"/>
+                        <button name="sync_interpreter" string="Sync Interpreter" type="object" class="oe_highlight"
+                                groups="bista_iugroup.group_iu_admin"/>
+                        <button name="%(bista_iugroup.action_duplicate_interpreters)d"  string="Copy Interpreter" type="action" class="oe_highlight"
+                                groups="bista_iugroup.group_record_manager,bista_iugroup.group_iu_cust_service,bista_iugroup.group_iu_recruiter"/>
+                    </header>
+                    <sheet>
+                        <group colspan="4" col="4">
+                            <group>
+                                <div class="oe_inline">
+                                    <field invisible="1" name="image" widget='image' class="oe_left oe_avatar" options='{"preview_image": "image_medium", "size": [90, 90]}'/>
+                                    <div class="oe_title" >
+                                        <div class="oe_edit_only">
+                                            <label for="ref" string="Reference"/>
+                                        </div>
+                                        <h1>
+                                            <field name="ref"  placeholder="Reference" string="Reference"/>
+                                        </h1>
+                                    </div>
+                                </div>
+                            </group>
+                            <group cols="2" colspan="6">
+                                <footer>
+                                    <button style="margin:5px" string="Geo Localize" name="geo_localize" type="object" class="oe_highlight oe_inline"
+                                            groups="bista_iugroup.group_record_manager,bista_iugroup.group_iu_cust_service,bista_iugroup.group_iu_recruiter"/>
+                                    <button style="margin:5px" string="Create Interpreter Login" name="create_interpreter_login" type="object" class="oe_highlight oe_inline"
+                                            groups="bista_iugroup.group_iu_cust_service,bista_iugroup.group_record_manager,bista_iugroup.group_iu_recruiter" attrs="{'invisible': [('has_login','=',True)]}" />
+                                    <button style="margin:5px" string="Resend Login Info" name="resend_login_mail" type="object" class="oe_highlight oe_inline" attrs="{'invisible': [('has_login','!=',True)]}"
+                                            groups="bista_iugroup.group_iu_cust_service,bista_iugroup.group_record_manager,bista_iugroup.group_iu_recruiter"/>
+                                </footer>
+                                <group>
+                                    <field name="latitude"/>
+                                    <field name="longitude"/>
+                                </group>
+                            </group>
+                        </group>
+                        <newline/>
+                        <notebook>
+                            <page string="General Info">
+                                <separator string="Interpreter Standing"/>
+                                <group>
+                                    <group>
+                                        <field name="telephone_interpretation" />
+                                        <field name="cust_type" />
+                                        <field name="is_agency" />
+                                        <field name="rating_id" domain="[('company_id','=',company_id)]"/>
+                                        <field name="company_id" groups="base.group_multi_company" widget="selection" required="1"/>
+                                    </group>
+                                    <group>
+                                        <field name="active" invisible="1"/>
+                                        <field name="is_interpretation_active"/>
+                                        <field name="gender"/>
+                                    </group>
+                                </group>
+                                <separator string="Personal Information"/>
+                                <group colspan="6" cols="2">
+                                    <group>
+                                        <field name="title" domain="[('company_id','=',company_id)]"/>
+                                        <field name="user_id" string="Related User" readonly="1" context="{'show_login': 1}"
+                                               domain="[('company_id','=',company_id)]" options="{'limit': 7, 'create': false, 'create_edit': false}"/>
+                                        <field name="name" string="First Name/Company" default_focus="1" placeholder="First Name / Company" required="1" colspan="1"/>
+                                        <field name="middle_name"  placeholder="Middle Name" colspan="1"/>
+                                        <field name="last_name"  placeholder="Last Name" colspan="1" required="0"/>
+                                        <field name="company_name" />
+                                        <field name="short_name" string="DBA"/>
+                                        <field name="has_login" invisible="1"/>
+                                        <field name="email2" widget="email" string="Email 2" />
+                                        <field name="email" widget="email" string="Email 1"  required="0"/>
+                                        <field name="fax"/>
+                                    </group>
+                                    <group>
+                                        <group>
+                                            <field name="street" style="width: 205px;" placeholder="Street..." string="Address 1" />
+                                            <field name="street2" style="width: 205px;" placeholder="Street 2..." string="Address 2"/>
+                                            <field name="city" style="width: 205px;" placeholder="City" required="1" />
+                                            <field name="zip" style="width: 205px;" placeholder="ZIP"   required="1"/>
+                                            <field name="zone_id" style="width: 205px;" domain="[('company_id','=',company_id)]" class="oe_title" options="{'limit': 7, 'create': false, 'create_edit': false, 'no_open': True}"/>
+                                            <field name="meta_zone_id" style="width: 205px;" class="oe_title" domain="[('company_id','=',company_id)]" options="{'limit': 7, 'create': false, 'create_edit': false, 'no_open': True}"/>
+                                            <field name="state_id" style="width: 205px;" class="oe_no_button" placeholder="State"   required="1" options="{'limit': 7, 'create': false, 'create_edit': false ,'no_open': True}"/>
+                                            <field name="country_id" style="width: 205px;" placeholder="Country" class="oe_no_button"  options="{'limit': 7, 'create': false, 'create_edit': false ,'no_open': True}"/>
+                                            <field name="modem" style="width: 205px;" invisible="1"/>
+                                            <field name="dob" style="width: 205px;"/>
+                                            <field name="age" style="width: 205px;"/>
+                                            <button name="open_map_new" string="Map"  type="object" icon="fa-search-plus"/>
+                                        </group>
+                                    </group>
+                                </group>
+                                <group>
+                                    <group>
+                                        <label for="phone" string="Cell Phone"/>
+                                        <div>
+                                            <field name="ext_phone1" class="oe_inline" placeholder="Ext" style="max-width: 15%%;"/>
+                                            <field name="phone" class="oe_inline" placeholder="e.g. 328-181-3700" required="1"/>
+                                            <field name="phone_type_id1" class="oe_inline" domain="[('company_id','=',company_id)]" style="max-width: 35%%;"/>
+                                        </div>
+                                        <label for="phone2" string="Home Phone"/>
+                                        <div>
+                                            <field name="ext_phone2" class="oe_inline" placeholder="Ext" style="max-width: 15%%;"/>
+                                            <field name="phone2" class="oe_inline" placeholder="e.g. 328-181-3700"/>
+                                            <field name="phone_type_id1" class="oe_inline" domain="[('company_id','=',company_id)]" style="max-width: 35%%;"/>
+                                        </div>
+                                    </group>
+                                    <group>
+                                        <label for="phone3" string="Work Phone"/>
+                                        <div>
+                                            <field name="ext_phone3" class="oe_inline" placeholder="Ext" style="max-width: 15%%;"/>
+                                            <field name="phone3" class="oe_inline" placeholder="e.g. 328-181-3700"/>
+                                            <field name="phone_type_id1" class="oe_inline" domain="[('company_id','=',company_id)]" style="max-width: 35%%;"/>
+                                        </div>
+                                        <label for="phone4" string="Other Phone(If Any)"/>
+                                        <div>
+                                            <field name="ext_phone4" class="oe_inline" placeholder="Ext" style="max-width: 15%%;"/>
+                                            <field name="phone4" class="oe_inline" placeholder="e.g. 328-181-3700"/>
+                                            <field name="phone_type_id1" class="oe_inline" domain="[('company_id','=',company_id)]" style="max-width: 35%%;"/>
+                                        </div>
+                                    </group>
+                                </group>
+                                <separator string="Interpreter Language"/>
+                                <field name="language_lines" nolabel="1" colspan="4">
+                                    <tree editable="top" >
+                                        <field name="name" domain="[('company_id','=',parent.company_id),('active_custom','=',True)]" context="{'company_id': company_id, 'show_group': 1 }"
+                                               options="{'limit': 7, 'create': false, 'create_edit': false , 'always_reload': True}"/>
+                                        <field name="specialization" />
+                                        <field name="is_simultaneous" />
+                                        <field name="certification_code" />
+                                        <field name="certification_level_id" domain="[('company_id','=',parent.company_id)]"/>
+                                        <field name="company_id" invisible="1" context="{'company_id': parent.company_id }"/>
+                                    </tree>
+                                </field>
+                                <newline/>
+                                <separator string="Interpreter Note"/>
+                                <field name="comment" placeholder="Put a note..." nolabel="1" colspan="4" widget="html"
+                                       groups="bista_iugroup.group_iu_cust_service,bista_iugroup.group_iu_recruiter,bista_iugroup.group_record_manager"/>
+                            </page>
+                            <page string="Other" groups="bista_iugroup.group_iu_cust_service,bista_iugroup.group_iu_recruiter,bista_iugroup.group_record_manager">
+                                <group>
+                                    <group>
+                                        <field name="ssnid" />
+                                        <field name="sinid"  />
+                                        <field name="vat" string="TIN No"/>
+                                        <field name="due_days" />
+                                    </group>
+                                    <group>
+                                        <field name="property_supplier_payment_term_id" widget="selection" string="Payment Term"/>
+                                        <field name="resume_on_file"/>
+                                        <field name="wb_on_file" />
+                                        <field name="contract_on_file" />
+                                    </group>
+                                </group>
+                            </page>
+                            <page string="Billing" colspan="4" groups="account.group_account_user,account.group_account_manager,bista_iugroup.group_iu_cust_service">
+                                <group>
+                                    <group>
+                                        <field name="rate" string="Per Mile Bill Rate"/>
+                                    </group>
+                                    <group>
+                                        <field name="bill_miles_after" />
+                                    </group>
+                                </group>
+                                <separator string="Billing Free Form Note"/>
+                                <field name="billing_comment" placeholder="Put an invoice note..." nolabel="1" colspan="4" widget="html"
+                                       groups="bista_iugroup.group_iu_cust_service,bista_iugroup.group_iu_recruiter,bista_iugroup.group_record_manager"/>
+                                <separator string="Rate"/>
+                                <newline/>
+                                <field name="rate_ids" options="{'reload_on_button': true}" colspan="2" nolabel="1">
+                                    <tree  string="Rates" editable="bottom">
+                                        <field name="rate_type" />
+                                        <field name="base_hour" />
+                                        <field name="inc_min" />
+                                        <field name="default_rate" />
+                                        <field name="spanish_regular" />
+                                        <field name="spanish_licenced" />
+                                        <field name="spanish_certified" />
+                                        <field name="exotic_regular" />
+                                        <field name="exotic_certified" />
+                                        <field name="exotic_middle" />
+                                        <field name="exotic_high" />
+                                    </tree>
+                                </field>
+                            </page>
+                            <page string="Event History" groups="bista_iugroup.group_iu_cust_service,bista_iugroup.group_iu_recruiter,bista_iugroup.group_record_manager">
+                                <footer>
+                                        <button style="margin:10px" string="Past Appointments" name="view_past_appointments" type="object" class="oe_highlight"
+                                                groups="bista_iugroup.group_record_manager,bista_iugroup.group_iu_cust_service,bista_iugroup.group_iu_recruiter"/>
+                                        <button style="margin:10px" string="Todays Appointments" name="view_todays_appointments" type="object" class="oe_highlight"
+                                                groups="bista_iugroup.group_record_manager,bista_iugroup.group_iu_cust_service,bista_iugroup.group_iu_recruiter"/>
+                                        <button style="margin:10px" string="Future Appointments" name="view_future_appointments" type="object" class="oe_highlight"
+                                                groups="bista_iugroup.group_record_manager,bista_iugroup.group_iu_cust_service,bista_iugroup.group_iu_recruiter"/>
+                                        <button style="margin:10px" string="Assign To Multi Events" type="action" name="%(bista_iugroup.action_assign_multi_event_wizard)d"
+                                                class="oe_highlight"
+                                                groups="bista_iugroup.group_record_manager,bista_iugroup.group_iu_cust_service,bista_iugroup.group_iu_recruiter" />
+                                </footer>
+                                <separator string="Interpreter Allocation History" invisible="1"/>
+                                <field name="interpreter_alloc_history" invisible="1">
+                                    <tree>
+                                        <field name="partner_id" context="{ 'form_view_ref':'bista_iugroup.view_partner_form_inherit_iu'}"/>
+                                        <field name="language_id" />
+                                        <field name="patient_id" />
+                                        <field name="event_id" string="Event"/>
+                                        <field name="task_id" string="Related Task"/>
+                                        <field name="city" />
+                                        <field name="rate" />
+                                        <field name="event_date" />
+                                        <field name="state" />
+                                    </tree>
+                                </field>
+                                <separator string="Job Offered History"/>
+                                <div class="adv_search">
+                                    <field name="interpreter_work_ids" widget="one2many_list" readonly="1">
+                                        <tree>
+                                            <field name="event_id" readonly="1"/>
+                                            <field name="event_date" readonly="1"/>
+                                            <field name="event_start_time" readonly="1"/>
+                                            <field name="event_end_time" readonly="1"/>
+                                            <field name="voicemail_msg" readonly="1"/>
+                                            <field name="state" invisible="1" readonly="1"/>
+                                            <button name="direct_to_event" string="" type="object" icon="fa-mail-reply-all"
+                                                    groups="bista_iugroup.group_record_manager,bista_iugroup.group_iu_cust_service,bista_iugroup.group_iu_recruiter"/>
+                                        </tree>
+                                    </field>
+                                </div>
+                            </page>
+                            <page string="Accounting" col="4" name="accounting" groups="account.group_account_user,account.group_account_manager">
+                                <group>
+                                    <group>
+                                        <field name="property_account_position_id" widget="selection"/>
+                                    </group>
+                                    <group>
+                                        <field name="last_time_entries_checked"/>
+                                    </group>
+                                    <group>
+                                        <field name="property_account_receivable_id" groups="account.group_account_invoice"
+                                               options="{'limit': 7, 'create': false, 'create_edit': false ,'always_reload': True}"/>
+                                        <field name="property_payment_term_id" widget="selection" invisible="1"/>
+                                        <field name="credit"/>
+                                        <field name="credit_limit"/>
+                                    </group>
+                                    <group>
+                                        <field name="property_account_payable_id" groups="account.group_account_invoice"
+                                               options="{'limit': 7, 'create': false, 'create_edit': false ,'always_reload': True}"/>
+                                        <field name="debit"/>
+                                    </group>
+                                </group>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids" widget="mail_followers"/>
+                        <field name="message_ids" widget="mail_thread"/>
+                    </div>
+                </form>
+            </field>
+        </record>
+
+        <!-- Fields of Billing Page readonly for customer-service group  -->
+        <record model="ir.ui.view" id="view_interpreter_readonly_customer_service">
+            <field name="name">view.interpreter.readonly.customer.service</field>
+            <field name="model">res.partner</field>
+            <field name="inherit_id" ref="bista_iugroup.view_interpreter_form" />
+            <field name="groups_id" eval="[(6, 0, [ref('bista_iugroup.group_iu_cust_service') ])]" />
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='rate']" position="attributes">
+                    <attribute name="readonly">1</attribute>
+                </xpath>
+                <xpath expr="//field[@name='bill_miles_after']" position="attributes">
+                    <attribute name="readonly">1</attribute>
+                </xpath>
+                <xpath expr="//field[@name='rate_ids']" position="attributes">
+                    <attribute name="readonly">1</attribute>
+                </xpath>
+                <xpath expr="//field[@name='billing_comment']" position="attributes">
+                    <attribute name="readonly">1</attribute>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="view_interpreter_filter" model="ir.ui.view">
+            <field name="name">interpreter.select</field>
+            <field name="model">res.partner</field>
+            <field name="arch" type="xml">
+                <search string="Search Interpreter">
+                    <field name="complete_name"/>
+                    <field name="name" string="First Name" filter_domain="['|',('name','ilike',self),('last_name','=',self)]"/>
+                    <field name="last_name"/>
+                    <field name="middle_name"/>
+                    <field name="ref"/>
+                    <filter help="My Interpreters" icon="fa-user" domain="[('user_id','=',uid)]"/>
+                    <separator/>
+                    <field name="language_id" />
+                    <field name="zip"/>
+                    <field name="email"/>
+                    <field name="city"/>
+                    <field name="zone_id"/>
+                    <field name="meta_zone_id" />
+                    <field name="phone"/>
+                    <field name="user_id"/>
+                    <separator/>
+                    <field name="country_id"/>
+                    <field name="parent_id"/>
+                    <separator/>
+                    <filter name="interp_active" string="Interpretation Active" icon="fa-file-o" domain="[('is_interpretation_active','=',1)]" help = "Interpretation Active Interpreters"/>
+                    <filter name="interp_inactive" string="Interpretation InActive" icon="fa-file-o" domain="[('is_interpretation_active','=',0)]" help = "Interpretation InActive Interpreters"/>
+                    <filter string="Active" name="active" domain="[('active','=',1)]" help="Active Partners"/>
+                    <filter string="InActive" name="inactive" domain="[('active','=',0)]" help="InActive Partners"/>
+                    <filter string="Is Agency" name="is_agency" domain="[('is_agency','=',1)]" help="Agency Interpreters"/>
+                    <group expand="0" string="Group By...">
+                        <filter string="Salesperson" icon="fa-user" domain="[]" context="{'group_by' : 'user_id'}" />
+                        <filter string="Company" context="{'group_by': 'parent_id'}"/>
+                        <filter string="Country" context="{'group_by': 'country_id'}"/>
+                        <filter string="Zip" context="{'group_by': 'zip'}"/>
+                        <filter string="Zone" context="{'group_by': 'zone_id'}"/>
+                        <filter string="Meta Zone" context="{'group_by': 'meta_zone_id'}"/>
+                        <filter string="Language" context="{'group_by': 'language_id'}"/>
+                        <filter string="Companies" icon="fa-user" domain="[]" context="{'group_by' : 'company_id'}" />
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <!-- Interpreter Kanban View -->
+        <record model="ir.ui.view" id="interpreter_kanban_view">
+            <field name="name">interpreter.kanban</field>
+            <field name="model">res.partner</field>
+            <field name="arch" type="xml">
+                <kanban>
+                    <field name="email"/>
+                    <field name="phone"/>
+                    <field name="zip"/>
+                    <field name="city"/>
+                    <field name="country_id"/>
+                    <field name="mobile"/>
+                    <field name="state_id"/>
+                    <field name="image"/>
+                    <templates>
+                        <t t-name="kanban-box">
+                            <div class="oe_kanban_vignette oe_semantic_html_override">
+                                <a type="open">
+                                    <t t-if="record.image and record.image.raw_value">
+                                        <img t-att-src="kanban_image('res.partner', 'image_medium', record.id.value)" class="oe_kanban_image"/>
+                                    </t>
+                                    <t t-if="record.image and record.image.raw_value">
+                                        <img t-att-src='_s + "/base/static/src/img/avatar.png"' class="oe_kanban_image"/>
+                                    </t>
+                                </a>
+                                <div class="oe_kanban_details">
+                                    <h4>
+                                        <a type="open">[<field name="ref"/>] <field name="name"/><t t-if="record.middle_name.raw_value"> <field name="middle_name"/> </t> <t t-if="record.last_name.raw_value"> <field name="last_name"/> </t> </a>
+                                    </h4>
+                                    <ul>
+                                        <li t-if="record.city.raw_value and !record.country_id.raw_value"><field name="city"/></li>
+                                        <li t-if="!record.city.raw_value and record.country_id.raw_value"><field name="country_id"/></li>
+                                        <li t-if="record.city.raw_value and record.country_id.raw_value"><field name="city"/>, <field name="country_id"/></li>
+                                        <li t-if="record.phone.raw_value">Tel: <field name="phone"/></li>
+                                        <li t-if="record.phone2.raw_value">Tel2: <field name="phone2"/></li>
+                                        <li t-if="record.email.raw_value"><a t-attf-href="mailto:#{record.email.value}"><field name="email"/></a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </t>
+                    </templates>
+                </kanban>
+            </field>
+        </record>
+
+        <record id="action_interpreter_form" model="ir.actions.act_window">
+            <field name="name">Interpreters</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">res.partner</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form,kanban</field>
+            <field name="context">{"default_supplier":1,"default_customer":0,"default_is_company":0,
+                "default_cust_type":'interpreter','default_is_interpretation_active':1,
+                'search_default_interp_active':1}</field>
+            <field name="domain">[('cust_type','in',('interpreter','interp_and_transl'))]</field>
+            <field name="search_view_id" ref="view_interpreter_filter"/>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Click to add a contact in your address book.
+                </p><p>
+                OpenERP helps you easily track all activities related to
+                a interpreter; discussions, history of business opportunities,
+                documents, etc.
+            </p>
+            </field>
+        </record>
+
+        <record id="action_interpreter_form_view_employee" model="ir.actions.act_window.view">
+            <field eval="2" name="sequence"/>
+            <field name="view_mode">kanban</field>
+            <field name="view_id" ref="interpreter_kanban_view"/>
+            <field name="act_window_id" ref="action_interpreter_form"/>
+        </record>
+
+        <record id="action_interpreter_form_view" model="ir.actions.act_window.view">
+            <field eval="1" name="sequence"/>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="view_interpreter_form"/>
+            <field name="act_window_id" ref="action_interpreter_form"/>
+        </record>
+
+        <record id="action_interpreter_tree_view" model="ir.actions.act_window.view">
+            <field name="sequence" eval="0"/>
+            <field name="view_mode">tree</field>
+            <field name="view_id" ref="view_interpreter_tree"/>
+            <field name="act_window_id" ref="action_interpreter_form"/>
+        </record>
+
+        <menuitem id="menu_interpreter_form" parent="menu_contacts" action="action_interpreter_form" sequence="3"/>
+        <!--This records are added to show Supplier menu item in Operation tabs-->
+
+        <record id="action_supplier_operation" model="ir.actions.act_window">
+            <field name="name">Suppliers</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">res.partner</field>
+            <field name="view_type">form</field>
+            <field name="domain">[('cust_type','=','other'),('supplier','=',True),('customer','=',False)]</field>
+            <field name="view_mode">tree,form</field>
+            <field name="context">{'default_customer': 0,'default_supplier': 1}</field>
+            <field name="filter" eval="True"/>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Click to add a contact in your address book.
+                </p><p>
+                OpenERP helps you easily track all activities related to
+                a supplier: discussions, history of purchases,
+                documents, etc.
+            </p>
+            </field>
+        </record>
+
+        <record id="action_supplier_operation_form" model="ir.actions.act_window.view">
+            <field eval="1" name="sequence"/>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="base.view_partner_form"/>
+            <field name="act_window_id" ref="action_supplier_operation"/>
+        </record>
+
+        <record id="action_supplier_operation_tree" model="ir.actions.act_window.view">
+            <field name="sequence" eval="0"/>
+            <field name="view_mode">tree</field>
+            <field name="view_id" ref="base.view_partner_tree"/>
+            <field name="act_window_id" ref="action_supplier_operation"/>
+        </record>
+
+        <menuitem id="menu_supplier_operation" parent="menu_contacts" action="action_supplier_operation" sequence="4"/>
+    </data>
+</odoo>

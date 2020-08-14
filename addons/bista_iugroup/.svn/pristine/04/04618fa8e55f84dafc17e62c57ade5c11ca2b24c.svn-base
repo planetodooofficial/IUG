@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="iu_timesheet_form" model="ir.ui.view">
+            <field name="name">timesheet.form</field>
+            <field name="model">timesheet</field>
+            <field name="arch" type="xml">
+                <form string="Timesheet">
+                    <header>
+                        <button name="fill_timesheet"  string="Search Timesheet" type="object" class="oe_highlight"/>
+                        <button name="button_confirm" states="draft" string="Submit to Manager" type="object" class="oe_highlight"/>
+                        <button name="done" states="confirm" string="Approve" type="workflow" groups="base.group_hr_user" class="oe_highlight"/>
+                        <button name="action_set_to_draft" states="done" string="Set to Draft" type="object" />
+                        <button name="cancel" states="confirm" string="Refuse" type="workflow" groups="base.group_hr_user" />
+                        <field name="state" widget="statusbar" statusbar_visible="new,confirm,done"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_right oe_button_box" name="buttons">
+                            <button type="action" name="%(hr_timesheet_attendance.act_hr_timesheet_sheet_sheet_2_hr_analytic_timesheet)d" string="Timesheet Activities" />
+                        </div>
+                        <div class="oe_title">
+                            <label for="interpreter_id" class="oe_edit_only"/>
+                            <h1>
+                                <field name="interpreter_id"  class="oe_inline"
+                                   domain="[('cust_type','in',('interpreter','interp_and_transl'))]" context="{'form_view_ref':'bista_iugroup.view_interpreter_form'}"/>
+                            </h1>
+                            <field name="user_id" invisible="1"/>
+                        </div>
+                        <group>
+                            <group>
+                                <label for="date_from" string="Timesheet Period"/>
+                                <div> <field name="date_from" class="oe_inline"/> to <field name="date_to" class="oe_inline"/></div>
+                                <field name="name" invisible="1"/>
+                                <field name="company_id" groups="base.group_multi_company"/>
+                            </group>
+                            <group groups="base.group_hr_attendance">
+                            </group>
+                        </group>
+                        <notebook>
+                            <page string="Summary">
+                                <field name="timesheet_ids" groups="project.group_tasks_work_on_tasks" readonly="1">
+                                    <tree string="Task Work" editable="top">
+                                        <field name="task_id" readonly="1"/>
+                                        <field name="name" readonly="1"/>
+                                        <field name="hours" widget="float_time" sum="Spent Hours" readonly="1"/>
+                                        <field name="date" readonly="1"/>
+                                        <field name="user_id" readonly="1"/>
+                                    </tree>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <div class="oe_chatter">
+                        <field name="message_ids" widget="mail_thread"/>
+                        <field name="message_follower_ids" widget="mail_followers"/>
+                    </div>
+                </form>
+            </field>
+        </record>
+
+        <record id="view_timesheet_filter" model="ir.ui.view">
+            <field name="name">timesheet.filter</field>
+            <field name="model">timesheet</field>
+            <field name="arch" type="xml">
+                <search string="Search Timesheet">
+                    <field name="date_from"/>
+                    <field name="state" />
+                    <filter name="new" string="In Draft" domain="[('state','in',('draft', 'new'))]" help="Unvalidated Timesheets"/>
+                    <filter name="to_approve" string="To Approve" domain="[('state','=','confirm')]" help="Confirmed Timesheets"/>
+                    <field name="interpreter_id"/>
+                    <group expand="0" string="Group By...">
+                        <filter string="Employees" icon="fa-user" domain="[]" context="{'group_by':'interpreter_id'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <record id="action_timesheet_form" model="ir.actions.act_window">
+            <field name="name">Timesheets to Validate</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">timesheet</field>
+            <field name="view_type">form</field>
+            <field name="view_id" eval="False"/>
+            <field name="context">{'search_default_to_approve':1}</field>
+            <field name="search_view_id" ref="view_timesheet_filter"/>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    New timesheet to approve.
+                </p><p>
+                    You must record timesheets every day and confirm at the end
+                    of the week. Once the timesheet is confirmed, it should be
+                    validated by a manager.
+                </p><p>
+                    Timesheets can also be invoiced to customers, depending on the
+                    configuration of each project's related contract.
+                </p>
+            </field>
+        </record>
+     
+        <menuitem action="action_timesheet_form" id="menu_act_hr_timesheet_sheet_form" parent="project.menu_project_management"
+             sequence="10" groups="bista_iugroup.group_record_manager"/>
+    </data>
+</odoo>

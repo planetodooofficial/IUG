@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+    	<template name="Assets Backend Drag Drop" inherit_id="web.assets_backend" id="assets_backend">
+            <xpath expr="." position="inside">
+                <script type="text/javascript" src="/drag_drop_multi_attachment/static/src/js/drag_drop_multi_attachment.js"></script>
+            	<link rel="stylesheet" href="/drag_drop_multi_attachment/static/src/css/drag_drop_multi_attachment.css"/>
+            </xpath>
+        </template>
+    </data>
+</odoo>

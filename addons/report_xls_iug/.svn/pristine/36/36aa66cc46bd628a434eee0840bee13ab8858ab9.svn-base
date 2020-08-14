@@ -1,0 +1,290 @@
+# -*- encoding: utf-8 -*-
+##############################################################################
+#
+#    OpenERP, Open Source Management Solution
+#
+#    Copyright (c) 2014 Noviat nv/sa (www.noviat.com). All rights reserved.
+#
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU Affero General Public License as
+#    published by the Free Software Foundation, either version 3 of the
+#    License, or (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+#    GNU Affero General Public License for more details.
+#
+#    You should have received a copy of the GNU Affero General Public License
+#    along with this program. If not, see <http://www.gnu.org/licenses/>.
+#
+##############################################################################
+
+from odoo import fields, models,_
+# from odoo.custom_addons.report_xls.utils import rowcol_to_cell, _render
+
+
+class account_invoice(models.Model):
+    _inherit = 'account.invoice'
+
+    # allow inherited modules to extend the query
+    def _report_xls_query_extra(self):
+        select_extra = ""
+        join_extra = ""
+        where_extra = ""
+        return (select_extra, join_extra, where_extra)
+
+    # allow inherited modules to add document references
+    def _report_xls_document_extra(self):
+        return "''"
+
+    # allow inherited modules to extend the render namespace
+    def _report_xls_render_space_extra_kaiser(self):
+        """
+        extend render namespace for use in the template 'lines', e.g.
+        space_extra = {
+            'partner_obj': self.pool.get('res.partner'),
+        }
+        return space_extra
+        """
+        return None
+    
+    # override list in inherited module to add/drop columns or change order
+    def _report_xls_fields_kaiser(self):
+        ''' List of Columns in the exported Excel with the sequence'''
+        return [
+            'invoice_number','amount',  'date_service', 'date_invoice', 'event_ref', 'language',
+            'address', 'city', 'zip','service_area','gl','nud','check',
+            'check_date','approving_mgr','department', 'dr_name','status','payment_received','po_no','contract_no',
+            'iu_actions','patient_medical_number'
+        ]
+    
+    # Change/Add Template entries
+    def _report_xls_template_kaiser(self):
+        return {}
+
+class account_invoice_line(models.Model):
+    _inherit = 'account.invoice.line'
+    
+    # allow inherited modules to extend the query
+    def _report_xls_query_extra(self):
+        select_extra = ""
+        join_extra = ""
+        where_extra = ""
+        return (select_extra, join_extra, where_extra)
+    
+    # allow inherited modules to add document references
+    def _report_xls_document_extra(self):
+        return ""
+    
+    def _report_xls_fields_kaiser_compliance(self):
+        ''' List of Columns in the exported Excel with the sequence'''
+        return [
+            'event_number', 'invoice_number', 'event_outcome', 'cancel_reason','create_date', 'less_than_24_notice', 'glcode', 'nuid', 'medical_number', 
+            'interpreter', 'date_service', 'requested_start_time','requested_end_time', 'start_time', 'end_time','duration', 'requester', 'location', 
+            'street', 'street2', 'interpretation_city', 'rate', 'total_interpretation_cost', 'amount', 'payment_received', 'status', 'multi_type', 'comments','interpretation_type', 
+            'patient_name', 'language', 'po_no', 'ordering_contact', 'billing_customer', 'billing_contact',
+            'contract_no','department', 'dr_name','miles_driven', 'total_miles_rate', 'comment','patient_medical_number'
+        ]
+    
+# +++++++++++++++++++ Cobb_DFCS +++++++++++++++++++++
+    # allow inherited modules to extend the render namespace
+    def _report_xls_render_space_extra_cobb(self):
+        return None
+
+    # override list in inherited module to add/drop columns or change order
+    def _report_xls_fields_cobb(self):
+        ''' List of Columns in the exported Excel with the sequence'''
+        return [
+            'invoice_number','amount',  'date_service', 'language', 
+            'interpretation_type','interpreter','interpretation_city','patient_name','requester', 
+            'ordering_contact', 'location','street', 'street2', 'billing_contact','billing_contact_ref',
+            'billing_customer','billing_customer_ref','office', 'city', 'zip','start_time','end_time','duration',
+            'rate','miles_driven','total_miles_rate', 'contract_no', 'po_no','department', 'dr_name', 'date_invoice','status',
+            'patient_medical_number','project','ref','event_department'
+        ]
+
+    # Change/Add Template entries
+    def _report_xls_template_cobb(self):
+        return {}
+
+# +++++++++++++++ CDCR-California_Rehabilitation_Ctr +++++++++++++++++
+    def _report_xls_render_space_extra_cdcr(self):
+        return None
+
+    def _report_xls_fields_cdcr(self):
+        return [
+            'invoice_number','amount', 'date_service', 'language',
+            'interpretation_type','interpreter','interpretation_city','patient_name','requester',
+            'ordering_contact', 'location','street', 'street2', 'billing_contact','billing_contact_ref',
+            'invoice_number', 'billing_customer','billing_customer_ref','office','city', 'zip','start_time','end_time','duration',
+            'rate','miles_driven','total_miles_rate', 'contract_no', 'po_no','department', 'dr_name', 'date_invoice','status',
+            'patient_medical_number'
+        ]
+
+    def _report_xls_template_cdcr(self):
+        return {}
+    
+# +++++++++++++++ ADP TOTAL SOURCE +++++++++++++++++
+    def _report_xls_render_space_extra_adp(self):
+        return None
+
+    def _report_xls_fields_adp(self):
+        ''' List of Columns in the exported Excel with the sequence'''
+        return [
+            'invoice_number','amount', 'date_service', 'language',
+            'interpretation_type','interpreter','interpretation_city','patient_name','requester',
+            'ordering_contact' ,'location','street', 'street2', 'billing_contact','billing_contact_ref',
+            'billing_customer','billing_customer_ref','office', 'city', 'zip','start_time','end_time','duration',
+            'rate','miles_driven','total_miles_rate', 'contract_no',  'po_no','department', 'dr_name', 'date_invoice','status',
+            'patient_medical_number'
+        ]
+
+    def _report_xls_template_adp(self):
+        return {}
+
+# +++++++++++++++ CST Report for Health and Human Services +++++++++++++++++
+    def _report_xls_render_space_extra_cst(self):
+        return None
+
+    def _report_xls_fields_cst(self):
+        ''' List of Columns in the exported Excel with the sequence'''
+        return [
+            'invoice_number', 'amount', 'date_service', 'language',
+            'interpretation_type','interpreter','interpretation_city','patient_name','requester',
+            'ordering_contact', 'location','street', 'street2',  'billing_customer','billing_customer_ref',
+            'billing_contact','billing_contact_ref','office','city', 'zip','start_time','end_time','duration',
+            'rate','miles_driven','total_miles_rate', 'contract_no',  'po_no', 'department', 'dr_name','date_invoice','status',
+            'patient_medical_number','event_id','event_ref','event_project_id'
+        ]
+    
+    def _report_xls_template_cst(self):
+        return {}
+
+# +++++++++++++++ CST Report for Health and Human Services For County Of San Mateo+++++++++++++++++
+    def _report_xls_render_space_extra_cst_org(self):
+        return None
+
+    def _report_xls_fields_cst_org(self):
+        ''' List of Columns in the exported Excel with the sequence'''
+        return [
+            'invoice_number', 'amount', 'date_service', 'language',
+            'interpretation_type', 'interpreter', 'interpretation_city', 'patient_name', 'requester',
+            'ordering_contact', 'location', 'street', 'street2', 'billing_customer', 'billing_customer_ref',
+            'billing_contact', 'billing_contact_ref', 'office', 'city', 'zip', 'start_time', 'end_time', 'duration',
+            'rate', 'miles_driven', 'total_miles_rate', 'contract_no', 'po_no', 'department', 'dr_name',
+            'date_invoice', 'status',
+            'patient_medical_number', 'event_id', 'event_ref', 'event_project_id','org_number',
+        ]
+
+    def _report_xls_template_cst_org(self):
+        return {}
+
+# +++++++++++++++ Report for VDSS Division of Finance - Budget +++++++++++++++++
+    def _report_xls_render_space_extra_vdss(self):
+        return None
+
+    def _report_xls_fields_vdss(self):
+        ''' List of Columns in the exported Excel with the sequence'''
+        return [
+            'invoice_number', 'amount', 'date_service', 'language',
+            'interpretation_type','interpreter','interpretation_city','patient_name','requester',
+            'ordering_contact', 'location','street', 'street2', 'billing_contact','billing_contact_ref',
+            'billing_customer','billing_customer_ref','office', 'city', 'zip','start_time','end_time','duration',
+            'rate','miles_driven','total_miles_rate', 'contract_no', 'po_no', 'department', 'dr_name','date_invoice',
+            'status','patient_medical_number'
+        ]
+
+    def _report_xls_template_vdss(self):
+        return {}
+    
+# +++++++++++++++ Report for John Muir +++++++++++++++++
+    def _report_xls_render_space_extra_john_muir(self):
+        return None
+    
+    def _report_xls_fields_john_muir(self):
+        ''' List of Columns in the exported Excel with the sequence'''
+        return [
+            'invoice_number', 'amount', 'date_service', 'language',
+            'interpretation_type','interpreter','interpretation_city','patient_name',  
+            'requester','ordering_contact','ordering_contact_phone', 'location','street', 'street2', 'billing_contact','billing_contact_ref',
+            'billing_customer','billing_customer_ref','office','city', 'zip','start_time','end_time','duration',
+            'rate','miles_driven','total_miles_rate', 'contract_no', 'po_no', 'department', 'dr_name','date_invoice','cost_center',
+            'status','patient_medical_number'
+        ]
+
+    def _report_xls_template_john_muir(self):
+        return {}
+
+# +++++++++++++++ Report for CalOptima +++++++++++++++++
+    def _report_xls_render_space_extra_caloptima(self):
+        return None
+
+    def _report_xls_fields_caloptima(self):
+        ''' List of Columns in the exported Excel with the sequence'''
+        return [
+            'invoice_number', 'amount', 'language','date_service','start_time','end_time',
+            'interpretation_type','interpreter','interpreter_gender','interpretation_city',#'patient_name','requester','office',
+            'requester', 'location','street', 'street2',  'billing_contact','ordering_contact','billing_contact_ref',
+            'billing_customer','billing_customer_ref','patient_name','medical_number','city', 'zip','duration','rate','miles_driven','total_miles_rate', 
+            'contract_no', 'po_no','department', 'dr_name','status','comment','patient_medical_number','job_note'
+        ]
+
+    def _report_xls_template_caloptima(self):
+        return {}
+
+    def _report_xls_fields_acd(self):
+        ''' List of Columns in the exported Excel with the sequence'''
+        return [
+            'invoice_number',  'date_service', 'start_time', 'end_time', 'requester', 'medical_number', 'location', 
+            'interpretation_type', 'patient_name', 'interpreter', 'duration', 'rate', 'amount', 'language',
+            'po_no', 'ordering_contact', 'billing_customer', 'billing_contact', 'location','street', 'street2', 'miles_driven',
+            'contract_no', 'total_miles_rate','status', 'comment'
+        ]
+
+# +++++++++++++++ HIPAA Report +++++++++++++++++
+    def _report_xls_render_space_extra_hipaa(self):
+        return None
+
+    def _report_xls_fields_hipaa(self):
+        ''' List of Columns in the exported Excel with the sequence'''
+        return [
+            'invoice_number', 'amount', 'date_service', 'language',
+            'interpretation_type', 'interpreter', 'interpretation_city', 'patient_name', 'requester',
+            'ordering_contact', 'location', 'street', 'street2', 'billing_customer', 'billing_customer_ref',
+            'billing_contact', 'billing_contact_ref', 'office', 'city', 'zip', 'start_time', 'end_time', 'duration',
+            'rate', 'miles_driven', 'total_miles_rate', 'contract_no', 'po_no', 'department', 'dr_name',
+            'date_invoice', 'status',
+            'patient_medical_number', 'event_id', 'event_ref', 'event_project_id'
+        ]
+
+    def _report_xls_template_hipaa(self):
+        return {}
+
+    # +++++++++++++++ Report for Invoice Profitability +++++++++++++++++
+    def _report_xls_render_space_extra_invoice_profitability(self):
+        return None
+
+    def _report_xls_fields_invoice_profitability(self):
+        ''' List of Columns in the exported Excel with the sequence'''
+        return [
+            'invoice_number', 'amount', 'date_service', 'language',
+            'interpretation_type', 'interpreter', 'interpretation_city', 'patient_name',
+            'requester', 'ordering_contact', 'ordering_contact_phone', 'location', 'street', 'street2', 'billing_contact',
+            'billing_contact_ref',
+            'billing_customer', 'billing_customer_ref', 'office', 'city', 'zip', 'start_time', 'end_time', 'duration',
+            'rate', 'miles_driven', 'total_miles_rate', 'contract_no', 'po_no', 'department', 'dr_name', 'date_invoice',
+            'cost_center',
+            'status', 'patient_medical_number', 'amount_total','sales_representative_id','sales_representative_id_for_billing_customer','requester_create_date',
+            'metazone','scheduler'
+        ]
+
+    def _report_xls_template_invoice_profitability(self):
+        return {}
+
+class res_partner(models.Model):
+    _inherit = 'res.partner'
+
+    create_date = fields.Datetime('Creation Date', readonly=True)
+
+

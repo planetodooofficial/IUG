@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- wizard view -->
+        <record id="assign_interpreter_wizard_view1" model="ir.ui.view">
+            <field name="name">Assign Interpreter</field>
+            <field name="model">assign.interp.wizard</field>
+            <field name="arch" type="xml">
+                <form string="Assign Interpreter">
+                    <group>
+                        <field name="event_id"  readonly="1" invisible="1"/>
+                        <field name="interpreter_id" readonly="1" invisible="1"/>
+                        <field name="history_id" readonly="1" invisible="1"/>
+                        <newline/>
+                        <group>
+                            <h4 style="color: #5F9EA0;"> Interpreter Appointments for this Event's Date:</h4>
+                        </group>
+                        <field name="interpreter_ids" nolabel="1" context="{'event_ids':event_id,}" colspan="4" readonly="1">
+                            <tree editable="top" decoration-info="state == 'confirm'" decoration-success="state == 'allocated'">
+                                <field name="name" readonly="1" context="{ 'form_view_ref':'bista_iugroup.view_interpreter_form'}" />
+                                <field name="partner_id" invisible="1" readonly="1" context="{'form_view_ref':'bista_iugroup.view_partner_form_inherit_iu'}"/>
+                                <field name="event_date" readonly="1" invisible="1"/>
+                                <field name="rate" readonly="1" groups="bista_iugroup.group_iu_cust_service,bista_iugroup.group_record_manager"/>
+                                <field name="city" readonly="1"/>
+                                <field name="event_start" readonly="1"/>
+                                <field name="event_end" readonly="1"/>
+                                <field name="event_id" readonly="1" string="Event"/>
+                                <field name="task_id" readonly="1" />
+                                <field name="state" readonly="1" />
+                                <button name="reset_event" type="object" icon="fa-times-circle" invisible="1"/>
+                            </tree>
+                        </field>
+                    </group>
+                    <footer>
+                        <button string="Accept Job" name="update_interpreter" type="object" class="oe_highlight"
+                                context="{'event_id': event_id ,'history_id': history_id}"/>
+                        or
+                        <button string="Cancel" class="oe_link" special="cancel" />
+                    </footer>
+                </form>
+            </field>
+        </record>
+        
+        <record model="ir.actions.act_window" id="action_assign_wizard1">
+            <field name="name">Assign Interpreter</field>
+            <field name="res_model">assign.interp.wizard</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="assign_interpreter_wizard_view1"/>
+            <field name="target">new</field>
+        </record>
+
+        <record id="view_select_interpreter_line_form" model="ir.ui.view">
+            <field name="name">select.interpreter.line.form</field>
+            <field name="model">select.interpreter.line</field>
+            <field eval="8" name="priority"/>
+            <field name="arch" type="xml">
+                <form string="Select Interpreter Line">
+                    <header>
+                        <field name="state" widget="statusbar" statusbar_visible="allocated,confirm"/>
+                    </header>
+                    <sheet>
+                        <group colspan="2" col="2">
+                            <group>
+                                <field name="interpreter_id" context="{'form_view_ref':'bista_iugroup.view_interpreter_form'}" readonly="1"/>
+                                <field name="visited" readonly="1"/>
+                                <field name="visited_date" readonly="1" string="Visit Date"/>
+                            </group>
+                            <group>
+                                <field name="middle_name" readonly="1" />
+                                <field name="zip" readonly="1" />
+                                <field name="rate" readonly="1" />
+                                <field name="duration" readonly="1"/>
+                                <field name="distance" readonly="1"/>
+                                
+                            </group>
+                        </group>
+                        <footer invisible="1">
+                            <button  name="leave_voicemail" type="object" string="Leave Voicemail"
+                                class="oe_highlight" attrs="{'invisible': [('state','in',('cancel','voicemailsent'))]}"/>
+                            or
+                            <button string="Assign Interpreter" type="action" name="%(bista_iugroup.action_assign_wizard1)d"
+                                class="oe_highlight" attrs="{'invisible': [('state','in',('cancel'))]}"/>
+                            or
+                            <button  name="cancel_appointment" type="object" class="oe_highlight" string="Cancel Interpreter"
+                                attrs="{'invisible': [('state','in',('cancel'))]}" />
+                            or
+                            <button string="Cancel" class="oe_link" special="cancel" />
+                        </footer>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <!-- wizard view -->
+        <record id="search_interpreter_wizard_view" model="ir.ui.view">
+            <field name="name">Assign Interpreter</field>
+            <field name="model">interpreter.search.lookup.assign</field>
+            <field name="arch" type="xml">
+                <form string="Assign Interpreter">
+                    <group>
+                        <field name="interpreter_rec" nolabel="1" readonly="1">
+                            <tree editable="top" decoration-info="state == 'confirm'" decoration-success="state == 'allocated'">
+                                <field name="name" readonly="1" />
+                                <field name="partner_id" invisible="1" readonly="1"/>
+                                <field name="event_date" readonly="1" />
+                                <field name="rate" readonly="1"/>
+                                <field name="city" readonly="1"/>
+                                <field name="event_start" readonly="1"/>
+                                <field name="event_end" readonly="1"/>
+                                <field name="event_id" readonly="1" string="Event"/>
+                                <field name="master_event_id" invisible="1"/>
+                                <field name="state" readonly="1" />
+                                <button name="assign_interpreter_to_event" type="object" icon="fa-check" context="{'interpreter_id':name,'event_id':event_id,'master_event_id':master_event_id}"/>
+                            </tree>
+                        </field>
+                    </group>
+                </form>
+            </field>
+        </record>
+        
+        <record model="ir.actions.act_window" id="action_search_interpreter_wizard">
+            <field name="name">Assign Interpreter</field>
+            <field name="res_model">interpreter.search.lookup.assign</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="search_interpreter_wizard_view"/>
+            <field name="target">new</field>
+        </record>
+    </data>
+</odoo>

@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+        <record id="recurring_event_wizard" model="ir.ui.view">
+            <field name="name">Recurring Event</field>
+            <field name="model">recurring.event</field>
+            <field name="arch" type="xml">
+<!--                <form string="recurring event" version="7.0">
+                    <separator string="When do you want to duplicate this event?"/>
+                    <group colspan="4">
+                        <div class="address_format">
+                           <label for="event_start_hr" style="width: 50%%" string="Start Time"  />
+                           <field name="event_start_hr" class="custom_character"  context="{'field':'event_start_hr'}" on_change="onchange_time_char(event_start_hr,context)"/>
+                           : <field name="event_start_min" class="custom_character" context="{'field':'event_start_min'}" on_change="onchange_time_char(event_start_min,context)"/>
+                           <field name="am_pm" style="width: 10%%"  />
+                           <field name="customer_timezone" groups="bista_iugroup.group_iu_admin" style="width: 30%%" attrs="{'readonly':[('state','in',('confirmed','unbilled','invoiced','cancel','done'))]}"/>
+                        </div>
+                        <div class="address_format">
+                            <label for="event_end_hr" style="width: 50%%" string="End Time" />
+                            <field name="event_end_hr" class="custom_character"  context="{'field':'event_end_hr'}" on_change="onchange_time_char(event_end_hr,context)"/>
+                            : <field name="event_end_min" class="custom_character"  context="{'field':'event_end_min'}" on_change="onchange_time_char(event_end_min,context)"/>
+                            <field name="am_pm2" style="width: 10%%" />
+                        </div>
+                        
+                        <field name="recurring_type" />
+                    </group>
+                    <group colspan="4" cols="6">
+                        <group>
+                            <field name="monday" attrs="{'invisible': [('recurring_type','=','monthly')]}"/>
+                            <field name="thursday" attrs="{'invisible': [('recurring_type','=','monthly')]}"/>
+                            <field name="sunday" attrs="{'invisible': [('recurring_type','=','monthly')]}"/>
+                        </group>
+                        <group>
+                            <field name="tuesday" attrs="{'invisible': [('recurring_type','=','monthly')]}"/>
+                            <field name="friday" attrs="{'invisible': [('recurring_type','=','monthly')]}"/>
+                        </group>
+                        <group>
+                            <field name="wednesday" attrs="{'invisible': [('recurring_type','=','monthly')]}"/>
+                            <field name="saturday" attrs="{'invisible': [('recurring_type','=','monthly')]}"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="start_date"/>
+                        <field name="end_date"/>
+                    </group>
+                    <footer>
+                        <button type="object" string="Recur" class="oe_highlight" name="recur_event"/>
+                        or
+                        <button string="Cancel" class="oe_link" special="cancel" />
+                    </footer>
+                </form>-->
+                 <form string="recurring event" version="7.0">
+                    <separator string="When do you want to duplicate this event?"/>
+                    <group>
+                        <group>
+                        <field name="start_date"/>
+                        <field name="end_date"/>
+<!--                        <field name ="appt_date" attrs="{'invisible': [('recurring_type','in',('daily','week',''))]}"/>-->
+                        </group>
+                        <group>
+                        <div class="address_format">
+                           <label for="event_start_hr" style="width: 50%%" string="Start Time"  />
+                           <field name="event_start_hr" class="custom_character"  context="{'field':'event_start_hr'}"  />
+                           : <field name="event_start_min" class="custom_character" context="{'field':'event_start_min'}" />
+                           <field name="am_pm" style="width: 10%%"  />
+                           <!--<field name="customer_timezone" groups="bista_iugroup.group_iu_admin" style="width: 30%%" attrs="{'readonly':[('state','in',('confirmed','unbilled','invoiced','cancel','done'))]}"/>-->
+                        </div>
+                        </group>
+                        <group>
+                            </group>
+                        <group>
+                        <div class="address_format">
+                            <label for="event_end_hr" style="width: 50%%" string="End Time" />
+                            <field name="event_end_hr" class="custom_character"  context="{'field':'event_end_hr'}" />
+                            : <field name="event_end_min" class="custom_character"  context="{'field':'event_end_min'}"  />
+                            <field name="am_pm2" style="width: 10%%" />
+                        </div>
+                        </group>
+                     </group>   
+                    
+                    <group>
+                        <group>    
+                        <field name="recurring_type" />
+                        </group>
+                        <group>
+                            </group>
+                    </group>
+                    <group colspan="4" cols="6">
+                        <group>
+                            <field name="monday" attrs="{'invisible': [('recurring_type','=','monthly')]}"/>
+                             <field name="wednesday" attrs="{'invisible': [('recurring_type','=','monthly')]}"/>
+                            <!--<field name="thursday" attrs="{'invisible': [('recurring_type','=','monthly')]}"/>-->
+                            <field name="friday" attrs="{'invisible': [('recurring_type','=','monthly')]}"/>
+                            <field name="sunday" attrs="{'invisible': [('recurring_type','=','monthly')]}"/>
+                        </group>
+                        <group>
+                            <field name="tuesday" attrs="{'invisible': [('recurring_type','=','monthly')]}"/>
+                            <field name="thursday" attrs="{'invisible': [('recurring_type','=','monthly')]}"/>
+                            <!--<field name="friday" attrs="{'invisible': [('recurring_type','=','monthly')]}"/>-->
+                             <field name="saturday" attrs="{'invisible': [('recurring_type','=','monthly')]}"/>
+                        </group>
+<!--                        <group>
+                            <field name="wednesday" attrs="{'invisible': [('recurring_type','=','monthly')]}"/>
+                            <field name="saturday" attrs="{'invisible': [('recurring_type','=','monthly')]}"/>
+                        </group>-->
+                        
+                    </group>
+                    <group>
+                        <field name ="appt_date" attrs="{'invisible': [('recurring_type','in',('daily','weekly',''))]}"/>
+                        <field name="recurring_attachment" filename="file_name"/>
+                        <field name="file_name" invisible="1"/>
+                    </group>
+                    <footer>
+                        <button string="Recurring" name="recur_event" type="object" class="oe_highlight"/>
+                        or
+                        <button string="Cancel" class="oe_link" special="cancel" />
+                    </footer>
+                </form>
+             </field>
+        </record>
+          
+        <record model="ir.actions.act_window" id="action_recurring_event">
+            <field name="name">Reccuring Event</field>
+            <field name="res_model">recurring.event</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="recurring_event_wizard"/>
+            <field name="target">new</field>
+        </record>
+     </data>
+</openerp>

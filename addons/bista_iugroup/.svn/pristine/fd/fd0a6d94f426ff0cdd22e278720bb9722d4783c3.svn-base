@@ -1,0 +1,374 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+         #########Pending and Done Timesheet##############
+        <menuitem id="menu_main_task_tm" name="Timesheet"
+            sequence="20" groups="bista_iugroup.group_record_manager,bista_iugroup.group_iu_cust_service"/>
+        <menuitem id="menu_child_main_tm" parent="bista_iugroup.menu_main_task_tm" name="Timesheet"
+            sequence="11" groups="bista_iugroup.group_record_manager,bista_iugroup.group_iu_cust_service"/>
+
+        <record id="action_pending_tasks" model="ir.actions.act_window">
+            <field name="name">Pending Timesheet</field>
+            <field name="res_model">project.task</field>
+            <field name="view_mode">kanban,tree,form,calendar,gantt,graph</field>
+            <field name="search_view_id" ref="project.view_task_search_form"/>
+            <field name="domain">[('state','=','draft')]</field>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                </p><p>
+                    There are no pending Timesheet for you.
+                </p>
+            </field>
+        </record>
+
+        <record id="pending_view_task_form" model="ir.actions.act_window.view">
+            <field eval="2" name="sequence"/>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="project.view_task_form2"/>
+            <field name="act_window_id" ref="bista_iugroup.action_pending_tasks"/>
+        </record>
+
+        <record id="pending_view_task_tree" model="ir.actions.act_window.view">
+            <field name="sequence" eval="1"/>
+            <field name="view_mode">tree</field>
+            <field name="view_id" ref="project.view_task_tree2"/>
+            <field name="act_window_id" ref="bista_iugroup.action_pending_tasks"/>
+        </record>
+
+        <record id="action_done_tasks" model="ir.actions.act_window">
+            <field name="name">Done Timesheets</field>
+            <field name="res_model">project.task</field>
+            <field name="view_mode">kanban,tree,form,calendar,gantt,graph</field>
+            <field name="search_view_id" ref="project.view_task_search_form"/>
+            <field name="domain">[('state','=','done')]</field>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                </p><p>
+                    There are no Done timesheets .
+                </p>
+            </field>
+        </record>
+
+        <record id="done_view_task_form" model="ir.actions.act_window.view">
+            <field eval="2" name="sequence"/>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="project.view_task_form2"/>
+            <field name="act_window_id" ref="bista_iugroup.action_done_tasks"/>
+        </record>
+
+        <record id="done_view_task_tree" model="ir.actions.act_window.view">
+            <field name="sequence" eval="1"/>
+            <field name="view_mode">tree</field>
+            <field name="view_id" ref="project.view_task_tree2"/>
+            <field name="act_window_id" ref="bista_iugroup.action_done_tasks"/>
+        </record>
+
+        <menuitem id="menu_pending_child_tm" parent="bista_iugroup.menu_child_main_tm" action="action_pending_tasks"
+            sequence="1" groups="bista_iugroup.group_record_manager,bista_iugroup.group_iu_cust_service" />
+        <menuitem id="menu_done_child_tm" parent="bista_iugroup.menu_child_main_tm" action="action_done_tasks"
+            sequence="2" groups="bista_iugroup.group_record_manager,bista_iugroup.group_iu_cust_service"/>
+        <menuitem id="menu_hr_working_hours_iu" parent="project.menu_project_management" action="hr_timesheet.act_hr_timesheet_line"
+            sequence="11" groups="bista_iugroup.group_record_manager" />
+       
+        <record id="edit_project_inherit_iu" model="ir.ui.view">
+            <field name="name">project.project.form</field>
+            <field name="model">project.project</field>
+            <field name="inherit_id" ref="project.edit_project" />
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='partner_id']" position="replace">
+                    <field name="partner_id" domain="[('customer', '=', True)]"/>
+                </xpath>
+            </field>
+
+        </record>
+
+        <record model="ir.ui.view" id="hr_timesheet.view_task_form2_inherited">
+            <field name="name">project.task.form.inherited</field>
+            <field name="model">project.task</field>
+            <field name="inherit_id" ref="project.view_task_form2" />
+            <field name="groups_id" eval="[(4, ref('base.group_user'))]"/>
+            <field name="arch" type="xml">
+                <field name="user_id" position="after">
+                    <field name="planned_hours" widget="float_time"/>
+                </field>
+                <field name="partner_id" position="after">
+                    <field name="parent_id" attrs="{'invisible' : [('parent_id', '=', False)]}" />
+                    <field name="child_ids" invisible="1" />
+                    <field name="subtask_project_id" invisible="1" />
+                </field>
+            </field>
+        </record>
+
+        <record id="project.view_task_form2" model="ir.ui.view">
+            <field name="name">project.task.form</field>
+            <field name="model">project.task</field>
+            <field eval="2" name="priority"/>
+            <field name="arch" type="xml">
+                <form string="Timesheet"  create="false">
+                    <header>
+                        <button name="project_task_reevaluate" string="Reactivate" type="object" attrs="{'invisible':['|',('billing_state','=','billed'),('state','=','draft')]}"
+                                states="cancelled,done" context="{'button_reactivate':True}" groups="base.group_user"/>
+                        <button name="do_cancel" string="Cancel Task" type="object" invisible="1"
+                                states="draft,open,pending" groups="base.group_user"/>
+                        <button name="send_for_billing" string="Send For Billing" type="object" class="oe_highlight" invisible="1"
+                                groups="bista_iugroup.group_record_manager" attrs="{'invisible':[('billing_state','=','billed')]}"/>
+                        <button name="send_for_billing_cust" string="Send For Billing" type="object" class="oe_highlight" invisible="1"
+                                groups="bista_iugroup.group_iu_cust_service" attrs="{'invisible':[('billing_state','=','billed')]}"/>
+                        <field name="stage_id" widget="statusbar"/>
+                    </header>
+                    <sheet string="Task">
+                        <h1>
+                            <field name="name" placeholder="Task summary..." attrs="{'readonly':[('state','=','done')]}"/>
+                        </h1>
+                        <group>
+                            <group>
+                                <field name="all_edited" invisible="1"/>
+                                <field name="project_id"   context="{'default_use_tasks':1}" invisible="1"/>
+                                <field name="user_id" attrs="{'readonly':[('state','in',['done', 'cancelled'])]}" options='{"no_open": True}' invisible="1"/>
+                                <field name="planned_hours" widget="float_time" invisible="1" groups="project.group_time_work_estimation_tasks"/>
+                                <field name="current_time" invisible="1"/>
+                            </group>
+                            <group>
+                                <field name="billing_state" invisible="1"/>
+                                <field name="date_deadline" attrs="{'readonly':[('state','in',['done', 'cancelled'])]}" invisible="1"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page string="Description">
+                                <field class="main_table" name="work_ids" attrs="{'readonly':[('state','=','done')]}"
+                                        groups="project.group_tasks_work_on_tasks,bista_iugroup.group_iu_cust_service,bista_iugroup.group_iu_recruiter,bista_iugroup.group_record_manager">
+                                    <tree string="Task Work" editable="top" create="false" delete="false">
+                                        <field name="name"/>
+                                        <field name="interpreter_id" readonly="1"/>
+                                        <field context="{'name':parent}" name="event_start_time" required="1" readonly="1" invisible="1"/>
+                                        <field context="{'name':parent}" name="event_end_time" required="1" readonly="1" invisible="1"/>
+                                        <field name="event_start_date"  string="Date"/>
+                                        <field name="event_start_hr" class="custom_integer_task" string="Start Hours" context="{'field':'event_start_hr'}" />
+                                        <field name="event_start_min" class="custom_integer_task" string="Start Min" context="{'field':'event_start_min'}" />
+                                        <field name="am_pm" class="custom_integer_task" string="AM/ PM"/>
+                                        <field name="event_end_hr" class="custom_integer_task" string="End Hours" context="{'field':'event_end_hr'}" />
+                                        <field name="event_end_min" class="custom_integer_task" string="End Min" context="{'field':'event_end_min'}" />
+                                        <field name="am_pm2" class="custom_integer_task" string="AM/ PM"/>
+                                        <field name="hours"  sum="Spent Hours"
+                                               class="custom_integer_task" invisible="1" />
+                                        <field name="time_spent" widget='float_time'/>
+                                        <field name="wait_time"  widget='float_time'/>
+                                        <field name="wait_time_bill" widget='float_time'/>
+                                        <field name="travel_time" widget='float_time'/>
+                                        <field name="total_mileage_covered" class="custom_integer_task"/>
+                                        <field name="event_out_come_id" required="1"  domain="[('company_id','=',company_id)]" options="{'limit': 7, 'create': false, 'create_edit': false, 'no_open': True}"/>
+                                        <field name="date" invisible="1"/>
+                                        <field name="user_id" readonly="1"/>
+                                        <field name="company_id" invisible="1"/>
+                                        <field name="edited" readonly="1" string="Done?" groups="bista_iugroup.group_iu_admin"/>
+                                    </tree>
+                                </field>
+                                <group>
+                                    <group class="oe_subtotal_footer oe_right" name="project_hours" groups="project.group_time_work_estimation_tasks">
+                                        <field name="effective_hours" widget="float_time"/>
+                                        <label for="remaining_hours" string="Remaining" groups="project.group_time_work_estimation_tasks"/>
+                                        <div>
+                                            <field name="remaining_hours" widget="float_time" attrs="{'readonly':[('state','in',('done','cancelled'))]}" groups="project.group_time_work_estimation_tasks"/>
+                                        </div>
+                                        <field name="total_hours" widget="float_time" class="oe_subtotal_footer_separator"/>
+                                    </group>
+                                </group>
+                                <div class="oe_clear"/>
+                            </page>
+                            <page string="Invoice Info" >
+                                <group colspan="4" col="6">
+                                    <group>
+                                        <field name="event_id" readonly="1"/>
+                                    </group>
+                                </group>
+                            </page>
+                            <page string="Extra Info" attrs="{'readonly':[('state','=','done')]}" invisible="1">
+                                <group col="4">
+                                    <field name="priority" groups="base.group_user"/>
+                                    <field name="sequence"/>
+                                    <field name="partner_id"/>
+                                    <field name="state" invisible="1"/>
+                                    <field name="company_id" groups="base.group_multi_company" widget="selection"/>
+                                </group>
+                                <group>
+                                    <group string="Gantt View">
+                                        <field name="date_start"/>
+                                        <field name="date_end"/>
+                                    </group>
+                                    <group>
+                                    </group>
+                                </group>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids" widget="mail_followers" groups="base.group_user"/>
+                        <field name="message_ids" widget="mail_thread"/>
+                    </div>
+                </form>
+            </field>
+        </record>
+
+        <record id="sale_timesheet.view_sale_service_inherit_form2" model="ir.ui.view">
+            <field name="name">sale.service.form.view.inherit</field>
+            <field name="model">project.task</field>
+            <field name="groups_id" eval="[(4, ref('base.group_user'))]"/>
+            <field name="inherit_id" ref="project.view_task_form2"/>
+            <field name="arch" type="xml">
+                <field name="company_id" position="before">
+                </field>
+            </field>
+        </record>
+
+        <record id="project.view_task_tree2" model="ir.ui.view">
+            <field name="name">project.task.tree</field>
+            <field name="model">project.task</field>
+            <field eval="2" name="priority"/>
+            <field name="arch" type="xml">
+                <tree fonts="bold:message_unread==True" colors="grey:state in ('cancelled','done');blue:state == 'pending';red:date_deadline and (date_deadline&lt;current_date) and (state in ('draft','pending','open'))" string="Tasks"
+                      create="false">
+                    <field name="message_unread" invisible="1"/>
+                    <field name="name"/>
+                    <field name="related_partner_id"/>
+                    <field name="view_interpreter"/>
+                    <field name="interpreters_phone"/>
+                    <field name="interpreters_email"/>
+                    <field name="date_start" />
+                    <field name="date_end" />
+                    <field name="date_deadline" invisible="context.get('deadline_visible',True)"/>
+                    <field name="stage_id" invisible="context.get('set_visible',False)" groups="base.group_no_one"/>
+                    <field name="state" invisible="1"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="hr_timesheet.view_task_tree2_inherited" model="ir.ui.view">
+            <field name="name">project.task.tree.inherited</field>
+            <field name="model">project.task</field>
+            <field name="inherit_id" ref="project.view_task_tree2" />
+            <field eval="2" name="priority"/>
+            <field name="arch" type="xml">
+                <field name="stage_id" position="after">
+                    <field name="progress" widget="progressbar"/>
+                </field>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="project.view_task_kanban">
+            <field name="name">project.task.kanban</field>
+            <field name="model">project.task</field>
+            <field name="arch" type="xml">
+                <kanban default_group_by="stage_id" create="false">
+                    <field name="color"/>
+                    <field name="priority"/>
+                    <field name="stage_id"/>
+                    <field name="user_id"/>
+                    <field name="user_email"/>
+                    <field name="description"/>
+                    <field name="sequence"/>
+                    <field name="state" groups="base.group_no_one"/>
+                    <field name="kanban_state"/>
+                    <field name="remaining_hours" sum="Remaining Time" groups="project.group_time_work_estimation_tasks"/>
+                    <field name="date_deadline"/>
+
+                    <templates>
+                        <t t-name="kanban-box">
+                            <div t-attf-class="oe_kanban_color_#{kanban_getcolor(record.color.raw_value)} oe_kanban_card oe_kanban_global_click">
+                                <div class="oe_dropdown_toggle oe_dropdown_kanban" groups="base.group_user">
+                                    <span class="oe_e">í</span>
+                                    <ul class="oe_dropdown_menu">
+                                        <li>
+                                            <ul class="oe_kanban_project_times" groups="project.group_time_work_estimation_tasks">
+                                                <li><a name="set_remaining_time_1" type="object" class="oe_kanban_button">1</a></li>
+                                                <li><a name="set_remaining_time_2" type="object" class="oe_kanban_button">2</a></li>
+                                                <li><a name="set_remaining_time_5" type="object" class="oe_kanban_button">5</a></li>
+                                                <li><a name="set_remaining_time_10" type="object" class="oe_kanban_button">10</a></li>
+                                                <li><a name="do_open" states="draft" string="Validate planned time" type="object" class="oe_kanban_button oe_kanban_button_active">!</a></li>
+                                            </ul>
+                                        </li>
+                                        <li><ul class="oe_kanban_colorpicker" data-field="color"/></li>
+                                    </ul>
+                                </div>
+                                <div class="oe_kanban_content">
+                                    <div><b><field name="name"/></b></div>
+                                    <div>
+                                        <field name="project_id"/><br/>
+                                        <t t-if="record.date_deadline.raw_value and record.date_deadline.raw_value lt (new Date())" t-set="red">oe_kanban_text_red</t>
+                                        <span t-attf-class="#{red || ''}"><i><field name="date_deadline"/></i></span>
+                                    </div>
+                                    <div class="oe_kanban_bottom_right">
+                                        <t groups="base.group_user">
+                                             <a t-if="record.kanban_state.raw_value === 'normal'" type="object" string="In Progress" name="set_kanban_state_done" class="oe_kanban_status"> </a>
+                                             <a t-if="record.kanban_state.raw_value === 'done'" type="object" string="Ready for next stage" name="set_kanban_state_blocked" class="oe_kanban_status oe_kanban_status_green"> </a>
+                                             <a t-if="record.kanban_state.raw_value === 'blocked'" type="object" string="Blocked" name="set_kanban_state_normal" class="oe_kanban_status oe_kanban_status_red"> </a>
+                                             <a t-if="record.priority.raw_value > 0" type="object" string="Normal" name="set_high_priority" class="oe_e oe_star_off">7</a>
+                                             <a t-if="record.priority.raw_value == 0" type="object" string="Very Important" name="set_normal_priority" class="oe_e oe_star_on">7</a>
+                                        </t>
+                                        <img t-att-src="kanban_image('res.users', 'image_small', record.user_id.raw_value)" t-att-title="record.user_id.value" width="24" height="24" class="oe_kanban_avatar"/>
+                                    </div>
+                                    <div class="oe_kanban_footer_left">
+                                        <span groups="project.group_time_work_estimation_tasks" title="Remaining hours">
+                                            <span class="oe_e">N</span>
+                                            <t t-esc="Math.round(record.remaining_hours.raw_value)"/>
+                                        </span>
+                                    </div>
+
+                                </div>
+                                <div class="oe_clear"></div>
+                            </div>
+                        </t>
+                    </templates>
+                </kanban>
+            </field>
+         </record>
+
+        <record id="hr_timesheet.view_task_kanban_inherited_progress" model="ir.ui.view">
+            <field name="name">project.task.timesheet.kanban.inherited.progress</field>
+            <field name="model">project.task</field>
+            <field name="inherit_id" ref="project.view_task_kanban"/>
+            <field name="arch" type="xml">
+                <templates position="before">
+                    <field name="progress" />
+                    <field name="remaining_hours" />
+                </templates>
+             </field>
+         </record>
+
+        <record id="view_task_search_form_iu" model="ir.ui.view">
+            <field name="name">project.task.search.form</field>
+            <field name="model">project.task</field>
+            <field name="inherit_id" ref="project.view_task_search_form" />
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='user_id']" position="after">
+                    <filter name="not_billed" string="Un Billed" domain="[('billing_state','=','not_billed')]" help="Un Billed Tasks" icon="fa-check-circle"/>
+                    <filter name="billed" string="Billed" domain="[('billing_state','=','billed')]" help="Billed Tasks"  icon="fa-check"/>
+                    <filter name="edited" string="Edited" domain="[('edited','=',True)]" help="Edited Tasks"  icon="fa-check"/>
+                    <filter name="not_edited" string="Unedited" domain="[('edited','=',False)]" help="Unedited Tasks"  icon="fa-check"/>
+                    <filter name="timesheet_pending" string="Timesheet Pending" domain="[('state','=','draft')]" help="New Tasks" icon="fa-check-circle"/>
+                    <field name="related_interpreter_id"/>
+                    <field name="related_transporter_id"/>
+                    <field name="related_partner_id"/>
+                    <field name="interpreters_phone"/>
+                    <field name="interpreters_email"/>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="project.action_view_task" model="ir.actions.act_window">
+            <field name="name">Tasks</field>
+            <field name="res_model">project.task</field>
+            <field name="view_mode">kanban,tree,form,calendar,gantt,graph</field>
+            <field name="search_view_id" ref="project.view_task_search_form"/>
+            <field name="context">{"search_not_billed":1,"search_default_not_billed":1}</field>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Click to create a new task.
+                </p><p>
+                    OpenERP's project management allows you to manage the pipeline
+                    of tasks in order to get things done efficiently. You can
+                    track progress, discuss on tasks, attach documents, etc.
+              </p>
+            </field>
+        </record>
+    </data>
+</odoo>

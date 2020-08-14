@@ -1,0 +1,15 @@
+{
+    'name': "Twilio SMS",
+    'summary': """ This App has the ability to send SMS using twilio """,
+    'version': '10.0.1.0.0',
+    'category': 'SMS app',
+    'website': "www.kastechindia.com",
+    'author': "Geetha",
+    'installable': True,
+    'application': True,
+    #'images': ['images/main_screenshot.png'],
+    'depends': ['web', 'mail','bista_iugroup'],#,'bista_iugroup','event'],
+    'data': ['security/ir.model.access.csv',
+        'views/twilio_sms_views.xml',
+        'views/res_partner.xml',],#'views/twiliosms_send_view.xml'],
+}

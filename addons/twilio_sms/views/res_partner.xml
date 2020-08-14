@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<openerp>
+    <data>
+
+        <record model="ir.ui.view" id="view_contact_form_inherited">
+            <field name="name">view.contact.form.inherited</field>
+            <field name="model">res.partner</field>
+            <field name="inherit_id" ref="bista_iugroup.view_contact_form" />
+            <field name="arch" type="xml">
+                <xpath expr="//notebook/page" position="inside">
+                    <separator string="SMS Service" />
+                    <group></group>
+                    <group>
+                      <field name="opt_for_sms"/>
+                    </group>
+                </xpath>
+            </field>
+        </record>
+
+
+        <record model="ir.ui.view" id="view_interpreter_sms">
+			<field name="name">view.interpreter.sms</field>
+			<field name="model">res.partner</field>
+			<field name="inherit_id" ref="bista_iugroup.view_interpreter_form" />
+			<field name="arch" type="xml">
+				<xpath expr="//notebook/page[1]" position="inside">
+                    <separator string="SMS Service" />
+                    <group></group>
+                    <group>
+                      <field name="opt_for_sms"/>
+                    </group>
+                </xpath>
+			</field>
+		</record>
+
+    </data>
+</openerp>

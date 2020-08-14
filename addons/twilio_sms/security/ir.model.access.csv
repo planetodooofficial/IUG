@@ -1,0 +1,13 @@
+"id","name","model_id:id","group_id:id","perm_read","perm_write","perm_create","perm_unlink"
+access_twilio_accounts,access_twilio_accounts,model_twilio_accounts,bista_iugroup.group_record_manager,1,1,1,1
+access_sms_template_twilio_manager,access_sms_template_twilio,model_sms_template_twilio,bista_iugroup.group_record_manager,1,1,1,0
+access_twilio_sms_send_manager,access_twilio_sms_send,model_twilio_sms_send,bista_iugroup.group_record_manager,1,1,1,0
+
+
+access_twilio_accounts_cust,access_twilio_accounts_cust_service,model_twilio_accounts,bista_iugroup.group_iu_cust_service,1,0,0,0
+access_sms_template_twilio,access_sms_template_twilio_cust_service,model_sms_template_twilio,bista_iugroup.group_iu_cust_service,1,1,1,0
+access_twilio_sms_send,access_twilio_sms_send_cust_service,model_twilio_sms_send,bista_iugroup.group_iu_cust_service,1,1,1,0
+
+
+
+

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<template>
+    <t t-name="mail.Chatter">
+        <div class="o_chatter">
+            <div class="o_chatter_topbar">
+                <button type="button" class="btn btn-sm btn-primary o_chatter_button_new_message" title="Send a message">
+                    New message
+                </button>
+                <button t-if="widget.options.display_log_button" class="btn btn-sm btn-link o_chatter_button_log_note" title="Log a note. Followers will not be notified.">
+                    Log an internal note
+                </button>
+                <b><a class='o_chatter_show_logs btn btn-sm btn-link' style="color: #0404B4; font-size: 18px; text-decoration: none">Show Logs</a></b>
+            </div>
+        </div>
+    </t>
+</template>

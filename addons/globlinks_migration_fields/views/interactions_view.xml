@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!--Interactions-->
+    <record model="ir.ui.view" id="view_interaction_form_inherit_iugroup">
+        <field name="name">Interaction</field>
+        <field name="model">interaction</field>
+        <field name="inherit_id" ref="bista_iugroup.interaction_form" />
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='outcome_id']" position="after">
+                <field name="globelink_id" readonly="1"/><!-- groups="base.group_no_one"-->
+                <field name="job_id" readonly="1"/><!-- groups="base.group_no_one"-->
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

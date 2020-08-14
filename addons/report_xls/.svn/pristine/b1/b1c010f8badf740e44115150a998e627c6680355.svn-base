@@ -1,0 +1,11 @@
+# -*- coding: utf-8 -*-
+
+from odoo import api, models,fields
+
+
+class IrActionsReportXml(models.Model):
+    _inherit = 'ir.actions.report.xml'
+
+    report_type = fields.Selection(selection_add=[("xls", "xls")])
+
+

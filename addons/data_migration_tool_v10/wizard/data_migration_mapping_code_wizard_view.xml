@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <record id="data_mappingcode_wizard_form" model="ir.ui.view">
+            <field name="name">data.mappingcode.wizard.form</field>
+            <field name="model">data.mappingcode.wizard</field>
+            <field name="arch" type="xml">
+                <form string="Data Migration">
+                    <group>
+                        <field name="upload_file" />
+                    </group>
+                    <group>
+                        <field name="upload_error" filename="upload_error_file_name" readonly="1"/>
+                        <field name="upload_error_file_name" invisible="1"/>
+                    </group>
+                    <group>
+                        <button name="map_event_followers" style="margin-bottom:10px;" string="MAP Event Followers" type="object" class="btn btn-danger"/>
+                        <button name="update_inactive_contact" style="margin-bottom:10px;" string="Update Inactive Contact" type="object" class="btn btn-info"/>
+                        <button name="update_interpreter_event" style="margin-bottom:10px;" string="Update Interpreter Event" type="object" class="btn btn-danger"/>
+                        <button name="update_fields_invoice" style="margin-bottom:10px;" string="Update Fields Invoice" type="object" class="btn btn-success"/>
+                        <button name="update_group_old_id" style="margin-bottom:10px;" string="Update Group Old ID" type="object" class="btn btn-danger"/>
+                        <button name="map_user_group" style="margin-bottom:10px;" string="Map User Group" type="object" class="btn btn-primary"/>
+                        <button name="update_user_id_partners" style="margin-bottom:10px;" string="Update fields in Customer" type="object" class="btn btn-warning"/>
+                        <button name="update_user_id_partners_all" style="margin-bottom:10px;" string="Update user fields in Customer" type="object" class="btn btn-warning"/>
+                    </group>
+                    <group String="Update in Users">
+                        <button name="update_login_users" style="margin-bottom:10px;" string="Update User" type="object" class="btn btn-danger"/>
+                        <button name="add_user" style="margin-bottom:10px;" string="Add User" type="object" class="btn btn-primary"/>
+                        <button name="update_related_user" style="margin-bottom:10px;" string="Update Related User" type="object" class="btn btn-warning"/>
+                    </group>
+                    <group String="New Uploads">
+                        <button name="import_interpreter_history" style="margin-bottom:10px;" string="Import interpreter History" type="object" class="btn btn-secondary"/>
+                        <button name="map_doctor_location_rel" style="margin-bottom:10px;" string="MAP Doctor Location Rel" type="object" class="btn btn-warning"/>
+                        <button name="map_translator_software_rel" style="margin-bottom:10px;" string="MAP Translator Software Rel" type="object" class="btn btn-primary"/>
+                        <button name="map_translator_affiliation_rel" style="margin-bottom:10px;" string="MAP Translator Affiliation Rel" type="object" class="btn btn-success"/>
+                        <button name="import_affiliation" style="margin-bottom:10px;" string="Upload Affiliation" type="object" class="btn btn-danger"/>
+                        <button name="update_user_access" style="margin-bottom:10px;" string="Update User Access" type="object" class="btn btn-info"/>
+                        <button name="update_partner_id_user" style="margin-bottom:10px;" string="Update User Partner" type="object" class="btn btn-success"/>
+
+                    </group>
+                    <group String="M2M Mappings">
+                        <button name="map_billing_inv_rel" style="margin-bottom:10px;" string="Map Billing Invoice Rel" type="object" class="btn btn-success"/>
+                        <button name="map_project_task_inv_rel" style="margin-bottom:10px;" string="Map Project Task Invoice Rel" type="object" class="btn btn-warning"/>
+                        <button name="map_partner_project_group_rel" style="margin-bottom:10px;" string="Map Project Partner Rel" type="object" class="btn btn-primary"/>
+                        <button name="map_part_cust_rel" style="margin-bottom:10px;" string="Map Customer Partner Rel" type="object" class="btn btn-danger"/>
+                        <button name="map_customer_billing_rule_rel" style="margin-bottom:10px;" string="Map Customer Billing Rule Rel" type="object" class="btn btn-info"/>
+                        <button name="map_project_task_partner_rel" style="margin-bottom:10px;" string="Map Project Task Partner Rel" type="object" class="btn btn-secondary"/>
+                        <button name="map_task_invoice_rel" style="margin-bottom:10px;" string="Map Task Invoice Rel" type="object" class="btn btn-warning"/>
+                        <button name="update_sheduler_event" style="margin-bottom:10px;" string="Map Sheduler EVent" type="object" class="btn btn-danger"/>
+                    </group>
+
+                    <footer>
+                        <button string="Cancel" class="oe_highlight" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+        <act_window id="data_mappingcode_wizard_action"
+                    name="Data Mapping Code Wizard"
+                    src_model="sale.order"
+                    res_model="data.mappingcode.wizard"
+                    view_type="form" view_mode="form"
+                    key2="client_action_multi" target="new"/>
+
+        <menuitem id="data_mappingcode_wizard_menu" action="data_mappingcode_wizard_action" name="Data Mapping Code Wizard"
+                  parent="migration_tool_base_menu" sequence="6"/>
+    </data>
+</odoo>

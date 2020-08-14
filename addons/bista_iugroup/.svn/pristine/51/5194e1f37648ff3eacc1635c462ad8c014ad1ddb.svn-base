@@ -1,0 +1,445 @@
+import logging
+logger = logging.getLogger('IUG')
+_logger = logging.getLogger(__name__)
+from pygeocoder import Geocoder
+from google_distance import google_maps_distance
+from pyzipcode import ZipCodeDatabase,ZipNotFoundException
+zcdb = ZipCodeDatabase()
+import pytz
+from odoo import fields, models,_,api
+import datetime
+from odoo import SUPERUSER_ID
+from odoo.tools import DEFAULT_SERVER_DATE_FORMAT, DEFAULT_SERVER_DATETIME_FORMAT
+import time
+from dateutil.relativedelta import relativedelta
+import calendar
+from odoo.exceptions import UserError, RedirectWarning, ValidationError,AccessDenied
+from odoo import tools
+
+api_count = 0
+api_key = False
+api_keys_dict = {'AIzaSyDAPZqsalpxu0T5SPRBXSG8K2ZVnngmmUo': {'count':0 , 'active':False},}
+
+
+class search_interpreters_wizard(models.Model):
+    """ A wizard to search nearby interpreters """
+    _name = 'search.interpreters.wizard'
+
+    def get_distance(self,origins,destinations,key = None):
+        ''' function to get distance and duartion between origin and destination and used in searching
+         Interpreters and Transporters '''
+        result ={}
+        departure_time = self._context.get('departure_time',False)
+        if not departure_time:
+            n = datetime.datetime.now()
+            departure_time = int(time.mktime(n.timetuple()))
+        maps = google_maps_distance()
+        result = maps.distance(origins, destinations, mode='driving', departure_time=departure_time ,key = key)
+        #print "get_distance.complete..........",result
+        return result
+
+    def get_key(self,count):
+        #        global api_count
+        global api_keys_dict
+        api_key = False
+        key_obj = self.env['api.keys']
+        #        The Date Change Scenario will be handled by scheduler
+
+        #        Check if the keys exists in the database if not create
+        key_ids = key_obj.search([])
+        if not key_ids:
+            for each_key in api_keys_dict:
+                key_obj.create({'used': api_keys_dict[each_key]['count'],
+                                         'active_run': api_keys_dict[each_key]['active'],
+                                         'name': each_key})
+        #        Search for active key in db
+        act_key_id = key_obj.search([('active_run', '=', True)]).ids
+        act_key_id = act_key_id[0] if act_key_id else False
+        # To get the api_key for the first time
+        if not act_key_id:
+            key_ids = key_obj.search([])
+            if key_ids:
+                act_key = key_ids[0]
+                act_key.write({'active_run': True})
+                act_key_id = act_key.id
+
+        act_key = key_obj.browse(act_key_id)
+        api_count = act_key.used
+        if api_count + count >= 1000:
+            act_key.write({'active_run': False, 'used': api_count})
+            key_ids2 = key_obj.search([('used', '<', 1000 - count)])
+            if key_ids2:
+                key_ids2[0].write({'active_run': True})
+                act_key = key_ids2[0]
+                api_count = act_key.used
+            else:  # In case all keys are exhausted
+                key_ids = key_obj.search([])
+                act_key = key_ids[0]
+                api_key = act_key.name
+                return api_key
+        api_key = act_key.name
+        key = api_key
+
+        if not key:
+            key_ids = key_obj.search([])
+            act_key = key_ids[0]
+            key = act_key.name
+        fin_key_ids = key_obj.search([('active_run', '=', True)])
+        #        lock = threading.Condition()
+        #        if write_lock == False and used_prod == False:
+        #            custom_thread.write_key(lock,cr,uid,key_ids[0],api_count).start()
+        #        else :
+        #            cr1 = pooler.get_db('iug_live').cursor()
+        #            custom_thread.write_key_consumer(lock,cr1,uid,key_ids[0],api_count).start()
+        if fin_key_ids:
+            count_old = fin_key_ids[0].used
+            fin_key_ids[0].write({'used': count + count_old})
+        #        print "thresdfdasf enu++++",threading.enumerate()
+        return key
+
+    def geo_query_address(self,street=None, zip=None, city=None, state=None, country=None):
+        if country and ',' in country and (country.endswith(' of') or country.endswith(' of the')):
+            # put country qualifier in front, otherwise GMap gives wrong results,
+            # e.g. 'Congo, Democratic Republic of the' => 'Democratic Republic of the Congo'
+            country = '{1} {0}'.format(*country.split(',', 1))
+        try:
+            if street:
+                street = street.encode('utf-8', 'ignore')
+                try:
+                    street = unicode(street, "ascii", 'ignore')
+                except UnicodeError:
+                    street = unicode(street, "utf-8", 'ignore').decode('ascii')
+            if zip:
+                zip = zip.encode('utf-8', 'ignore')
+                try:
+                    zip = unicode(zip, "ascii", 'ignore')
+                except UnicodeError:
+                    zip = unicode(zip, "utf-8", 'ignore').decode('ascii')
+            if city:
+                city = city.encode('utf-8', 'ignore')
+                try:
+                    city = unicode(city, "ascii", 'ignore')
+                except UnicodeError:
+                    city = unicode(city, "utf-8", 'ignore').decode('ascii')
+            if state:
+                state = state.encode('utf-8', 'ignore')
+            if country:
+                country = country.encode('utf-8', 'ignore')
+        except Exception:
+            pass
+        return tools.ustr(', '.join(filter(None, [street, ("%s %s" % (zip or '', city or '')).strip(),
+                                                  state, country])))
+
+    def geo_find(self,addr, api_key=False):
+        # link = 'https://maps.googleapis.com/maps/api/geocode/json?address=1600+Amphitheatre+Parkway,+Mountain+View,+CA&key=API_KEY'
+        #    url = 'https://maps.googleapis.com/maps/api/geocode/json?sensor=false&address='
+        #    url += urllib.quote(addr.encode('utf8'))
+        #    print "api_key.........",api_key,type(api_key)
+        res = []
+        #    if api_key:
+        #        url += '&key='
+        #        url += urllib.quote(api_key.encode('utf8'))
+        #    print "url........",url
+        #    u = urllib.urlopen(url)
+        #    print "u.......", u
+        #    result = json.load(u)
+        #    print "result......",result
+        try:
+            logger = logging.getLogger('test2')
+            logger.info("This is api_key %s" % str(api_key))
+            gcoder = Geocoder(api_key)
+            results = gcoder.geocode(addr)
+            res.append(results[0].latitude)
+            res.append(results[0].longitude)
+        except Exception, e:
+            logger = logging.getLogger('test2')
+            logger.info("This is error %s" % str(e))
+        #        raise osv.except_osv(_('Network error'),
+        #                             _('Cannot contact geolocation servers. Please make sure that your internet connection is up and running (%s).') % (e.args))
+
+        #    try:
+        #        u = urllib.urlopen(url)
+        #        print "u.......", u
+        #        result = json.load(u)
+        #        print "result......",result
+        #    except Exception, e:
+        #        raise osv.except_osv(_('Network error'),
+        #                             _('Cannot contact geolocation servers. Please make sure that your internet connection is up and running (%s).') % (e.args))
+        #
+        #    #print "result.......",result
+        #    if result['status'] != 'OK':
+        #        return None
+
+        #    try:
+        #        geo = result['results'][0]['geometry']['location']
+        #        return float(geo['lat']), float(geo['lng'])
+        #    except (KeyError, ValueError):
+        #        return None
+        try:
+            if res:
+                return res
+        except (KeyError, ValueError):
+            return None
+
+    @api.multi
+    def search_interpreters(self):
+        ''' This function search interpreters based on the user input'''
+        int_languages,int_locations,ints,dist_dict=[],[],[],{}
+        int_medical_rates, int_normal_rates,int_deposition_rates,int_conf_call_rates,int_travel_rates,int_other_rates=[],[],[],[],[],[]
+        dist_dict['duration'], dist_dict['distance'] = '', 0
+        count_of_records_created=0
+        # cur_obj = self
+        res_partner_obj=self.env['res.partner']
+        lang_obj=self.env['language']
+        searched_interpreters_obj=self.env['select.interpreter.by.distance']
+        self._cr.execute('''truncate search_interpreters_wizard_rel,select_interpreter_by_distance''')
+        self._cr.commit()
+        zip_code=self.zip
+        language_id=self.language_id
+        is_simultaneous=self.is_simultaneous
+        search_distance=self.search_distance
+        if zip_code:
+            search_location=self.geo_query_address(street=False, zip=zip_code, city=False,
+                                                state=False, country=False)
+            # key = self.get_key(1)
+            # result = self.geo_find(search_location,key)
+            zips = [z.zip for z in zcdb.get_zipcodes_around_radius(zip_code, search_distance)]
+            # if result:
+            if zips:
+                # latitude = result[0]
+                # longitude = result[1]
+                if language_id and is_simultaneous:
+                    # query = """select lang.interpreter_id from interpreter_language as lang INNER JOIN res_partner as partner ON (lang.interpreter_id = partner.id)\
+                    #                         where partner.active is true and lang.name = %s and lang.is_simultaneous ='t' and partner.longitude is not null AND partner.latitude is not null AND partner.latitude >= (%s - 1)
+                    #       AND partner.latitude <= (%s + 1) AND partner.longitude >= (%s - 1.5) AND partner.longitude <= (%s + 1.5)""" % (
+                    # language_id.id,latitude,latitude,longitude,longitude)
+                    query = """select lang.interpreter_id from interpreter_language as lang INNER JOIN res_partner as partner ON (lang.interpreter_id = partner.id)\
+                                                                where partner.active is true and lang.name = %s and lang.is_simultaneous ='t' and partner.zip in %s""" % (
+                        language_id.id,str(tuple(zips)))
+                    self._cr.execute(query)
+                    interpreter_ids = map(lambda x: x[0], self._cr.fetchall())
+                elif language_id and not is_simultaneous:
+                    # query = """select lang.interpreter_id from interpreter_language as lang INNER JOIN res_partner as partner ON (lang.interpreter_id = partner.id)\
+                    #                                             where partner.active is true and lang.name = %s and partner.longitude is not null AND partner.latitude is not null AND partner.latitude >= (%s - 1)
+                    #                           AND partner.latitude <= (%s + 1) AND partner.longitude >= (%s - 1.5) AND partner.longitude <= (%s + 1.5)""" % (
+                    #     language_id.id, latitude, latitude, longitude, longitude)
+                    query = """select lang.interpreter_id from interpreter_language as lang INNER JOIN res_partner as partner ON (lang.interpreter_id = partner.id)\
+                                                                                    where partner.active is true and lang.name = %s and partner.zip in %s""" % (
+                        language_id.id,tuple(zips))
+                    self._cr.execute(query)
+                    interpreter_ids = map(lambda x: x[0], self._cr.fetchall())
+                else:
+                    query = """select lang.interpreter_id from interpreter_language as lang INNER JOIN res_partner as partner ON (lang.interpreter_id = partner.id)\
+                                                                                    where partner.active is true and lang.name is not null and partner.zip in %s"""% (str(tuple(zips)).encode('ascii', 'ignore'))
+                    self._cr.execute(query)
+                    interpreter_ids = map(lambda x: x[0], self._cr.fetchall())
+                # interpreter_ids = res_partner_obj.search([('latitude', '>', latitude - 1), ('latitude', '<', latitude + 1),
+                #                    ('longitude', '>', longitude - 1.5), ('longitude', '<', longitude + 1.5),
+                #                    ('cust_type','=','interpreter')])
+                logger = logging.getLogger('test2')
+                # logger.info("This is long - 1.5------->%s " % str(longitude - 1.5))
+                # logger.info("This is long +1.5 ------->%s " % str(longitude + 1.5))
+                # logger.info("This is latitude ------->%s " % str(latitude + 1))
+                # logger.info("This is latitude ------->%s " % str(latitude -1))
+                logger.info("This is interpreter ids ------->%s " % str(len(interpreter_ids)))
+                # if cur_obj.language_id:
+                for interpreter in res_partner_obj.browse(interpreter_ids):
+                    # language_match = False
+                    # if interpreter.language_lines:
+                    #     logger.info("This is language lines ------->%s " % str(interpreter.language_lines))
+                    #     for rec in interpreter.language_lines:
+                    #         if cur_obj.language_id.id == rec.name.id:
+                    #             language_match=True
+                    #             logger.info("This is language match ------->%s " % str(language_match))
+                    #             if cur_obj.is_simultaneous:
+                    #                 if not rec.is_simultaneous:
+                    #                     language_match=False
+                    # logger.info("This is language match ------->%s " % str(language_match))
+                    # if language_match:
+                        interp_address = False
+                        interp_address = self.geo_query_address(interpreter.street or False,interpreter.zip or False, interpreter.city or False,interpreter.state_id and interpreter.state_id.name or False,interpreter.country_id and interpreter.country_id.name or False)
+                        medical_rate,normal_rate,other_rate,depostion_rate,conf_call_rate,travel_rate=0.0,0.0,0.0,0.0,0.0,0.0
+                        for rates in interpreter.rate_ids:
+                            if rates.rate_type == 'medical':
+                                medical_rate=rates.default_rate
+                            if rates.rate_type == 'normal':
+                                normal_rate=rates.default_rate
+                            if rates.rate_type == 'conf_call':
+                                conf_call_rate=rates.default_rate
+                            if rates.rate_type == 'travel':
+                                travel_rate=rates.default_rate
+                            if rates.rate_type == 'other':
+                                other_rate=rates.default_rate
+                            if rates.rate_type == 'deposition':
+                                depostion_rate=rates.default_rate
+                        int_medical_rates.append(medical_rate)
+                        int_normal_rates.append(normal_rate)
+                        int_deposition_rates.append(depostion_rate)
+                        int_conf_call_rates.append(conf_call_rate)
+                        int_travel_rates.append(travel_rate)
+                        int_other_rates.append(other_rate)
+                        int_locations.append(interp_address)
+                        int_languages.append(language_id.id)
+                        ints.append(interpreter.id)
+                # else:
+                #     for interpreter in interpreter_ids:
+                #         interp_address=False
+                #         interp_address = self.geo_query_address(interpreter.street or False, interpreter.zip or False,
+                #                                                 interpreter.city or False,
+                #                                                 interpreter.state_id and interpreter.state_id.name or False,
+                #                                                 interpreter.country_id and interpreter.country_id.name or False)
+                #         medical_rate, normal_rate, other_rate, depostion_rate, conf_call_rate, travel_rate = 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+                #         for rates in interpreter.rate_ids:
+                #             if rates.rate_type == 'medical':
+                #                 medical_rate = rates.default_rate
+                #             if rates.rate_type == 'normal':
+                #                 normal_rate = rates.default_rate
+                #             if rates.rate_type == 'conf_call':
+                #                 conf_call_rate = rates.default_rate
+                #             if rates.rate_type == 'travel':
+                #                 travel_rate = rates.default_rate
+                #             if rates.rate_type == 'other':
+                #                 other_rate = rates.default_rate
+                #             if rates.rate_type == 'deposition':
+                #                 depostion_rate = rates.default_rate
+                #
+                #         interpreter_language=False
+                #         if interpreter.language_lines:
+                #             for rec in interpreter.language_lines:
+                #                 interpreter_language=rec.name
+                #                 break
+                #         logger.info("This is int language ------->%s " % str(interpreter_language))
+                #         if interpreter_language:
+                #             int_medical_rates.append(medical_rate)
+                #             int_normal_rates.append(normal_rate)
+                #             int_deposition_rates.append(depostion_rate)
+                #             int_conf_call_rates.append(conf_call_rate)
+                #             int_travel_rates.append(travel_rate)
+                #             int_other_rates.append(other_rate)
+                #             int_locations.append(interp_address)
+                #             int_languages.append(interpreter_language.id)
+                #             ints.append(interpreter.id)
+                if len(int_locations) > 0:
+                    # key = self.get_key(len(int_locations))
+                    key = 'AIzaSyDAPZqsalpxu0T5SPRBXSG8K2ZVnngmmUo'
+                    div = len(int_locations) / 10
+                    rem = len(int_locations) % 10
+                    if div:
+                        for i, j in [(10 * k, 10 * l) for k, l in zip(range(0, div), range(1,
+                                                                                           div + 1))]:  # [(0,10),(10,20),(20,30),(30,40),(40,50),(50,60)]:
+                            locs = '|'.join(int_locations[i:j])
+                            try:
+                                dist_dict = self.get_distance(locs,search_location,key=key)
+                            except Exception, e:
+                                logger.info("This is distance error ------->%s " % str(e))
+                                pass
+                            dur, dist = [], []
+                            dur = dist_dict.get('duration', False) if dist_dict.get('duration', False) else [0 for m in
+                                                                                                             range(0, 10)]
+                            dist = dist_dict.get('distance', False) if dist_dict.get('distance', False) else [0 for m in
+                                                                                                              range(0, 10)]
+
+                            for interp_id,distance,language,medical_rate,normal_rate,deposition_rate,conf_call_rate,travel_rate,other_rate in zip(ints[i:j],dist,int_languages[i:j],int_medical_rates[i:j], int_normal_rates[i:j],int_deposition_rates[i:j],int_conf_call_rates[i:j],int_travel_rates[i:j],int_other_rates[i:j]):
+                                distance_to_compare=float(float(distance) * 0.000621371)
+                                # if interp_id==13:
+                                #     logger = logging.getLogger('test2')
+                                #     logger.info("This is distance_to_compare ------->%s " % str(distance_to_compare))
+                                #     logger.info("This is search distance ------->%s " % str(cur_obj.search_distance))
+                                if distance_to_compare <= float(search_distance):
+                                    # logger.info("This is interpreter id ------->%s " % str(interp_id))
+                                    res=self.write({'result_set': [
+                                    (0, 0, {'interpreter_id': interp_id,'language_id':language,
+                                            'distance': float(float(distance) * 0.000621371) or 0,'medical_rate':medical_rate,
+            'normal_rate': normal_rate,
+            'deposition_rate': deposition_rate,
+            'conf_call_rate': conf_call_rate,
+            'travel_rate': travel_rate,
+            'other_rate': other_rate})]})
+                                    count_of_records_created +=1
+
+                    if rem:
+                        for i, j in [(div * 10, div * 10 + rem)]:  # [(0,10),(10,20),(20,30),(30,40),(40,50),(50,60)]:
+
+                            locs = '|'.join(int_locations[i:j])
+                            # key = self.get_key(len(int_locations))
+                            key = 'AIzaSyDAPZqsalpxu0T5SPRBXSG8K2ZVnngmmUo'
+                            #            dist_dict = self.get_distance(cr, uid, ids, locs ,event_locations[0][:-1] , context=context, key=key)
+                            try:
+                                dist_dict = self.get_distance(locs, search_location,key=key)
+                            except Exception, e:
+                                logger.info("This is distance error ------->%s " % str(e))
+                                pass
+                            dur, dist = [], []
+                            dur = dist_dict.get('duration', False) if dist_dict.get('duration', False) else [0 for o in
+                                                                                                             range(0, 10)]
+                            dist = dist_dict.get('distance', False) if dist_dict.get('distance', False) else [0 for p in
+                                                                                                              range(0, 10)]
+                            #                    print "dur+++++++++++++++++++",dur
+                            #                    print "dist++++++++++++++++++",dist
+                            #                    print "zip(ints[i:j],rates[i:j],visit_list[i:j],preferred_lst[i:j],dur,dist)++",zip(ints[i:j],rates[i:j],visit_list[i:j],preferred_lst[i:j],dur,dist)
+                            for interp_id, distance, language, medical_rate, normal_rate, deposition_rate, conf_call_rate, travel_rate, other_rate in zip(
+                                    ints[i:j], dist, int_languages[i:j], int_medical_rates[i:j], int_normal_rates[i:j],
+                                    int_deposition_rates[i:j], int_conf_call_rates[i:j], int_travel_rates[i:j],
+                                    int_other_rates[i:j]):
+                                distance_to_compare = float(float(distance) * 0.000621371)
+                                if distance_to_compare <= float(search_distance):
+                                    # logger.info("This is interpreter id ------->%s " % str(interp_id))
+                                    res = self.write({'result_set': [
+                                        (0, 0, {'interpreter_id': interp_id, 'language_id': language,
+                                                'distance': float(float(distance) * 0.000621371) or 0,'medical_rate': medical_rate,
+                                        'normal_rate': normal_rate,
+                                        'deposition_rate': deposition_rate,
+                                        'conf_call_rate': conf_call_rate,
+                                        'travel_rate': travel_rate,
+                                        'other_rate': other_rate})],
+                                        })
+                                    count_of_records_created += 1
+
+
+        if count_of_records_created == 0:
+            self.write({'label_flag': True, 'flag': False})
+        else:
+            self.write({'label_flag': False, 'flag': True})
+        self._cr.commit()
+        return True
+
+
+
+
+
+    
+
+    name=fields.Char(default='Interpreter Search')
+    zip=fields.Char('Zip', change_default=True, size=24 ,track_visibility='onchange')
+    language_id=fields.Many2one('language','Language')
+    search_distance=fields.Integer('Search Distance')
+    result_set=fields.Many2many('select.interpreter.by.distance', 'search_interpreters_wizard_rel', 'search_interpreters_wizard_id',
+                                   'select_interpreter_by_distance_id', 'Interpreters Search Result')
+    is_simultaneous=fields.Boolean("Is Simultaneous", )
+    label_flag=fields.Boolean("Flag",)
+    flag=fields.Boolean("Flag", )
+
+
+class select_interpreter_by_distance(models.Model):
+    _name = 'select.interpreter.by.distance'
+    _order = 'distance'
+
+    name=fields.Char(related='interpreter_id.name', string='Name', store=True)
+    middle_name=fields.Char(related='interpreter_id.middle_name', string='Middle Name', store=True)
+    last_name=fields.Char(related='interpreter_id.last_name', string='Last Name', store=True)
+    phone=fields.Char(related='interpreter_id.cell_phone', string='Phone', store=True)
+    email=fields.Char(related='interpreter_id.email', string='Email', store=True)
+    city=fields.Char(related='interpreter_id.city', string='City', store=True)
+    language_id=fields.Many2one('language','Language')
+    interpreter_id=fields.Many2one("res.partner", 'Interpreter', )
+    distance=fields.Float('Distance', digits=(16, 2))
+    medical_rate=fields.Float('Medical Rate')
+    normal_rate=fields.Float('Legal Rate')
+    deposition_rate=fields.Float('Deposition Rate')
+    conf_call_rate=fields.Float('Conf call Rate')
+    travel_rate=fields.Float('Travel Rate')
+    other_rate=fields.Float('Other Rate')
+    is_interpretation_active=fields.Boolean(related='interpreter_id.is_interpretation_active', string='Active', store=True)
+
+
+

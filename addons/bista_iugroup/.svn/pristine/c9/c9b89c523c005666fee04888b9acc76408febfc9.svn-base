@@ -1,0 +1,416 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Sequences for event -->
+        <!--<record id="seq_type_event_iug" model="ir.sequence.type">-->
+            <!--<field name="name">Event</field>-->
+            <!--<field name="code">event.iug</field>-->
+        <!--</record>-->
+
+        <record id="seq_event_iug" model="ir.sequence">
+            <field name="name">Event</field>
+            <field name="code">event.iug</field>
+            <field name="prefix">E</field>
+            <field name="padding">4</field>
+            <field name="company_id" eval="False"/>
+        </record>
+        
+        <!--<record id="seq_type_event_iug_sd" model="ir.sequence.type">-->
+            <!--<field name="name">Event</field>-->
+            <!--<field name="code">event.iug.sd</field>-->
+        <!--</record>-->
+
+        <record id="seq_event_iug_sd" model="ir.sequence">
+            <field name="name">Event IUG SD</field>
+            <field name="code">event.iug.sd</field>
+            <field name="prefix">E</field>
+            <field name="padding">4</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <!--<record id="seq_type_event_asit" model="ir.sequence.type">-->
+            <!--<field name="name">Event ASIT</field>-->
+            <!--<field name="code">event.asit</field>-->
+        <!--</record>-->
+
+        <record id="seq_event_asit" model="ir.sequence">
+            <field name="name">Event ASIT</field>
+            <field name="code">event.asit</field>
+            <field name="prefix">E</field>
+            <field name="padding">4</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <!--<record id="seq_type_event_acd" model="ir.sequence.type">-->
+            <!--<field name="name">Event ACD</field>-->
+            <!--<field name="code">event.acd</field>-->
+        <!--</record>-->
+
+        <record id="seq_event_acd" model="ir.sequence">
+            <field name="name">Event ACD</field>
+            <field name="code">event.acd</field>
+            <field name="prefix">E</field>
+            <field name="padding">4</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <!--<record id="seq_type_event_aa" model="ir.sequence.type">-->
+            <!--<field name="name">Event AA</field>-->
+            <!--<field name="code">event.aa</field>-->
+        <!--</record>-->
+
+        <record id="seq_event_aa" model="ir.sequence">
+            <field name="name">Event AA</field>
+            <field name="code">event.aa</field>
+            <field name="prefix">E</field>
+            <field name="padding">4</field>
+            <field name="company_id" eval="False"/>
+        </record>
+        
+        <!-- Sequences for customer -->
+        <!--<record id="seq_type_customer_iug" model="ir.sequence.type">-->
+            <!--<field name="name">Customer IUG</field>-->
+            <!--<field name="code">res.partner.iug</field>-->
+        <!--</record>-->
+
+        <record id="seq_customer_iug" model="ir.sequence">
+            <field name="name">Customer IUG</field>
+            <field name="code">res.partner.iug</field>
+            <field name="prefix">C</field>
+            <field name="padding">4</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <!--<record id="seq_type_customer_iug_sd" model="ir.sequence.type">-->
+            <!--<field name="name">Customer IUG SD</field>-->
+            <!--<field name="code">res.partner.iug.sd</field>-->
+        <!--</record>-->
+
+        <record id="seq_customer_iug_sd" model="ir.sequence">
+            <field name="name">Customer IUG SD</field>
+            <field name="code">res.partner.iug.sd</field>
+            <field name="prefix">C</field>
+            <field name="padding">4</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <!--<record id="seq_type_customer_asit" model="ir.sequence.type">-->
+            <!--<field name="name">Customer ASIT</field>-->
+            <!--<field name="code">res.partner.asit</field>-->
+        <!--</record>-->
+
+        <record id="seq_customer_asit" model="ir.sequence">
+            <field name="name">Customer ASIT</field>
+            <field name="code">res.partner.asit</field>
+            <field name="prefix">C</field>
+            <field name="padding">4</field>
+            <field name="company_id" eval="False"/>
+        </record>
+        
+        <!--<record id="seq_type_customer_aa" model="ir.sequence.type">-->
+            <!--<field name="name">Customer AA</field>-->
+            <!--<field name="code">res.partner.aa</field>-->
+        <!--</record>-->
+        
+        <record id="seq_customer_aa" model="ir.sequence">
+            <field name="name">Customer AA</field>
+            <field name="code">res.partner.aa</field>
+            <field name="prefix">C</field>
+            <field name="padding">4</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <!--<record id="seq_type_customer_acd" model="ir.sequence.type">-->
+            <!--<field name="name">Customer ACD</field>-->
+            <!--<field name="code">res.partner.acd</field>-->
+        <!--</record>-->
+
+        <record id="seq_customer_acd" model="ir.sequence">
+            <field name="name">Customer ACD</field>
+            <field name="code">res.partner.acd</field>
+            <field name="prefix">C</field>
+            <field name="padding">4</field>
+            <field name="company_id" eval="False"/>
+        </record>
+        
+        <!-- Sequences for Contact -->
+        <!--<record id="seq_type_contact_iug" model="ir.sequence.type">-->
+            <!--<field name="name">Contact IUG</field>-->
+            <!--<field name="code">contact.iug</field>-->
+        <!--</record>-->
+
+        <record id="seq_contact_iug" model="ir.sequence">
+            <field name="name">Contact IUG</field>
+            <field name="code">contact.iug</field>
+            <field name="prefix">CT</field>
+            <field name="padding">4</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <!--<record id="seq_type_contact_iug_sd" model="ir.sequence.type">-->
+            <!--<field name="name">Contact IUG SD</field>-->
+            <!--<field name="code">contact.iug.sd</field>-->
+        <!--</record>-->
+
+        <record id="seq_contact_iug_sd" model="ir.sequence">
+            <field name="name">Contact IUG SD</field>
+            <field name="code">contact.iug.sd</field>
+            <field name="prefix">CT</field>
+            <field name="padding">4</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <!--<record id="seq_type_contact_asit" model="ir.sequence.type">-->
+            <!--<field name="name">Contact ASIT</field>-->
+            <!--<field name="code">contact.asit</field>-->
+        <!--</record>-->
+
+        <record id="seq_contact_asit" model="ir.sequence">
+            <field name="name">Contact ASIT</field>
+            <field name="code">contact.asit</field>
+            <field name="prefix">CT</field>
+            <field name="padding">4</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <!--<record id="seq_type_contact_acd" model="ir.sequence.type">-->
+            <!--<field name="name">Contact ACD</field>-->
+            <!--<field name="code">contact.acd</field>-->
+        <!--</record>-->
+
+        <record id="seq_contact_acd" model="ir.sequence">
+            <field name="name">Contact ACD</field>
+            <field name="code">contact.acd</field>
+            <field name="prefix">CT</field>
+            <field name="padding">4</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <!--<record id="seq_type_contact_aa" model="ir.sequence.type">-->
+            <!--<field name="name">Contact AA</field>-->
+            <!--<field name="code">contact.aa</field>-->
+        <!--</record>-->
+
+        <record id="seq_contact_aa" model="ir.sequence">
+            <field name="name">Contact AA</field>
+            <field name="code">contact.aa</field>
+            <field name="prefix">CT</field>
+            <field name="padding">4</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <!-- Sequences for Interpreter -->
+        <!--<record id="seq_type_interpreter_iug" model="ir.sequence.type">-->
+            <!--<field name="name">Interpreter IUG</field>-->
+            <!--<field name="code">interpreter.iug</field>-->
+        <!--</record>-->
+
+        <record id="seq_interpreter_iug" model="ir.sequence">
+            <field name="name">Interpreter IUG</field>
+            <field name="code">interpreter.iug</field>
+            <field name="prefix">IN</field>
+            <field name="padding">4</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <!--<record id="seq_type_interpreter_iug_sd" model="ir.sequence.type">-->
+            <!--<field name="name">Interpreter IUG SD</field>-->
+            <!--<field name="code">interpreter.iug.sd</field>-->
+        <!--</record>-->
+
+        <record id="seq_interpreter_iug_sd" model="ir.sequence">
+            <field name="name">Interpreter IUG SD</field>
+            <field name="code">interpreter.iug.sd</field>
+            <field name="prefix">IN</field>
+            <field name="padding">4</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <!--<record id="seq_type_interpreter_asit" model="ir.sequence.type">-->
+            <!--<field name="name">Interpreter ASIT</field>-->
+            <!--<field name="code">interpreter.asit</field>-->
+        <!--</record>-->
+
+        <record id="seq_interpreter_asit" model="ir.sequence">
+            <field name="name">Interpreter ASIT</field>
+            <field name="code">interpreter.asit</field>
+            <field name="prefix">IN</field>
+            <field name="padding">4</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+
+        <!--<record id="seq_type_interpreter_acd" model="ir.sequence.type">-->
+            <!--<field name="name">Interpreter ACD</field>-->
+            <!--<field name="code">interpreter.acd</field>-->
+        <!--</record>-->
+
+        <record id="seq_interpreter_acd" model="ir.sequence">
+            <field name="name">Interpreter ACD</field>
+            <field name="code">interpreter.acd</field>
+            <field name="prefix">IN</field>
+            <field name="padding">4</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <!--<record id="seq_type_interpreter_aa" model="ir.sequence.type">-->
+            <!--<field name="name">Interpreter AA</field>-->
+            <!--<field name="code">interpreter.aa</field>-->
+        <!--</record>-->
+
+        <record id="seq_interpreter_aa" model="ir.sequence">
+            <field name="name">Interpreter AA</field>
+            <field name="code">interpreter.aa</field>
+            <field name="prefix">IN</field>
+            <field name="padding">4</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <!-- Sequences for Transporter -->
+        <!--<record id="seq_type_transporter_iug" model="ir.sequence.type">-->
+            <!--<field name="name">Transporter IUG</field>-->
+            <!--<field name="code">transporter.iug</field>-->
+        <!--</record>-->
+
+        <record id="seq_transporter_iug" model="ir.sequence">
+            <field name="name">Transporter IUG</field>
+            <field name="code">transporter.iug</field>
+            <field name="prefix">TP</field>
+            <field name="padding">4</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <!--<record id="seq_type_transporter_iug_sd" model="ir.sequence.type">-->
+            <!--<field name="name">Transporter IUG SD</field>-->
+            <!--<field name="code">transporter.iug.sd</field>-->
+        <!--</record>-->
+
+        <record id="seq_transporter_iug_sd" model="ir.sequence">
+            <field name="name">Transporter IUG SD</field>
+            <field name="code">transporter.iug.sd</field>
+            <field name="prefix">TP</field>
+            <field name="padding">4</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <!--<record id="seq_type_transporter_asit" model="ir.sequence.type">-->
+            <!--<field name="name">Transporter ASIT</field>-->
+            <!--<field name="code">transporter.asit</field>-->
+        <!--</record>-->
+
+        <record id="seq_transporter_asit" model="ir.sequence">
+            <field name="name">Transporter ASIT</field>
+            <field name="code">transporter.asit</field>
+            <field name="prefix">TP</field>
+            <field name="padding">4</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <!--<record id="seq_type_transporter_acd" model="ir.sequence.type">-->
+            <!--<field name="name">Transporter ACD</field>-->
+            <!--<field name="code">transporter.acd</field>-->
+        <!--</record>-->
+
+        <record id="seq_transporter_acd" model="ir.sequence">
+            <field name="name">Transporter ACD</field>
+            <field name="code">transporter.acd</field>
+            <field name="prefix">TP</field>
+            <field name="padding">4</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <!--<record id="seq_type_transporter_aa" model="ir.sequence.type">-->
+            <!--<field name="name">Transporter AA</field>-->
+            <!--<field name="code">transporter.aa</field>-->
+        <!--</record>-->
+
+        <record id="seq_transporter_aa" model="ir.sequence">
+            <field name="name">Transporter AA</field>
+            <field name="code">transporter.aa</field>
+            <field name="prefix">TP</field>
+            <field name="padding">4</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <!-- Sequences for Translator -->
+        <!--<record id="seq_type_translator_iug" model="ir.sequence.type">-->
+            <!--<field name="name">Translator IUG</field>-->
+            <!--<field name="code">translator.iug</field>-->
+        <!--</record>-->
+
+        <record id="seq_translator_iug" model="ir.sequence">
+            <field name="name">Translator IUG</field>
+            <field name="code">translator.iug</field>
+            <field name="prefix">TL</field>
+            <field name="padding">4</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <!--<record id="seq_type_translator_iug_sd" model="ir.sequence.type">-->
+            <!--<field name="name">Translator IUG SD</field>-->
+            <!--<field name="code">translator.iug.sd</field>-->
+        <!--</record>-->
+
+        <record id="seq_translator_iug_sd" model="ir.sequence">
+            <field name="name">Translator IUG SD</field>
+            <field name="code">translator.iug.sd</field>
+            <field name="prefix">TL</field>
+            <field name="padding">4</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <!--<record id="seq_type_translator_asit" model="ir.sequence.type">-->
+            <!--<field name="name">Translator ASIT</field>-->
+            <!--<field name="code">translator.asit</field>-->
+        <!--</record>-->
+
+        <record id="seq_translator_asit" model="ir.sequence">
+            <field name="name">Translator ASIT</field>
+            <field name="code">translator.asit</field>
+            <field name="prefix">TL</field>
+            <field name="padding">4</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <!--<record id="seq_type_translator_aa" model="ir.sequence.type">-->
+            <!--<field name="name">Translator AA</field>-->
+            <!--<field name="code">translator.aa</field>-->
+        <!--</record>-->
+
+        <record id="seq_translator_aa" model="ir.sequence">
+            <field name="name">Translator AA</field>
+            <field name="code">translator.aa</field>
+            <field name="prefix">TL</field>
+            <field name="padding">4</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <!--<record id="seq_type_translator_acd" model="ir.sequence.type">-->
+            <!--<field name="name">Translator ACD</field>-->
+            <!--<field name="code">translator.acd</field>-->
+        <!--</record>-->
+
+        <record id="seq_translator_acd" model="ir.sequence">
+            <field name="name">Translator ACD</field>
+            <field name="code">translator.acd</field>
+            <field name="prefix">TL</field>
+            <field name="padding">4</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <!-- Sequences for Interpreter/Translator -->
+        <!--<record id="seq_type_interpreter_translator" model="ir.sequence.type">-->
+            <!--<field name="name">Interpreter/Translator</field>-->
+            <!--<field name="code">interpreter_translator</field>-->
+        <!--</record>-->
+
+        <record id="seq_interpreter_translator" model="ir.sequence">
+            <field name="name">Interpreter/Translator</field>
+            <field name="code">interpreter_translator</field>
+            <field name="prefix">IT</field>
+            <field name="padding">4</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+    </data>
+</odoo>

@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+	<data>
+		<record id="view_users_tree_iu" model="ir.ui.view">
+			<field name="name">res.users.tree</field>
+			<field name="model">res.users</field>
+			<field name="inherit_id" ref="base.view_users_tree" />
+			<field name="arch" type="xml">
+				<xpath expr="/tree/field[@name='login_date']" position="after">
+					<!--<field name="complete_name"/> -->
+					<field name="user_type" />
+					<field name="zone_id" />
+					<field name="company_id" />
+				</xpath>
+
+			</field>
+		</record>
+
+		<record id="view_users_form_inherit_iu" model="ir.ui.view">
+			<field name="name">res.users.form</field>
+			<field name="model">res.users</field>
+			<field name="inherit_id" ref="base.view_users_form" />
+			<field name="arch" type="xml">
+				<xpath
+					expr="//notebook/page[2]//field[@name='signature']"
+					position="after">
+					<field name="require_to_reset" />
+					<field name="mail_group" />
+					<field name="zone_id" domain="[('company_id','=',company_id)]" />
+					<field name="user_type" required="1" />
+				</xpath>
+				<!-- <xpath expr="/form/sheet/notebook" position="attributes"> <attribute 
+					name="groups">bista_iugroup.group_users_iu</attribute> <attribute name="invisible">0</attribute> 
+					</xpath> -->
+			</field>
+		</record>
+
+		<record id="view_users_search_iu" model="ir.ui.view">
+			<field name="name">res.users.search</field>
+			<field name="model">res.users</field>
+			<field name="inherit_id" ref="base.view_users_search" />
+			<field name="arch" type="xml">
+				<xpath expr="/search/field[@name='company_ids']" position="after">
+					<field name="zone_id" />
+					<field name="user_type" />
+					<field name="complete_name" />
+					<!--<field name="company_id"/> -->
+					<group expand="0" string="Group By...">
+						<filter string="Companies" icon="terp-personal" domain="[]"
+							context="{'group_by' : 'company_id'}" />
+						<filter string="Zone" context="{'group_by': 'zone_id'}" />
+						<filter string="User Type" context="{'group_by': 'user_type'}" />
+					</group>
+				</xpath>
+			</field>
+		</record>
+
+
+		<record id='view_report_users' model="ir.ui.view">
+			<field name="name">view.report.users</field>
+			<field name="model">report.users</field>
+			<field name="arch" type="xml">
+				<form string="Report User Group" version="7.0">
+					<header></header>
+					<sheet>
+					<group>
+						<group col = "2">
+							<field name="group_name" />
+						</group>
+						<group col = "2">
+						<field name="template_id" widget="selection" />
+						</group>
+					</group>
+					<group>
+							<field name="get_info">
+								<tree editable="bottom">
+									<field name="users" />
+									<field name="mail_id" />
+								</tree>
+							</field>
+						</group>
+					</sheet>
+				</form>
+			</field>
+		</record>
+	
+	
+		  <record id="view_report_users_tree" model="ir.ui.view">
+            <field name="name">view.report.users.tree</field>
+            <field name="model">report.users</field>
+            <field name="arch" type="xml">
+            <tree string="Report Users">
+                <field name="group_name"/>
+            </tree>
+            </field>
+        </record>
+
+		<record id="action_report_users" model="ir.actions.act_window">
+			<field name="name">IUG Report Users</field>
+			<field name="res_model">report.users</field>
+			<field name="view_type">form</field>
+			<field name="view_mode">tree,form</field>
+			<field name="view_id" ref="view_report_users_tree" />
+		</record>
+
+		<menuitem id="menu_action_res_users_iu" name="Users" groups="group_iu_users"
+			sequence="15" />
+
+		<menuitem id="sub_menu_action_res_users_iu" name="Users"
+			groups="group_iu_users" parent="menu_action_res_users_iu" sequence="1" />
+
+		<menuitem id="sub_menu_action_res_users_iu_2" action="base.action_res_users"
+			groups="group_iu_users" parent="sub_menu_action_res_users_iu"
+			sequence="1" />
+		
+		
+		
+		<!-- sub parent menu for report groups-->
+		<menuitem name="Report groups" id="report_sub_menu" parent="menu_action_res_users_iu"
+		groups="group_iu_users" />
+		<!--child menu desing for report groups -->
+		<menuitem name="Report User Groups" id="child_menu" parent="report_sub_menu"
+			action="action_report_users" groups="group_iu_users" />
+
+		<act_window id="change_password_wizard_action_iu" name="Change Password"
+			view_mode="form" src_model="res.users" res_model="change.password.wizard"
+			view_type="form" key2="client_action_multi" target="new" groups="group_iu_users" />
+
+
+	</data>
+</openerp>

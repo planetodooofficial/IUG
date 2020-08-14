@@ -1,0 +1,38 @@
+<?xml version ="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="view_create_voucher" model="ir.ui.view">
+            <field name="name">create Payment</field>
+            <field name="model">create.voucher</field>
+            <field name="type">form</field>
+            <field name="arch" type="xml">
+                <form string="Create Payment">
+                    <group colspan="4" cols="4">
+                        <group>
+                            <field name="company_id" groups="base.group_multi_company" widget="selection"/>
+                            <field name="amount" />
+                            <field name="date_checkprint" />
+                        </group>
+                        <group>
+                            <field name="journal_id" domain="[('type','in',('bank','cash')),('company_id','=',company_id)]"
+                                   required="1" options="{'limit': 7, 'create': false, 'create_edit': false, 'no_open': True}"/>
+                        </group>
+                    </group>
+                    <footer>
+                        <button name="create_invoice_voucher" string="Create Payment" type="object" class="oe_highlight"/>
+                        or
+                        <button string="Cancel" class="oe_link" special="cancel" />
+                    </footer>
+                </form>
+           </field>
+        </record>
+
+        <act_window name="Create Customer Payment"
+            res_model="create.voucher"
+            src_model="account.invoice"
+            view_mode="form"
+            target="new"
+            key2="client_action_multi"
+            id="action_create_invoice_voucher"/>
+    </data>
+</odoo>

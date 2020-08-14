@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <record id="data_migration_wizard_form2" model="ir.ui.view">
+            <field name="name">data.migration.wizard.form2</field>
+            <field name="model">data.migration.wizard2</field>
+            <field name="arch" type="xml">
+                <form string="Data Migration 2">
+                    <group>
+                        <field name="upload_file2" />
+                    </group>
+                    <group>
+                        <field name="upload_error2" filename="upload_error_file_name2" readonly="1"/>
+                        <field name="upload_error_file_name2" invisible="1"/>
+                    </group>
+                    <group string="Master Data">
+                        <button name="cancel_journal_entries" string="Cancel Journal Entries" type="object"/>
+                        <button name="import_event_outcome" style="margin-bottom:10px;" string="Upload Event Outcome(1)" type="object" class="btn btn-success"/>
+                        <button name="import_translator_alloc_history" style="margin-bottom:10px;" string="Upload Translation Alloc History(2)" type="object" class="btn btn-warning"/>
+                        <button name="import_document_type" style="margin-bottom:10px;" string="Upload Document Type(3)" type="object" class="btn btn-danger"/>
+                        <button name="import_documents" style="margin-bottom:10px;" string="Upload Documents(4)" type="object" class="btn btn-danger"/>
+                        <button name="import_E2D" style="margin-bottom:10px;" string="Upload Event to Doc(5)" type="object" class="btn btn-warning"/>
+                        <button name="import_doc_sender" style="margin-bottom:10px;" string="Upload Doc Sender(6)" type="object" class="btn btn-primary"/>
+                        <button name="import_doc_receipt" style="margin-bottom:10px;" string="Upload Doc Receipt(7)" type="object" class="btn btn-secondary"/>
+                    </group>
+                    <group>
+                        <button name="import_iu_message" style="margin-bottom:10px;" string="Upload IU Message(8)" type="object" class="btn btn-secondary"/>
+                        <button name="import_location" style="margin-bottom:10px;" string="Upload Location(9)" type="object" class="btn btn-primary"/>
+                        <button name="import_interpret_alloc_his" style="margin-bottom:10px;" string="Upload Interpreter Alloc His (10)" type="object" class="btn btn-danger"/>
+                        <button name="import_users" style="margin-bottom:10px;" string="Upload Users (11)" type="object" class="btn btn-warning"/>
+                        <button name="import_customers" style="margin-bottom:10px;" string="Upload Customers (12)" type="object" class="btn btn-info"/>
+                    </group>
+                    <group>
+                        <button name="import_twilio_send" style="margin-bottom:10px;" string="Upload Twilio Send(13)" type="object" class="btn btn-secondary"/>
+                        <!--<button name="import_twilio_sms_received" style="margin-bottom:10px;" string="Upload Twilio Receive(14)" type="object" class="btn btn-primary"/>-->
+                        <!--<button name="import_account_invoice_line" style="margin-bottom:10px;" string="Upload Account_invoice_line(15)" type="object" class="btn btn-primary"/>-->
+
+                    </group>
+                    <group string="Patch Code">
+                        <button name="update_state_old" style="margin-bottom:10px;" string="Update State Old Id" type="object" class="btn btn-primary"/>
+                        <button name="map_zone_and_zipcode" style="margin-bottom:10px;" string="Map Zone/Zipcodes" type="object" class="btn btn-info"/>
+                    </group>
+                    <group string="Non View Data Upload">
+                        <button name="import_res_title" style="margin-bottom:10px;" string="Upload Title" type="object" class="btn btn-danger"/>
+                    </group>
+                    <footer>
+                        <button string="Cancel" class="oe_highlight" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+        <act_window id="data_migration_wizard_action2"
+                    name="Data Migration Wizard-2"
+                    src_model="sale.order"
+                    res_model="data.migration.wizard2"
+                    view_type="form" view_mode="form"
+                    key2="client_action_multi" target="new"/>
+        <menuitem id="data_migration_wizard_menu2" action="data_migration_wizard_action2" name="Data Migration Wizard 2"
+                  parent="migration_tool_base_menu" sequence="3"/>
+    </data>
+</odoo>

@@ -1,0 +1,232 @@
+<?xml version="1.0"?>
+<document filename="test.pdf">
+    <template pageSize="(595, 830)" title="Test" author="Martin Simon" allowSplitting="20">
+        <pageTemplate id="first">
+            <frame id="first" x1="15.0" y1="42.0" width="567" height="780"/>
+            <frame id="second" x1="15.0" y1="42.0" width="567" height="334"/>
+<!--            <pageGraphics>
+                <setFont name="Helvetica" size="9"/>
+                <drawString x="9cm" y="28cm">[[invoice.partner_id.vendor]]</drawString>
+                <drawString x="10cm" y="28cm">[[invoice.partner_id.name]] </drawString>
+            </pageGraphics>-->
+        </pageTemplate>
+    </template>
+    <stylesheet>
+
+        <blockTableStyle id="Content_Order_Reference_Table">
+            <blockAlignment value="LEFT"/>
+            <blockValign value="TOP"/>
+            <lineStyle kind="LINEBEFORE" colorName="#e6e6e6" start="0,0" stop="0,-1"/>
+            <lineStyle kind="LINEABOVE" colorName="#e6e6e6" start="0,0" stop="0,0"/>
+            <lineStyle kind="LINEBELOW" colorName="#e6e6e6" start="0,-1" stop="0,-1"/>
+            <lineStyle kind="LINEBEFORE" colorName="#e6e6e6" start="1,0" stop="1,-1"/>
+            <lineStyle kind="LINEABOVE" colorName="#e6e6e6" start="1,0" stop="1,0"/>
+            <lineStyle kind="LINEBELOW" colorName="#e6e6e6" start="1,-1" stop="1,-1"/>
+            <lineStyle kind="LINEBEFORE" colorName="#e6e6e6" start="2,0" stop="2,-1"/>
+            <lineStyle kind="LINEABOVE" colorName="#e6e6e6" start="2,0" stop="2,0"/>
+            <lineStyle kind="LINEBELOW" colorName="#e6e6e6" start="2,-1" stop="2,-1"/>
+            <lineStyle kind="LINEBEFORE" colorName="#e6e6e6" start="3,0" stop="3,-1"/>
+            <lineStyle kind="LINEAFTER" colorName="#e6e6e6" start="3,0" stop="3,-1"/>
+            <lineStyle kind="LINEABOVE" colorName="#e6e6e6" start="3,0" stop="3,0"/>
+            <lineStyle kind="LINEBELOW" colorName="#e6e6e6" start="3,-1" stop="3,-1"/>
+            <lineStyle kind="LINEBEFORE" colorName="#e6e6e6" start="4,0" stop="4,-1"/>
+            <lineStyle kind="LINEAFTER" colorName="#e6e6e6" start="4,0" stop="4,-1"/>
+            <lineStyle kind="LINEABOVE" colorName="#e6e6e6" start="4,0" stop="4,0"/>
+            <lineStyle kind="LINEBELOW" colorName="#e6e6e6" start="4,-1" stop="4,-1"/>
+            <lineStyle kind="LINEBEFORE" colorName="#e6e6e6" start="5,0" stop="5,-1"/>
+            <lineStyle kind="LINEAFTER" colorName="#e6e6e6" start="5,0" stop="5,-1"/>
+            <lineStyle kind="LINEABOVE" colorName="#e6e6e6" start="5,0" stop="5,0"/>
+            <lineStyle kind="LINEBELOW" colorName="#e6e6e6" start="5,-1" stop="5,-1"/>
+        </blockTableStyle>
+        <blockTableStyle id="Table_Header_Pur_ord_Line">
+            <blockAlignment value="LEFT"/>
+            <blockValign value="TOP"/>
+            <lineStyle kind="LINEBELOW" colorName="#000000" start="0,-1" stop="0,-1"/>
+            <lineStyle kind="LINEBELOW" colorName="#000000" start="1,-1" stop="1,-1"/>
+            <lineStyle kind="LINEBELOW" colorName="#000000" start="2,-1" stop="2,-1"/>
+            <lineStyle kind="LINEBELOW" colorName="#000000" start="3,-1" stop="3,-1"/>
+            <lineStyle kind="LINEBELOW" colorName="#000000" start="4,-1" stop="4,-1"/>
+            <lineStyle kind="LINEBELOW" colorName="#000000" start="5,-1" stop="5,-1"/>
+            <lineStyle kind="LINEBELOW" colorName="#000000" start="6,-1" stop="6,-1"/>
+        </blockTableStyle>
+
+        <blockTableStyle id="Table_no_value">
+            <blockAlignment value="LEFT"/>
+            <blockValign value="TOP"/>
+        </blockTableStyle>
+
+        <initialize>
+            <paraStyle name="all" alignment="justify"/>
+        </initialize>
+        <paraStyle name="Standard" fontName="Helvetica"/>
+        <paraStyle name="Heading" fontName="Helvetica" fontSize="14.0" leading="17" spaceBefore="12.0" spaceAfter="6.0"/>
+        <paraStyle name="Text body" fontName="Helvetica" spaceBefore="0.0" spaceAfter="6.0"/>
+        <paraStyle name="List" fontName="Helvetica" spaceBefore="0.0" spaceAfter="6.0"/>
+        <paraStyle name="Caption" fontName="Helvetica-Oblique" fontSize="12.0" leading="15" spaceBefore="6.0" spaceAfter="6.0"/>
+        <paraStyle name="Index" fontName="Helvetica"/>
+        <paraStyle name="terp_header" fontName="Helvetica-Bold" fontSize="12.0" leading="15" alignment="LEFT" spaceBefore="0.0" spaceAfter="0.0"/>
+        <paraStyle name="terp_header_Centre" fontName="Helvetica-Bold" fontSize="8" leading="15" alignment="CENTER" spaceBefore="0.0" spaceAfter="0.0"/>
+        <paraStyle name="terp_default_8" fontName="Helvetica" fontSize="8.0" leading="10" alignment="LEFT" spaceBefore="0.0" spaceAfter="0.0"/>
+        <paraStyle name="terp_default_Bold_8" fontName="Helvetica-Bold" fontSize="8.0" leading="10" alignment="LEFT" spaceBefore="0.0" spaceAfter="0.0"/>
+        <paraStyle name="terp_tblheader_Details" fontName="Helvetica-Bold" fontSize="9.0" leading="11" alignment="LEFT" spaceBefore="0.0" spaceAfter="0.0"/>
+        <paraStyle name="terp_tblheader_Details_Centre" fontName="Helvetica-Bold" fontSize="9.0" leading="11" alignment="CENTER" spaceBefore="0.0" spaceAfter="0.0"/>
+        <paraStyle name="terp_default_Centre_8" fontName="Helvetica" fontSize="8.0" leading="10" alignment="CENTER" spaceBefore="0.0" spaceAfter="0.0"/>
+        <paraStyle name="terp_default_Centre_9" fontName="Helvetica" fontSize="9.0" leading="11" alignment="CENTER" spaceBefore="0.0" spaceAfter="0.0"/>
+        <paraStyle name="terp_tblheader_General" fontName="Helvetica-Bold" fontSize="8.0" leading="10" alignment="LEFT" spaceBefore="6.0" spaceAfter="6.0"/>
+        <paraStyle name="terp_tblheader_General_Centre" fontName="Helvetica-Bold" fontSize="8.0" leading="10" alignment="CENTER" spaceBefore="0.0" spaceAfter="0.0"/>
+        <paraStyle name="Table Contents" fontName="Helvetica"/>
+        <paraStyle name="Footer" fontName="Helvetica"/>
+        <paraStyle name="Table Heading" fontName="Helvetica" alignment="CENTER"/>
+        <paraStyle name="Horizontal Line" fontName="Helvetica" fontSize="6.0" leading="8" spaceBefore="0.0" spaceAfter="14.0"/>
+        <paraStyle name="Heading 9" fontName="Helvetica-Bold" fontSize="75%" leading="NaN" spaceBefore="12.0" spaceAfter="6.0"/>
+        <paraStyle name="terp_tblheader_General_Right" fontName="Helvetica-Bold" fontSize="8.0" leading="10" alignment="RIGHT" spaceBefore="0.0" spaceAfter="0.0"/>
+        <paraStyle name="terp_tblheader_Details_Right" fontName="Helvetica-Bold" fontSize="9.0" leading="11" alignment="RIGHT" spaceBefore="0.0" spaceAfter="0.0"/>
+        <paraStyle name="terp_default_Right_8" fontName="Helvetica" fontSize="8.0" leading="10" alignment="RIGHT" spaceBefore="0.0" spaceAfter="0.0"/>
+        <paraStyle name="terp_header_Right" fontName="Helvetica-Bold" fontSize="15.0" leading="19" alignment="LEFT" spaceBefore="0.0" spaceAfter="0.0"/>
+        <paraStyle name="terp_default_address" fontName="Helvetica" fontSize="10.0" leading="13" alignment="LEFT" spaceBefore="0.0" spaceAfter="0.0"/>
+        <paraStyle name="terp_default_left_9" fontName="Helvetica" fontSize="9.0" alignment="LEFT" spaceBefore="0.0" spaceAfter="0.0"/>
+        <images/>
+    </stylesheet>
+
+    <story>
+        <para style="P1">[[repeatIn(objects,'invoice')]]</para>
+        <spacer length = "16"/>
+        <blockTable colWidths="215.96,30,260,37.96" style="Table_no_value">
+            <tr>
+                <td>
+                    <para style="terp_default_left_9"></para>
+                </td>
+                <td>
+                    <para style="terp_default_left_9">[[ invoice.partner_id.name or '' ]]</para>
+                </td>
+                <td>
+                    <para style="terp_default_left_9">[[ invoice.partner_id.last_name or '' ]]</para>
+                </td>
+                <td>
+                    <para style="terp_default_left_9">
+                    </para>
+                </td>
+            </tr>
+        </blockTable>
+        <spacer length="1"/>
+        <blockTable colWidths="367.96,89,71,65" style="Table_no_value">
+            <tr>
+                <td>
+                    <para style="terp_default_left_9"></para>
+                </td>
+                <td>
+                    <para style="terp_default_left_9">[[ get_check_details(invoice)['check_no'] or '' ]]</para>
+                </td>
+                <td>
+                    <para style="terp_default_left_9">[[ (get_check_details(invoice)['date_paid']) or '' ]]</para>
+                </td>
+                <td>
+                    <para style="terp_default_left_9">
+                    </para>
+                </td>
+            </tr>
+        </blockTable>
+        <spacer length = "18"/>
+        <section>
+            <para style="terp_default_1">[[repeatIn(get_individual_data(invoice), 'line') ]]</para>
+            <blockTable colWidths="78,70,73,115,80,185.96" style="Table_no_value">
+                <tr>
+                    <td>
+                        <para style="terp_default_left_9">[[ line.supplier_invoice_number or line.number or '' ]]</para>
+                    </td>
+                    <td>
+                        <para style="terp_default_left_9">[[ get_invoice_date(line) ]]</para>
+                    </td>
+                    <td>
+                        <para style="terp_default_left_9">[[ formatLang(line.amount_total,digits=get_digits(dp='Account')) ]]</para>
+                    </td>
+                    <td>
+                        <para style="terp_default_left_9"></para>
+                    </td>
+                    <td>
+                        <para style="terp_default_left_9">[[ formatLang(line.amount_total,digits=get_digits(dp='Account')) ]]</para>
+                    </td>
+                    <td>
+                        <para style="terp_default_left_9">[[ line.reference or '' ]]</para>
+<!--                        <spacer length = "420"/>-->
+
+                    </td>
+                </tr>
+            </blockTable>
+
+        </section>
+<!--        <spacer length = "420"/>-->
+        <blockTable colWidths="78,70,73,115,70,195.96" style="Table_no_value">
+            <tr>
+                <td>
+                </td>
+                <td>
+                    <para style="terp_default_left_9">Total</para>
+                </td>
+                <td>
+                    <!--<para style="terp_default_left_9">[[ get_check_details(invoice)['total_amt'] or '' ]]</para>-->
+                    <para style="terp_default_left_9">[[ formatLang(get_check_details(invoice)['total_amt'],digits=get_digits(dp='Account')) or '' ]]</para>
+                </td>
+                <td>
+                    <para style="terp_default_left_9"></para>
+                </td>
+                <td>
+                    <!--<para style="terp_default_left_9">[[ get_check_details(invoice)['total_amt'] or '' ]]</para>-->
+                    <para style="terp_default_left_9">[[ formatLang(get_check_details(invoice)['total_amt'],digits=get_digits(dp='Account')) or ''  ]]</para>
+                </td>
+                <td>
+                    <para style="terp_default_left_9"></para>
+                </td>
+            </tr>
+        </blockTable>
+        <nextFrame/>
+        <spacer length = "181"/>
+        <blockTable colWidths="417.96,80,80" style="Table_no_value">
+            <tr>
+                <td>
+
+                </td>
+                <td>
+                    <!--<para style="terp_default_Centre_9">[[ formatLang(get_check_details(invoice)['check_no'],digits=get_digits(dp='lot qty')) or '' ]]</para>-->
+                    <para style="terp_default_Centre_9">[[ get_check_details(invoice)['check_no'] or '' ]]</para>
+                </td>
+                <td>
+                    <para style="terp_default_Centre_9">[[ get_check_details(invoice)['date_paid'] or '' ]]</para>
+                </td>
+            </tr>
+        </blockTable>
+        <spacer length = "2"/>
+        <blockTable colWidths="30,407.96,35,95" style="Table_no_value">
+            <tr>
+                <td></td>
+                <td>
+                    <spacer length = "10"/>
+                    <para style="terp_default_left_9">[[ get_check_details(invoice)['amount_in_word'] ]]</para>
+                </td>
+                <td>
+                </td>
+                <td>
+                    <spacer length = "10"/>
+                    <para style="terp_default_left_9">[[ formatLang(get_check_details(invoice)['total_amt'], digits=get_digits(dp='Account'),currency_obj=invoice.currency_id) ]]</para>
+                </td>
+            </tr>
+        </blockTable>
+
+        <blockTable colWidths="30,530.96" style="Table_no_value">
+            <tr>
+                <td></td>
+                <td>
+                   
+                    <para style="terp_default_left_9">[[ invoice.partner_id.name ]]</para>
+                    <para style="terp_default_left_9">[[ display_address(invoice.partner_id)]]</para>
+                </td>
+            </tr>
+        </blockTable>
+
+    </story>
+</document>
+
+
+
+
+

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="VcsDirectoryMappings">
+    <mapping directory="$PROJECT_DIR$/.." vcs="svn" />
+    <mapping directory="$PROJECT_DIR$/../account_financial_report_qweb" vcs="svn" />
+    <mapping directory="$PROJECT_DIR$/../account_invoice_merge" vcs="svn" />
+    <mapping directory="$PROJECT_DIR$/../account_period" vcs="svn" />
+    <mapping directory="$PROJECT_DIR$/../bista_iugroup" vcs="svn" />
+    <mapping directory="$PROJECT_DIR$/../date_range" vcs="svn" />
+  </component>
+</project>

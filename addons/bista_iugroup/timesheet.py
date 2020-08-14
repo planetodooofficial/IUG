@@ -1,0 +1,258 @@
+# -*- coding: utf-8 -*-
+##############################################################################
+#
+#    OpenERP, Open Source Management Solution
+#    Copyright (C) 2004-2010 Tiny SPRL (<http://tiny.be>).
+#
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU Affero General Public License as
+#    published by the Free Software Foundation, either version 3 of the
+#    License, or (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU Affero General Public License for more details.
+#
+#    You should have received a copy of the GNU Affero General Public License
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+##############################################################################
+
+import time
+from datetime import datetime, timedelta
+from dateutil.relativedelta import relativedelta
+
+from odoo import fields, models,api
+from odoo.tools.translate import _
+from odoo import netsvc
+from odoo.exceptions import UserError, RedirectWarning, ValidationError
+
+class timesheet(models.Model):
+    _name = "timesheet"
+    _inherit = "mail.thread"
+    _order = "id desc"
+    _description="Custom Timesheet"
+
+    @api.multi
+    def copy(self, default=None):
+        raise UserError(_('You cannot duplicate a timesheet.'))
+
+    @api.model
+    def create(self,vals):
+        if 'interpreter_id' in vals:
+            if not self.env['res.partner'].browse(vals['interpreter_id']).user_id:
+                raise UserError(_('In order to create a timesheet for this interpreter, you must assign it to a user.'))
+#            if not self.pool.get('res.partner').browse(cr, uid, vals['interpreter_id']).product_id:
+#                raise osv.except_osv(_('Error!'), _('In order to create a timesheet for this interpreter, you must link the interpreter to a product, like \'Consultant\'.'))
+#            if not self.pool.get('res.partner').browse(cr, uid, vals['interpreter_id']).journal_id:
+#                raise osv.except_osv(_('Configuration Error!'), _('In order to create a timesheet for this interpreter, you must assign an analytic journal to the interpreter, like \'Timesheet Journal\'.'))
+        return super(timesheet, self).create(vals)
+
+    @api.multi
+    def write(self,vals):
+        if 'interpreter_id' in vals:
+            new_user_id = self.env['res.partner'].browse(vals['interpreter_id']).user_id.id or False
+            if not new_user_id:
+                raise UserError(_('In order to create a timesheet for this interpreter, you must assign it to a user.'))
+#            if not self._sheet_date(cr, uid, ids, forced_user_id=new_user_id):
+#                raise osv.except_osv(_('Error!'), _('You cannot have 2 timesheets that overlap!\nYou should use the menu \'My Timesheet\' to avoid this problem.'))
+#            if not self.pool.get('res.partner').browse(cr, uid, vals['interpreter_id']).product_id:
+#                raise osv.except_osv(_('Error!'), _('In order to create a timesheet for this interpreter, you must link the interpreter to a product.'))
+#            if not self.pool.get('res.partner').browse(cr, uid, vals['interpreter_id']).journal_id:
+#                raise osv.except_osv(_('Configuration Error!'), _('In order to create a timesheet for this interpreter, you must assign an analytic journal to the interpreter, like \'Timesheet Journal\'.'))
+        return super(timesheet, self).write(vals)
+
+    @api.multi
+    def button_confirm(self):
+        for sheet in self:
+            if sheet.interpreter_id and sheet.interpreter_id.parent_id and sheet.interpreter_id.parent_id.user_id:
+                self.message_subscribe_users(user_ids=[sheet.interpreter_id.parent_id.user_id.id])
+            # sheet.check_interpreter_attendance_state()
+            # di = sheet.user_id.company_id.timesheet_max_difference
+#            if (abs(sheet.total_difference) < di) or not di:
+#                wf_service = netsvc.LocalService("workflow")
+#                wf_service.trg_validate(uid, 'hr_timesheet_sheet.sheet', sheet.id, 'confirm', cr)
+#            else:
+#                raise osv.except_osv(_('Warning!'), _('Please verify that the total difference of the sheet is lower than %.2f.') %(di,))
+        return True
+
+    @api.multi
+    def fill_timesheet(self):
+        task_obj = self.env['project.task']
+        for sheet in self:
+            if not sheet.interpreter_id:
+                raise UserError(_('Please select Interpreter in the form.'))
+            query = "delete from custom_timesheet_rel "
+            self._cr.execute(query)
+            task_ids = task_obj.search([('interpreter_id','=',sheet.interpreter_id.id)])
+            for task_id in task_ids:
+                for work in task_id.work_ids:
+                    print "work.....",work
+                    if (work.date == sheet.date_from) or (work.date == sheet.date_to) or ((work.date > sheet.date_from) and (work.date < sheet.date_to)):
+                        self._cr.execute('insert into custom_timesheet_rel (sheet_id,work_id) values(%s,%s) ', (self.ids[0], work.id))
+            mod_obj = self.env['ir.model.data']
+            res = mod_obj.get_object_reference('bista_iugroup', 'iu_timesheet_form')
+            res_id = res and res[1] or False,
+            return {
+                'name': _('Timesheet'),
+                'view_type': 'form',
+                'view_mode': 'form',
+                'view_id': [res_id[0]],
+                'res_model': 'timesheet',
+                'type': 'ir.actions.act_window',
+                'nodestroy': True,
+                'target': 'current',
+                'res_id': self.ids and self.ids[0] or False,
+            }
+
+    @api.model
+    def _default_date_from(self):
+        user = self.env.user
+        r = user.company_id and user.company_id.timesheet_range or 'month'
+        if r == 'month':
+            return time.strftime('%Y-%m-01')
+        elif r == 'week':
+            return (datetime.today() + relativedelta(weekday=0, days=-6)).strftime('%Y-%m-%d')
+        elif r == 'year':
+            return time.strftime('%Y-01-01')
+        return fields.Date.context_today(self)
+
+    @api.model
+    def _default_date_to(self):
+        user = self.env.user
+        r = user.company_id and user.company_id.timesheet_range or 'month'
+        if r == 'month':
+            return (datetime.today() + relativedelta(months=+1, day=1, days=-1)).strftime('%Y-%m-%d')
+        elif r == 'week':
+            return (datetime.today() + relativedelta(weekday=6)).strftime('%Y-%m-%d')
+        elif r == 'year':
+            return time.strftime('%Y-12-31')
+        return fields.Date.context_today(self)
+
+    @api.model
+    def _default_interpreter(self):
+        emp_ids = self.env['res.partner'].search([('user_id', '=', self.env.user.id)]).ids
+        return emp_ids and emp_ids[0] or False
+
+    name=fields.Char('Note', size=64, index=1,states={'confirm':[('readonly', True)], 'done':[('readonly', True)]})
+    interpreter_id=fields.Many2one('res.partner', 'Employee', required=True,default=_default_interpreter)
+    user_id=fields.Many2one(related='interpreter_id.user_id', store=True, string="User", required=False, readonly=True)
+    date_from=fields.Date('Date from', required=True, index=1, readonly=True, states={'new':[('readonly', False)]},default=_default_date_from)
+    date_to=fields.Date('Date to', required=True, index=1, readonly=True, states={'new':[('readonly', False)]},default=_default_date_to)
+#        'timesheet_lines' : fields.one2many('timesheet.line', 'timesheet_id',
+#            'Timesheet lines',
+#            readonly=True, states={
+#                'draft': [('readonly', False)],
+#                'new': [('readonly', False)]}
+#            ),
+    timesheet_ids=fields.Many2many('project.task.work', 'custom_timesheet_rel','sheet_id','work_id','Timesheet lines',readonly=True, states={'draft': [('readonly', False)],'new': [('readonly', False)]})
+    state= fields.Selection([
+        ('new', 'New'),
+        ('draft','Open'),
+        ('confirm','Waiting Approval'),
+        ('done','Approved')], 'Status', index=True, required=True, readonly=True,default='new',
+        help=' * The \'Draft\' status is used when a user is encoding a new and unconfirmed timesheet. \
+            \n* The \'Confirmed\' status is used for to confirm the timesheet by user. \
+            \n* The \'Done\' status is used when users timesheet is accepted by his/her senior.')
+    company_id=fields.Many2one('res.company', 'Company',default=lambda self: self.env['res.company']._company_default_get('timesheet'))
+
+    # @api.model
+    # def _sheet_date(self, cr, uid, ids, forced_user_id=False, context=None):
+    #     print "this..."
+    #     for sheet in self.browse(cr, uid, ids, context=context):
+    #         new_user_id = forced_user_id or sheet.user_id and sheet.user_id.id
+    #         if new_user_id:
+    #             cr.execute('SELECT id \
+    #                 FROM hr_timesheet_sheet_sheet \
+    #                 WHERE (date_from <= %s and %s <= date_to) \
+    #                     AND user_id=%s \
+    #                     AND id <> %s',(sheet.date_to, sheet.date_from, new_user_id, sheet.id))
+    #             if cr.fetchall():
+    #                 return False
+    #     return True
+
+
+#    _constraints = [
+#        (_sheet_date, 'You cannot have 2 timesheets that overlap!\nPlease use the menu \'My Current Timesheet\' to avoid this problem.', ['date_from','date_to']),
+#    ]
+
+    @api.multi
+    def action_set_to_draft(self):
+        self.write({'state': 'draft'})
+        return True
+
+    @api.multi
+    def name_get(self):
+        # week number according to ISO 8601 Calendar
+        return [(r['id'], _('Week ') + datetime.strptime(r['date_from'], '%Y-%m-%d').strftime('%U'))
+                for r in self.read(['date_from'], load='_classic_write')]
+
+    @api.multi
+    def unlink(self):
+        sheets = self.read(['state'])
+        for sheet in sheets:
+            if sheet['state'] in ('confirm', 'done'):
+                raise UserError(_('You cannot delete a timesheet which is already confirmed.'))
+            
+        return super(timesheet, self).unlink()
+
+    @api.onchange('interpreter_id')
+    def onchange_interpreter_id(self):
+        department_id =  False
+        user_id = False
+        if self.interpreter_id:
+            user_id = self.interpreter_id.user_id.id
+        return {'value': {'user_id': user_id}}
+
+    # ------------------------------------------------
+    # OpenChatter methods and notifications
+    # ------------------------------------------------
+
+
+    @api.model
+    def _needaction_domain_get(self):
+        empids = self.env['res.partner'].search([('parent_id.user_id', '=', self.env.uid)])
+        if not empids:
+            return False
+        return ['&', ('state', '=', 'confirm'), ('employee_id', 'in', empids.ids)]
+
+
+class timesheet_line(models.Model):
+    _name = "timesheet.line"
+    _order = "date asc"
+
+    name=fields.Char('Work summary', size=128)
+    date=fields.Datetime('Date', index="1")
+    task_id=fields.Many2one('project.task', 'Task', ondelete='cascade', required=True, index="1")
+    hours=fields.Float('Time Spent')
+    user_id=fields.Many2one('res.users', 'Done by', required=True, index="1")
+    company_id=fields.Many2one(related='task_id.company_id', string='Company', store=True, readonly=True)
+
+    @api.multi
+    def _check_sheet_state(self):
+        for timesheet_line in self:
+            if timesheet_line.sheet_id and timesheet_line.sheet_id.state not in ('draft', 'new'):
+                return False
+        return True
+
+    _constraints = [
+        (_check_sheet_state, 'You cannot modify an entry in a Confirmed/Done timesheet !', ['state']),
+    ]
+
+    @api.multi
+    def unlink(self):
+        self._check()
+        return super(timesheet_line,self).unlink()
+
+    def _check(self):
+        for att in self:
+            if att.sheet_id and att.sheet_id.state not in ('draft', 'new'):
+                raise UserError(_('You cannot modify an entry in a confirmed timesheet.'))
+        return True
+
+
+
+
+# vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:
+

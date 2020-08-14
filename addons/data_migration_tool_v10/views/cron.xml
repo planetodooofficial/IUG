@@ -1,0 +1,68 @@
+<odoo>
+    <data>
+        <record forcecreate="True" id="ir_cron_sync_invoice_records" model="ir.cron">
+            <field name="name">Sync Invoice Records</field>
+            <field eval="False" name="active"/>
+            <field name="user_id" ref="base.user_root"/>
+            <field name="interval_number">1</field>
+            <field name="interval_type">hours</field>
+            <field name="numbercall">-1</field>
+            <field eval="False" name="doall"/>
+            <field eval="'sync.records'" name="model"/>
+            <field eval="'sync_invoice_records'" name="function"/>
+            <field eval="'()'" name="args"/>
+        </record>
+
+        <record forcecreate="True" id="ir_cron_sync_other_records" model="ir.cron">
+            <field name="name">Sync Other Records</field>
+            <field eval="False" name="active"/>
+            <field name="user_id" ref="base.user_root"/>
+            <field name="interval_number">1</field>
+            <field name="interval_type">hours</field>
+            <field name="numbercall">-1</field>
+            <field eval="False" name="doall"/>
+            <field eval="'sync.records'" name="model"/>
+            <field eval="'sync_other_records'" name="function"/>
+            <field eval="'()'" name="args"/>
+        </record>
+
+        <record forcecreate="True" id="ir_cron_sync_project_related_records" model="ir.cron">
+            <field name="name">Sync Project Related Records</field>
+            <field eval="False" name="active"/>
+            <field name="user_id" ref="base.user_root"/>
+            <field name="interval_number">1</field>
+            <field name="interval_type">hours</field>
+            <field name="numbercall">-1</field>
+            <field eval="False" name="doall"/>
+            <field eval="'sync.records'" name="model"/>
+            <field eval="'sync_project_related_records'" name="function"/>
+            <field eval="'()'" name="args"/>
+        </record>
+
+        <record forcecreate="True" id="ir_cron_sync_event_and_related_records" model="ir.cron">
+            <field name="name">Sync Event And Related records</field>
+            <field eval="False" name="active"/>
+            <field name="user_id" ref="base.user_root"/>
+            <field name="interval_number">1</field>
+            <field name="interval_type">hours</field>
+            <field name="numbercall">-1</field>
+            <field eval="False" name="doall"/>
+            <field eval="'sync.records'" name="model"/>
+            <field eval="'sync_event_and_related_records'" name="function"/>
+            <field eval="'()'" name="args"/>
+        </record>
+
+        <record forcecreate="True" id="ir_cron_sync_partner_user_and_ir_attachment_records" model="ir.cron">
+            <field name="name">Sync Partner, User And Ir Attachment Records</field>
+            <field eval="False" name="active"/>
+            <field name="user_id" ref="base.user_root"/>
+            <field name="interval_number">1</field>
+            <field name="interval_type">hours</field>
+            <field name="numbercall">-1</field>
+            <field eval="False" name="doall"/>
+            <field eval="'sync.records'" name="model"/>
+            <field eval="'sync_partner_user_and_ir_attachment_records'" name="function"/>
+            <field eval="'()'" name="args"/>
+        </record>
+    </data>
+</odoo>

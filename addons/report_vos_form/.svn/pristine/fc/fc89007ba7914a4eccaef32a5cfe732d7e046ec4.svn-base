@@ -1,0 +1,307 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="report_vos_form.report_vos_form_parent_template">
+        <t t-call="report.html_container">
+            <t t-foreach="docs" t-as="o">
+
+                    <t t-call="report_vos_form.report_vos_form_child_template" t-lang="o.partner_id.lang"/>
+
+            </t>
+        </t>
+    </template>
+
+    <template id="report_vos_form.report_vos_form_child_template">
+
+        <!--<t t-call="report_vos_form.external_layout_footer"/>-->
+        <div class="page">
+            <style>
+                .basic_table{
+                border:1px solid lightGrey;
+                border-collapse: collapse;
+                }
+                .basic_table td {
+                border:1px solid lightGrey;
+                font-size:12;
+                }
+                pre{margin:0;overflow-x:hidden;border:none;}
+                .list_table {
+border-color:black;
+text-align:center;
+border-collapse: collapse;
+
+}
+.list_table td {
+border-color:gray;
+border-top:1px solid gray;
+text-align:left;
+font-size:12;
+padding-right:3px
+padding-left:3px
+padding-top:3px
+padding-bottom:3px
+}
+
+.list_table th {
+border-bottom:2px solid black;
+text-align:left;
+font-size:12;
+font-weight:bold;
+padding-right:3px
+padding-left:3px
+}
+            </style>
+        <table >
+         <tr>
+           <td style="width:80px;height:50px;border:1px solid #000;"><img src="'data:image/jpeg;base64,%s'%o.company_id.logo" width="410" height="110"/>
+           </td>
+           <td style="float:center;left:50px;">
+               <pre style="margin:0;overflow-x:hidden;"><b>Kaiser Permanente Verification of Service Form</b></pre>
+                 <br/>
+                  <td align="right" style="width:80px;">Vendor Assigned Event Number</td>
+                  <td align="right"> <div style="width:80px;height:50px;border:1px solid #000"><t t-esc="o.name or ''"/></div></td>
+<!---->
+                  <td align="right" style="width:80px;">Vendor Assigned Invoice Number</td>
+                  <td align="right"> <div style="width:80px;height:50px;border:1px solid #000;position:absolute;margin-top:50px"><t t-esc="o.view_interpreter_inv and o.view_interpreter_inv.number  or ''"/></div></td>
+           </td>
+         </tr>
+        </table>
+        <table >
+         <tr>
+        <p><b> Please have a sections 1 &amp; 2 completed prior to making a request  for SIGN and SPOKEN language interpretation service.</b></p>
+             <pre style="margin:0"><b><u>Phone:</u></b>(800) 726-9891    <b><u>Online Portal:</u></b>www.interpretersunlimited.com   <b><u>Online Portal:</u></b>E-Mail:info@iugroup.com</pre>
+        <p>(Available 24/7)</p>
+
+        <p>Please also uitilize the above contact methods to submit questions or complaints regarding Interpreters Unlimited interpreting services and/or scheduling,</p>
+        <p><b>KP INTERPRETER REQUEST SUMMARY</b></p>
+        <h8><I><pre style="margin:0">*INTERPRETERS ARE SCHEDULED FOR TWO (2) HOUR BLOACKS AND MUST STAY ONSITE  FOR A TWO (2) HOUR MINIMUM UNLESS </pre></I> <I>OTHERWISE NOTED OR RELEASED.
+            INTERPRETERS MUST REMAIN WITH THE PATIENT UNTIL A KP STAFF MEMBER HAS DISMISSED THEM.</I></h8>
+         </tr>
+        </table>
+
+        <table class="basic_table">
+              <tr>
+                  <td colspan="3" style="border:1px solid lightGrey;font-size:12;"><pre style="margin:0">SECTION1 :ASSIGNMENT INFORMATION                               MEDICAL CENTER AREA:</pre></td>
+              </tr>
+              <tr>
+                 <td style="border:1px solid lightGrey;font-size:12;">Language Needed(Fill in Language):     Tactile ASL <br/>
+                     <pre style="margin:0">Sign Language:                        Spoken Language: <t t-esc="o.language_id and o.language_id.name or ''"/></pre></td>
+                 <td style="border:1px solid lightGrey;font-size:12;" colspan="2" rowspan="2">Address of Appointment <br/>
+                                (Include Hosptial or MOB Name): <t t-esc="o.location_id.street"/>
+                            <br/><t t-esc="o.location_id and o.location_id.city or ''"/>
+                            <br/><t t-esc="o.location_id and o.location_id.state_id.name or ''"/>
+                            <br/><t t-esc="o.location_id and o.location_id.country_id.name or ''"/>
+                            <br/><t t-esc="o.location_id and o.location_id.zip or ''"/></td>
+
+              </tr>
+               <tr><td></td></tr>
+             <tr>
+                   <td colspan="2" height="50">Department Name:  <t t-esc="o.department or ''"/> </td>
+                   <td width="4">Date You are submitting this Request: <t t-esc="o.create_date or ''"/></td>
+
+              </tr>
+              <tr>
+                   <td colspan="2" height="50">KP Person Making Request: <t t-esc="o.ordering_contact_id and o.ordering_contact_id.name or ''"/>
+                   <t t-esc="o.ordering_contact_id and o.ordering_contact_id.last_name"/></td>
+                   <td height="50">KP Person Making Request's Phone Number: <t t-esc="o.ordering_contact_id and o.ordering_contact_id.cell_phone or o.ordering_contact_id.phone or ''"/></td>
+               </tr>
+              <tr  rowspan="2" >
+                   <td colspan="2">Preferred Method of Contact for Interpreter confirmation
+                                    (Include number or email address):<br/>
+                       <pre style="margin:0">Phone     Fax          Email</pre>
+                   </td>
+                   <td> KP On-Site Point of Contact (Name  and Phone Number): <t t-esc="o.ordering_contact_id and o.ordering_contact_id.name or ''"/>
+                   <t t-esc="o.ordering_contact_id and o.ordering_contact_id.last_name or ''"/></td>
+                  <td></td>
+               </tr>
+              <tr>
+                   <td colspan="2" >Provider (First and Last Name):
+                        <t t-esc="o.dr_name or ''"/>
+                   </td>
+                   <td>Member Preference for Interpreter:<br/>
+                       <pre style="margin:0">Female     Male      No Preference       Other__________</pre>
+                  </td>
+               </tr>
+               <tr>
+                  <td width="10">Date of Service: <t t-esc="o.event_start_date or ''"/></td>
+                  <td width="70"><pre style="margin:0">Request Start Time: <t t-esc="o.event_start_hr or '00'"/>:<t t-esc="o.event_start_min or '00'"/>        </pre></td>
+                  <td width="70">Request End Time*: <t t-esc="o.event_end_hr or '00'"/>:<t t-esc="o.event_end_min or '00'"/> <t t-esc="o.am_pm2 and o.am_pm2.upper() or ''"/></td>
+               </tr>
+               <tr rowspan="2">
+                   <td colspan="2">Patient Name:
+                        <t t-esc="o.patient_id and o.patient_id.name or ''"/><br/>
+                        <t t-esc="o.patient_id and o.patient_id.last_name or ''"/>
+                   </td>
+                   <td>Medical Record#:
+                       <t t-esc="o.medical_no or ''"/>
+                  </td>
+               </tr>
+               <tr>
+               <td colspan="3"><b>SECTION 2: BILLING INFORMATION- PLEASE PROVIDE YOUR COST CENTER</b></td>
+               </tr>
+               <tr>
+                  <td> Business Unit#(Regin Entity; total 4 digits):</td>
+                  <td> Location Code (5 digits):</td>
+                  <td colspan="2"> Department Code (4 digits) - Expense Code:</td>
+               </tr>
+               <tr>
+                  <td><t t-esc="o.cust_gpuid and o.cust_gpuid.split('-', 1) and (len(o.cust_gpuid.split('-', 2)) > 2) and o.cust_gpuid.split('-', 2)[0] or '_'"/> </td>
+                  <td><t t-esc="o.cust_gpuid and o.cust_gpuid.split('-', 2) and (len(o.cust_gpuid.split('-', 2)) > 2) and o.cust_gpuid.split('-', 2)[1] or '_'"/></td>
+                  <td><t t-esc="o.cust_gpuid and o.cust_gpuid.split('-', 2) and (len(o.cust_gpuid.split('-', 2)) > 2) and o.cust_gpuid.split('-', 2)[2]  or '_'"/></td>
+               </tr>
+               <tr>
+                  <td colspan="2">
+                  Person with Authority to Approve Payment (FDA Approved):
+                  <t t-esc="o.approving_mgr or ''"/>
+                  </td>
+                  <td>
+                  FDA Approved NUID# (Begins with a letter followed by a 6 digits):
+                  <t t-esc="o.cust_csid or ''"/>
+                  </td>
+
+               </tr>
+               <tr>
+                  <td colspan="2">
+                  </td>
+                  <td>
+                  __ ____ ____ ____
+                  </td>
+               </tr>
+        </table>
+    <P><B>TO BE COMPLETED BY KP STAFF ON-SITE -VERIFICATION OF INTERPRETATION SERVICES</B></P>
+    <table border="1" class="basic_table">
+        <tr width="100%">
+            <td colspan="4">
+                <pre style="margin:0">SECTION 3: KP STAFF PLEASE COMPLETE THIS SECTION WHILE THE INTERPRETER IS ONSITE         PATIENT NO SHOW</pre>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                Interpreter ARRIVAL Time
+            </td>
+            <td>
+                KP Staff (First Name and Last Name):
+            </td>
+            <td>
+                KP Staff NUID:
+            </td>
+            <td>
+                <pre style="color:black;font-size:12;">KP Staff&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;
+Signature:</pre>
+            </td>
+        </tr>
+        <tr>
+            <td>
+            Interpreter END Time (Appointment over 2 hours):
+            </td>
+            <td>
+            KP Staff (First Name and Last Name):
+            </td>
+            <td>
+            KP Staff NUID:
+            </td>
+            <td>
+            <pre style="color:black;font-size:12;">KP Staff&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;
+Signature:</pre>
+            </td>
+
+        </tr>
+    </table>
+
+    <p>TO BE COMPLETED BY INTERPRETERS UNLIMITED INTERPRETER ONLY</p>
+
+    <table border="1" class="basic_table" >
+        <tr>
+            <td colspan="3">
+            <pre style="color:black;font-size:12;">SECTION 4: CREDENTIALS- Interpreters Unlimited please check your certification type, sign below and
+fax/email/mail  this completed form to Interpreters Unlimited for verification. If you are a spoken language
+Interpreter, please complete your competency level in the (fill in) Other section below.</pre>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="3">
+                <pre style="margin:0">RID    NAD     Other(Fill in):                        Certification #          </pre>
+            </td>
+        </tr>
+        <tr>
+        <td>
+        Interpreter Name (Please Print):
+        </td>
+            <td>
+                Interpreter Signature:
+            </td>
+         </tr>
+        <tr>
+            <td colspan="3">
+                Interpreter Comments (Note as applicable -i.e. patient no show, multiple patients/locations, etc.)
+            </td>
+        </tr>
+    </table>
+    <p style="page-break-after:always"></p>
+        </div>
+    </template>
+
+    <template id="report_vos_form.external_layout">
+    <!-- Multicompany -->
+    <t t-if="not o and doc">
+        <t t-set="o" t-value="doc"/>
+    </t>
+    <t t-if="o and 'company_id' in o">
+        <t t-set="company" t-value="o.company_id"></t>
+    </t>
+
+    <t t-if="not o or not 'company_id' in o">
+        <t t-set="company" t-value="res_company"></t>
+    </t>
+
+    <t t-call="report_vos_form.external_layout_header" />
+    <t t-raw="0" />
+    <t t-call="report_vos_form.external_layout_footer" />
+    </template>
+
+<template id="report_vos_form.external_layout_header">
+    <t t-if="o and 'company_id' in o">
+        <t t-set="company" t-value="o.company_id"></t>
+    </t>
+
+    <t t-if="not o or not 'company_id' in o">
+        <t t-set="company" t-value="res_company"></t>
+    </t>
+
+    <div class="header" style="border-bottom: 0px solid black; width: 100%">
+        <t t-esc="company"/>
+        <table>
+            <tr>
+                <td style="width:150px;height:80px;border:1px solid #000;top: 10;"><img t-if="company.logo" t-att-src="'data:image/png;base64,%s' % company.logo"/></td>
+
+                <span>rrdurdhrudfjr</span>
+                <td style="text-align:right">
+                    <tr>
+                        <t t-esc="company.partner_id.name"/>
+                    </tr>
+                    <tr>
+                        <t t-esc="company.partner_id.street or ''"/>
+                    </tr>
+                    <tr>
+                        Phone: <t t-esc="company.partner_id.phone or ''"/>
+                    </tr>
+                    <tr>
+                        Mail: <t t-esc="company.partner_id.email or ''"/>
+                    </tr>
+                </td>
+            </tr>
+        </table>
+        </div>
+</template>
+
+<template id="report_vos_form.external_layout_footer">
+    <div class="footer">
+        <table style="border-top: 1px solid black; width: 100%">
+            <tr >
+                <td style="text-align:right;font-size:12;" width="95%">Page <span class="page"/></td><td style="text-align:left;font-size:12;">  of <span class="topage"/></td>
+            </tr>
+        </table>
+    </div>
+</template>
+
+</odoo>

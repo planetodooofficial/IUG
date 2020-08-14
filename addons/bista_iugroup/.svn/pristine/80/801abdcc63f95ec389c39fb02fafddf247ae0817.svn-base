@@ -1,0 +1,90 @@
+<odoo>
+
+    <record id="view_account_payment_form_add_notes" model="ir.ui.view">
+        <field name="name">view.account.payment.form.add.notes</field>
+        <field name="model">account.payment</field>
+        <field name="inherit_id" ref="account.view_account_payment_form" />
+        <field name="arch" type="xml">
+            <xpath expr="//group" position="after">
+                <group string="Internal Notes">
+                    <field name="internal_notes" colspan="2" nolabel="1"/>
+                </group>
+            </xpath>
+            <xpath expr="//field[@name='communication']" position="after">
+                    <field name="check_number_string"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_account_payment_invoice_form_add_notes" model="ir.ui.view">
+        <field name="name">view.account.payment.invoice.form.add.notes</field>
+        <field name="model">account.payment</field>
+        <field name="inherit_id" ref="account.view_account_payment_invoice_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//group" position="after">
+                <group string="Internal Notes">
+                    <field name="internal_notes" colspan="2" nolabel="1"/>
+                </group>
+            </xpath>
+            <xpath expr="//field[@name='communication']" position="after">
+                    <field name="check_number_string"/>
+            </xpath>
+        </field>
+    </record>
+
+
+
+
+
+    <record id="view_account_payment_from_invoices_add_notes" model="ir.ui.view">
+        <field name="name">view.account.payment.from.invoices.add.notes</field>
+        <field name="model">account.payment</field>
+        <field name="inherit_id" ref="account.view_account_payment_from_invoices"/>
+        <field name="arch" type="xml">
+            <xpath expr="//group" position="after">
+                <group string="Internal Notes">
+                    <field name="internal_notes" colspan="2" nolabel="1"/>
+                </group>
+            </xpath>
+            <xpath expr="//field[@name='communication']" position="after">
+                    <field name="check_number_string"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_account_payment_tree_add_check_number" model="ir.ui.view">
+            <field name="name">account.payment.tree</field>
+            <field name="model">account.payment</field>
+            <field name="inherit_id" ref="account.view_account_payment_tree"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='name']" position="after">
+                    <field name="check_number_string" string="Check Number"/>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="view_account_supplier_payment_tree_add_check_number" model="ir.ui.view">
+            <field name="name">account.supplier.payment.tree</field>
+            <field name="model">account.payment</field>
+            <field name="inherit_id" ref="account.view_account_supplier_payment_tree"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='name']" position="after">
+                    <field name="check_number_string" string="Check Number"/>
+                </xpath>
+                <xpath expr="//field[@name='payment_method_id']" position="replace">
+                </xpath>
+            </field>
+        </record>
+
+    <record id="view_account_payment_search_add_payment_date" model="ir.ui.view">
+        <field name="name">account.payment.search</field>
+        <field name="model">account.payment</field>
+        <field name="inherit_id" ref="account.view_account_payment_search"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='partner_id']" position="after">
+                    <field name="payment_date"/>
+                </xpath>
+            </field>
+    </record>
+
+</odoo>

@@ -1,0 +1,163 @@
+# -*- coding: utf-8 -*-
+##############################################################################
+#
+#    OpenERP, Open Source Business Applications
+#    Copyright (C) 2004-2012 OpenERP S.A. (<http://openerp.com>).
+#
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU Affero General Public License as
+#    published by the Free Software Foundation, either version 3 of the
+#    License, or (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU Affero General Public License for more details.
+#
+#    You should have received a copy of the GNU Affero General Public License
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+##############################################################################
+
+import re
+from odoo import fields,models,api
+from odoo.tools.translate import _
+import time
+from odoo import SUPERUSER_ID, tools
+w_types = [('warning','Warning'),('info','Information'),('error','Error')]
+
+class warning(models.TransientModel):
+    _name = 'warning'
+    _rec_name = 'title'
+
+    history_id=fields.Many2one("select.interpreter.line", "History Id" ,)
+    event_id=fields.Many2one("event", "Event Id" ,)
+    title=fields.Char("Title", size=32)
+    warning_message=fields.Html("Message")
+    type=fields.Selection([('warning','Warning'),('info','Information'),('error','Error')],
+                            string='Status')
+
+    @api.model
+    def _get_view_id(self):
+        res = self.env['ir.model.data'].get_object_reference('bista_iugroup', 'warning_form')
+        if res:
+            return res[1]
+        else:
+            return False
+
+    @api.model
+    def message(self):
+        message = self
+        message_type = [t[1]for t in w_types if message.type == t[0]][0]
+        res = {
+            'name': '%s: %s' % (_(message_type), _(message.title)),
+            'view_type': 'form',
+            'view_mode': 'form',
+            'view_id': self._get_view_id(),
+            'res_model': 'warning',
+            'domain': [],
+            'context': self._context,
+            'type': 'ir.actions.act_window',
+            'target': 'new',
+            'res_id': message.id
+        }
+        return res
+
+    @api.model
+    def warning(self,title, message):
+        id = self.create({'title': title, 'warning_message': message, 'type': 'warning'})
+        res = self.message()
+        
+        return res
+
+    # def info(self, cr, uid, title, message, context=None):
+    #     res = []
+    #     return res
+    #
+    # def error(self, cr, uid, title, message, context=None):
+    #     res = []
+    #     return res
+
+    @api.model
+    def update_interpreter(self):
+        ''' This function updates or assigns interpreter in the event form '''
+        res= []
+        self=self.with_context(interpreter=True)
+        event_obj = self.env['event']
+        mod_obj = self.env['ir.model.data']
+        user = self.env.user
+        event_id = self._context.get('event_id',False)
+        sel_line_id = self._context.get('history_id',False)
+        if event_id:
+            event = event_obj.sudo().browse(event_id)
+            int_line_obj = self.env['select.interpreter.line']
+            if sel_line_id:
+                sel_line = int_line_obj.sudo().browse(sel_line_id)
+                sel_line.sudo().write({'state': 'cancel'})
+                event.sudo().write({'event_follower_ids':[(3, sel_line.interpreter_id.user_id.id)],'assigned_interpreters':[(3,sel_line.interpreter_id.id)],
+                                                        'interpreter_ids2':[(3,sel_line.id)]}) 
+                new_event = self.env['event'].sudo().browse(event.id)
+                if new_event.multi_type and len(new_event.assigned_interpreters) >= int(new_event.multi_type):
+                    new_event.write({'state':'allocated'})
+                else:
+                    new_event.write({'state':'draft'})
+                for interpreter_line in event.interpreter_ids2:
+                    if interpreter_line.state != 'cancel':
+                        interpreter_line.cancel_appointment()
+#                    if interpreter_line.interpreter_id.user_id.id in event.event_follower_ids:
+#                        self.pool.get('event').write(cr ,SUPERUSER_ID , [event.id],{'event_follower_ids':[(4,interpreter_line.interpreter_id.user_id.id)]})
+                history_id = event.history_id
+                if history_id:
+                    for each_history in history_id:
+                        if each_history.name.id == sel_line.interpreter_id.id:
+                            each_history.sudo().write({'state':'cancel','cancel_date':time.strftime('%Y-%m-%d %H:%M:%S')})
+            else:
+                if 'interpreter_id' in self._context and self._context['interpreter_id']:
+                    event.sudo().write({'assigned_interpreters':[(3, self._context['interpreter_id'])]})
+                new_event = event_obj.sudo().browse(event.id)
+                if new_event.multi_type and len(new_event.assigned_interpreters) >= int(new_event.multi_type):
+                    new_event.write({'state':'allocated'})
+                else:
+                    new_event.write({'state':'draft'})
+                self=self.with_context(system_rejected=True)
+                for interpreter_line in event.interpreter_ids2:
+                    if interpreter_line.state != 'cancel':
+                        interpreter_line.cancel_appointment()
+                history_id = event.history_id
+                if history_id:
+                    for each_history in history_id:
+                        if 'interpreter_id' in self._context and self._context['interpreter_id']:
+                            if each_history.name.id == self._context['interpreter_id']:
+                                each_history.sudo().write({'state':'cancel','cancel_date':time.strftime('%Y-%m-%d %H:%M:%S')})
+                
+        res = mod_obj.get_object_reference('bista_iugroup', 'view_event_form')
+        res_id = res and res[1] or False,
+        res_int = mod_obj.get_object_reference('bista_iugroup', 'view_event_user_form')
+        res_int_id = res_int and res_int[1] or False,
+        return {
+            'name': _('Event'),
+            'view_type': 'form',
+            'view_mode': 'form',
+            'view_id': [res_id[0]] if user.user_type in ['staff','admin'] else [res_int_id[0]] ,
+            'res_model': 'event',
+            'type': 'ir.actions.act_window',
+            'nodestroy': True,
+            'target': 'current',
+            'res_id': event_id or False,
+        }
+
+    @api.model
+    def default_get(self, fields):
+        res = {}
+        res = super(warning , self).default_get(fields)
+        wiz_ids = self._context.get('active_ids', [])
+        if not wiz_ids or len(wiz_ids) != 1:
+            return res
+        wiz_id, = wiz_ids
+        event_id = self._context.get('event_id',False)
+        history_id = self._context.get('history_id',False)
+        if 'event_id' in fields:
+            res.update({'event_id':event_id})
+        if 'history_id' in fields:
+            res.update({'history_id':history_id})
+        return res

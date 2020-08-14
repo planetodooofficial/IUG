@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectRootManager" version="2" project-jdk-name="Python 2.7" project-jdk-type="Python SDK" />
+  <component name="SvnBranchConfigurationManager">
+    <option name="myConfigurationMap">
+      <map>
+        <entry key="$PROJECT_DIR$/..">
+          <value>
+            <SvnBranchConfiguration>
+              <option name="trunkUrl" value="https://planetodoo.svn.cloudforge.com/iug" />
+            </SvnBranchConfiguration>
+          </value>
+        </entry>
+        <entry key="$PROJECT_DIR$/../bista_iugroup">
+          <value>
+            <SvnBranchConfiguration>
+              <option name="trunkUrl" value="https://teckzilla.unfuddle.com/svn/teckzilla_iug/bista_iugroup" />
+            </SvnBranchConfiguration>
+          </value>
+        </entry>
+        <entry key="$PROJECT_DIR$">
+          <value>
+            <SvnBranchConfiguration>
+              <option name="trunkUrl" value="https://planetodoo.svn.cloudforge.com/iug/data_migration_tool_v10" />
+            </SvnBranchConfiguration>
+          </value>
+        </entry>
+        <entry key="$PROJECT_DIR$/../../../odoo_11.0.latest/odoo/Essential_Folder/essential_design">
+          <value>
+            <SvnBranchConfiguration>
+              <option name="trunkUrl" value="https://teckzilla.unfuddle.com/svn/teckzilla_teckzillaodoo11/essential_design" />
+            </SvnBranchConfiguration>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+</project>

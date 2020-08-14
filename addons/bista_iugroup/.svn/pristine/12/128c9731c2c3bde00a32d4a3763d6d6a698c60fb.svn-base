@@ -1,0 +1,285 @@
+<?xml version="1.0" ?>
+<odoo>
+    <data>
+        <menuitem id="menu_send_fax_form" sequence="16" name="Fax" groups="bista_iugroup.group_iu_fax"/>
+        <menuitem id="sub_menu_send_fax_form" sequence="1" name="Fax" parent="menu_send_fax_form"
+                  groups="bista_iugroup.group_iu_fax" />
+        <record id="view_status_form" model="ir.ui.view">
+            <field name="name">view.status.form</field>
+            <field name="model">status.description</field>
+            <field eval="8" name="priority"/>
+            <field name="arch" type="xml">
+                <form string="Status Description">
+                    <field name="name" string="Code"/>
+                    <field name="status" string="Description" />
+                    <field name="code_type" string="Error Type"/>
+                </form>
+             </field>
+        </record>
+
+        <record id="view_status_tree" model="ir.ui.view">
+            <field name="name">view.status.tree</field>
+            <field name="model">status.description</field>
+            <field eval="8" name="priority"/>
+            <field name="arch" type="xml">
+                <tree string="Status Description">
+                    <field name="name" string="Code"/>
+                    <field name="status" string="Description" />
+                    <field name="code_type" string="Error Type"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="action_status_description" model="ir.actions.act_window">
+            <field name="name">Status Description</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">status.description</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="target">current</field>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Click to Send Fax .
+                </p><p>
+                    Odoo helps you easily track all activities related to
+                    Fax.
+                </p>
+            </field>
+        </record>
+
+        <menuitem id="status_des" action="action_status_description" sequence="5" parent="sub_menu_send_fax_form" groups="bista_iugroup.group_iu_fax" />
+       <!-- Form For Fax sending-->
+        <record id="view_send_fax_form" model="ir.ui.view">
+            <field name="name">send.fax.form</field>
+            <field name="model">send.fax</field>
+            <field eval="8" name="priority"/>
+            <field name="arch" type="xml">
+                <form string="Fax Sending Form">
+                    <header>
+                        <button name="send_fax" string="Send Fax" type="object" class="oe_highlight" groups="bista_iugroup.group_iu_fax"/>
+                        <field name="state" widget="statusbar" statusbar_visible="draft,done"/>
+                    </header>
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="partner_id"  options="{'limit': 7, 'create': false, 'create_edit': false}"
+                                       attrs="{'invisible':[('manual_fax','=',False)],'required':[('manual_fax','=',True)]}"/>
+                                <field name="show_fax" attrs="{'required':[('manual_fax','=',False)]}" />
+                                <field name = 'existing'/>
+                            </group>
+                            <group>
+                                <field name="manual_fax" />
+                                <field name="fax" invisible="1"/>
+                                <separator/>
+                                <separator/>
+                                <field name="partner_attachment" attrs="{'invisible':[('existing','in',('event',False))],'required':[('existing','=','partner')]}"
+                                       options="{'limit': 7, 'create': false, 'create_edit': false}"/>
+                                <field name="event_attachment" attrs="{'invisible':[('existing','in',('partner',False))],'required':[('existing','=','event')]}"
+                                       options="{'limit': 7, 'create': false, 'create_edit': false}"/>
+                            </group>
+                        </group>
+                        <h3 class="oe_warning" attrs="{'invisible':[('manual_fax','=',True)]}">
+                            Note : - Enter Fax number with out special characters</h3>
+                        <separator string="Attachments" />
+                        <field name="send_attachment_ids" nolabel="1" colspan="4" attrs="{'readonly':[('state','=','done')]}">
+                            <tree string="Attachments" editable="top" >
+                                <field name="datas" filename="name"/>
+                                <field name="name" />
+                                <field name="document_type_id" options="{'limit': 7, 'create': false, 'create_edit': false}"/>
+                            </tree>
+                        </field>
+                        <separator string="Cover Note..." />
+                        <field name="fax_cover" placeholder="Enter Cover for Fax..." nolabel="1" colspan="4" widget="html"/>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="action_send_fax_form" model="ir.actions.act_window">
+            <field name="name">Fax OUT</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">send.fax</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Click to Send Fax .
+                </p><p>
+                    Odoo helps you easily track all activities related to
+                    Fax.
+                </p>
+            </field>
+        </record>
+
+        <menuitem id="send_fax_form" action="action_send_fax_form" sequence="2" parent="sub_menu_send_fax_form"
+                  groups="bista_iugroup.group_iu_fax" />
+        
+        <!-- Form For Fax sending-->
+        <record id="view_incoming_fax_tree" model="ir.ui.view">
+            <field name="name">incoming.fax.tree</field>
+            <field name="model">incoming.fax</field>
+            <field eval="8" name="priority"/>
+            <field name="arch" type="xml">
+                <tree string="Incoming Fax" create="false">
+                    <field name="date" select="1"/>
+                    <field name="pages" select="1"/>
+                    <field name="event_ids" widget="many2many_tags" domain="[('company_id','=',company_id2),('state','not in',('done','cancel','unbilled','invoiced')),('event_start_date','>=','2015-01-01')]" />
+                    <field name="partner_ids" widget="many2many_tags" domain="[('company_id','=',company_id2),('cust_type','!=','other')]"/>
+                    <field name="document_type_id" string="Document Action"/>
+                    <field name="state" string="status"/>
+                    <field name="attached" />
+                </tree>
+            </field>
+        </record>
+
+        <record id="view_incoming_fax_form" model="ir.ui.view">
+            <field name="name">incoming.fax.form</field>
+            <field name="model">incoming.fax</field>
+            <field eval="8" name="priority"/>
+            <field name="arch" type="xml">
+                <form string="Fax Sending Form"  create="false" >
+                    <header>
+                        <button string="Attach Documents" name="attach_documents" type="object" class="oe_highlight" groups="bista_iugroup.group_record_manager,bista_iugroup.group_iu_cust_service,bista_iugroup.group_iu_recruiter" />
+                        <button name="get_fax" string="Get Fax" type="object"/>
+                        <button name="fax_script" string="Run Script" type="object" groups="bista_iugroup.group_iu_admin"/>
+                        <field name="state" widget="statusbar" statusbar_visible="done"/>
+                    </header>
+                    <sheet>
+                        <group colspan="4" col="4">
+                            <group>
+                                <field name="company_id2" widget="selection" required="1"/>
+                                <field name="date" />
+                                <field name="attached" readonly="1"/>
+                                <field name="datas_rel" filename="datas_fname_rel" />
+                                <field name="datas_fname_rel" invisible="1"/>
+                                <field name="document_type_id" required="1" string="Document Action" />
+                            </group>
+                            <group>
+                                <field name="attach_to" required="1" />
+                                <field name="doc_type" string = "Document Type" attrs="{'required':[('attach_to','=','event')],'invisible':[('attach_to','=','partner')]}"/>
+                                <field name="event_ids" widget="many2many_tags" domain="[('company_id','=',company_id2)]"
+                                       attrs="{'invisible':[('attach_to','=','partner')]}" options="{'limit': 7, 'create': false, 'create_edit': false}"/>
+                                <field name="partner_ids" widget="many2many_tags" attrs="{'invisible':[('attach_to','=','event')]}" domain="[('company_id','=',company_id2),('cust_type','!=','other')]"
+                                       options="{'limit': 7, 'create': false, 'create_edit': false}"/>
+                            </group>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="view_fax_in_filter" model="ir.ui.view">
+        <field name="name">view.fax.in.filter</field>
+        <field name="model">incoming.fax</field>
+            <field name="arch" type="xml">
+                <search string="Incoming Fax">
+                    <field name="caller_id" string="Caller Id"/>
+                    <field name="fax_date" />
+                    <filter name="attached" string="Attached" icon="fa-file-o" domain="[('attached','=',1)]" help = "Document Attached"/>
+                    <filter name="unattached" string="Unattached" icon="fa-file-o" domain="[('attached','=',0)]" help = "Document Not Attached"/>
+                    <filter string="Done" domain="[('state','=','done')]" help="Done" icon="fa-user"/>
+                    <filter string="Close" domain="[('state','=','close')]" help="Close" icon="fa-user"/>
+                    <group expand="0" string="Group By...">
+                        <filter string="Date" icon="fa-calendar" domain="[]" context="{'group_by' : 'fax_date'}"/>
+                    </group>
+                </search>
+            </field>
+       </record>
+
+        <record id="action_incoming_fax_form" model="ir.actions.act_window">
+            <field name="name">Fax IN</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">incoming.fax</field>
+            <field name="search_view_id" ref="view_fax_in_filter"/>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Click to Send Fax .
+                </p><p>
+                    Odoo helps you easily track all activities related to
+                    Fax.
+                </p>
+            </field>
+        </record>
+
+        <menuitem id="incoming_fax_form" action="action_incoming_fax_form" sequence="1" parent="sub_menu_send_fax_form"
+                  groups="bista_iugroup.group_iu_fax" />
+
+        <!-- Form For Fax Outgoing History -->
+        <record id="view_outgoing_fax_tree" model="ir.ui.view">
+            <field name="name">outgoing.fax.tree</field>
+            <field name="model">outgoing.fax</field>
+            <field eval="8" name="priority"/>
+            <field name="arch" type="xml">
+                <tree string="Outgoing Fax" create="false" edit="false">
+                    <field name="name" invisible="1"/>
+                    <field name="partner_id" select="1"/>
+                    <field name="fax" select="1"/>
+                    <field name="date" select="1"/>
+                    <field name="sent_fax_status" select="1"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="view_outgoing_fax_form" model="ir.ui.view">
+            <field name="name">outgoing.fax.form</field>
+            <field name="model">outgoing.fax</field>
+            <field eval="8" name="priority"/>
+            <field name="arch" type="xml">
+                <form string="Sent Fax" create="false" edit="false">
+                    <header>
+                        <button name="get_status_out" type = "object" string = "Get Status"/>
+                    </header>
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="partner_id" />
+                                <field name="fax" />
+                            </group>
+                            <group>
+                                <field name="date" />
+                                <field name="stat_des"/>
+                            </group>
+                        </group>
+                        <field name="fax_cover" colspan="4" widget="html"/>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="view_fax_out_filter" model="ir.ui.view">
+        <field name="name">view.fax.out.filter</field>
+        <field name="model">outgoing.fax</field>
+        <field name="arch" type="xml">
+            <search string="Incoming Fax">
+               <field name="fax" string="Fax"/>
+               <field name="partner_id" string="Partner"/>
+               <group expand="0" string="Group By...">
+                    <filter string="Date" icon="fa-user" domain="[]" context="{'group_by' : 'fax_date'}" />
+               </group>
+            </search>
+        </field>
+       </record>
+
+        <record id="action_outgoing_fax_form" model="ir.actions.act_window">
+            <field name="name">Sent Fax</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">outgoing.fax</field>
+            <field name="search_view_id" ref="view_fax_out_filter"/>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Click to see Outgoing Fax .
+                </p><p>
+                    Odoo helps you easily track all activities related to
+                    Fax.
+                </p>
+            </field>
+        </record>
+
+        <menuitem id="outgoing_fax_form" action="action_outgoing_fax_form" sequence="4" parent="sub_menu_send_fax_form" groups="bista_iugroup.group_iu_fax" />
+    </data>
+</odoo>

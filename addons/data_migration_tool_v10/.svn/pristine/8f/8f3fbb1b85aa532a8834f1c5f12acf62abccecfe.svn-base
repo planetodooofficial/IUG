@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <record id="data_patchcode_wizard_form" model="ir.ui.view">
+            <field name="name">data.patchcode.wizard.form</field>
+            <field name="model">data.patchcode.wizard</field>
+            <field name="arch" type="xml">
+                <form string="Data Migration">
+                    <group>
+                        <field name="upload_file" />
+                    </group>
+                    <group>
+                        <field name="upload_error" filename="upload_error_file_name" readonly="1"/>
+                        <field name="upload_error_file_name" invisible="1"/>
+                    </group>
+                    <group string="Other Models">
+                        <button name="import_invoice" style="margin-bottom:10px;" string="Upload Invoice" type="object" class="btn btn-secondary"/>
+                        <button name="import_account_invoice_line" style="margin-bottom:10px;" string="Upload Invoice Line" type="object" class="btn btn-danger"/>
+                        <button name="import_billing_form" style="margin-bottom:10px;" string="Upload Billing Form" type="object" class="btn btn-warning"/>
+                        <button name="import_event_line" style="margin-bottom:10px;" string="Upload Event Line" type="object" class="btn btn-primary"/>
+                        <button name="import_ir_attachment" style="margin-bottom:10px;" string="Upload Ir Attachments" type="object" class="btn btn-primary"/>
+                    </group>
+                    <group string="Patch Code Data Upload" >
+                        <button name="map_event_inter_line" style="margin-bottom:10px;" string="MAP event and interpreter line" type="object" class="btn btn-danger"/>
+                        <button name="update_invoice" style="margin-bottom:10px;" string="Update Invoice and Journal" type="object" class="btn btn-primary"/>
+                        <button name="update_coa_invoice_line" style="margin-bottom:10px;" string="Update Invoice account_id" type="object" class="btn btn-primary"/>
+                        <button name="map_event_invoice" style="margin-bottom:10px;" string="MAP event and Invoices" type="object" class="btn btn-danger"/>
+                        <button name="update_invoice_id_in_event" style="margin-bottom:10px;" string="Upadte Event With Invoices" type="object" class="btn btn-danger"/>
+                        <button name="update_task_id_in_event" style="margin-bottom:10px;" string="Upadte Event With Task" type="object" class="btn btn-primary"/>
+                        <button name="update_related_company_in_contacts" style="margin-bottom:10px;" string="Upadte Contacts With parent_id" type="object" class="btn btn-primary"/>
+                    </group>
+                    <group string="Accounting Configurations">
+                        <button name="import_account" style="margin-bottom:10px;" string="Upload Account" type="object" class="btn btn-warning"/>
+                        <button name="import_account_period" style="margin-bottom:10px;" string="Upload Period" type="object" class="btn btn-primary"/>
+                        <button name="import_account_journal" style="margin-bottom:10px;" string="Upload Acc Journal" type="object" class="btn btn-danger"/>
+                        <button name="import_account_fiscalyear" style="margin-bottom:10px;" string="Upload Fiscal year" type="object" class="btn btn-info"/>
+                    </group>
+                    <group string="Custom Journal Entries">
+                        <button name="import_account_move" style="margin-bottom:10px;" string="Upload Account Move" type="object" class="btn btn-warning"/>
+                        <button name="import_account_move_line" style="margin-bottom:10px;" string="Upload Account Move Line" type="object" class="btn btn-primary"/>
+                        <button name="map_event_translator_line" style="margin-bottom:10px;" string="MAP event and translator line" type="object" class="btn btn-danger"/>
+                        <button name="map_event_assigned_interpreters" style="margin-bottom:10px;" string="MAP event and assigned interpreters" type="object" class="btn btn-danger"/>
+                    </group>
+                    <group string="Updates In Event">
+                        <button name="update_name_schedular_id" style="margin-bottom:10px;" string="Update Name/Scheduler in event" type="object" class="btn btn-warning"/>
+                        <button name="import_appointment_type_group" style="margin-bottom:10px;" string="Upload Appointment type group" type="object" class="btn btn-danger"/>
+                        <button name="import_appointment_type" style="margin-bottom:10px;" string="Upload Appointment type" type="object" class="btn btn-primary"/>
+                        <button name="import_iug_project" style="margin-bottom:10px;" string="Upload IUG Project" type="object" class="btn btn-info"/>
+                        <button name="update_project_event" style="margin-bottom:10px;" string="Update project in event" type="object" class="btn btn-secondary"/>
+                    </group>
+                    <group string="Updates in Invoice">
+                        <button name="update_project_invoice" style="margin-bottom:10px;" string="Update project invoice" type="object" class="btn btn-info"/>
+                    </group>
+                    <group string="New updates">
+                        <button name="import_incoming_fax" style="margin-bottom:10px;" string="Import Incoming Fax" type="object" class="btn btn-info"/>
+                        <button name="update_events_ids_in_fax_in" style="margin-bottom:10px;" string="Update Events_ids in Incoming Fax" type="object" class="btn btn-info"/>
+                        <button name="update_partner_id_in_rate" style="margin-bottom:10px;" string="Update Partner_id in Rate" type="object" class="btn btn-info"/>
+                        <button name="import_assign_translator_history" style="margin-bottom:10px;" string="Import Assign translator History" type="object" class="btn btn-info"/>
+                        <button name="map_journal_for_invoices" style="margin-bottom:10px;" string="Map Journal for Invoices" type="object" class="btn btn-info"/>
+                        <button name="map_journal_for_payments" style="margin-bottom:10px;" string="Map Journal for Payments" type="object" class="btn btn-info"/>
+                    </group>
+                    <footer>
+                        <button string="Cancel" class="oe_highlight" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+        <act_window id="data_patchcode_wizard_action"
+                    name="Data Patch Code Wizard"
+                    src_model="sale.order"
+                    res_model="data.patchcode.wizard"
+                    view_type="form" view_mode="form"
+                    key2="client_action_multi" target="new"/>
+
+        <menuitem id="data_patchcode_wizard_menu" action="data_patchcode_wizard_action" name="Data Patch Code Wizard"
+                  parent="migration_tool_base_menu" sequence="5"/>
+    </data>
+</odoo>

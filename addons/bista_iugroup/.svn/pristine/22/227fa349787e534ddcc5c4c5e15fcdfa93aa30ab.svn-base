@@ -1,0 +1,28 @@
+<?xml version ="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="view_update_invoice" model="ir.ui.view">
+            <field name="name">Update.Invoice.Form</field>
+            <field name="model">update.invoice</field>
+            <field name="type">form</field>
+            <field name="arch" type="xml">
+                <form string="Update Invoices">
+                    <footer>
+                        <button name="mark_as_printed" string="Mark as Printed" type="object" class="oe_highlight"/>
+                        <button name="validate_invoices" string="Validate Invoices" type="object" class="oe_highlight" groups="bista_iugroup.group_iu_admin"/>
+                        <button name="reset_to_draft" string="Reset to draft" type="object" class="oe_highlight" groups="bista_iugroup.group_iu_admin"/>
+                        or
+                        <button string="Cancel" class="oe_link" special="cancel" />
+                    </footer>
+                </form>
+            </field>
+        </record>
+        <act_window name="Mark invoices as Printed"
+            res_model="update.invoice"
+            src_model="account.invoice"
+            view_mode="form"
+            target="new"
+            key2="client_action_multi"
+            id="action_view_update_invoice"/>
+    </data>
+</odoo>

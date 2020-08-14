@@ -1,0 +1,703 @@
+# -*- coding: utf-8 -*-
+##############################################################################
+#
+#    OpenERP, Open Source Business Applications
+#    Copyright (C) 2004-2012 OpenERP S.A. (<http://openerp.com>).
+#
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU Affero General Public License as
+#    published by the Free Software Foundation, either version 3 of the
+#    License, or (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU Affero General Public License for more details.
+#
+#    You should have received a copy of the GNU Affero General Public License
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+##############################################################################
+import time
+from odoo import models, fields,_,api
+from odoo.tools import DEFAULT_SERVER_DATE_FORMAT, DEFAULT_SERVER_DATETIME_FORMAT
+from odoo import SUPERUSER_ID, tools
+from odoo.exceptions import UserError
+
+class api_keys(models.Model):
+    _name = "api.keys"
+
+    name=fields.Char('Key')
+    email=fields.Char('Registered Email')
+    used=fields.Integer('Requests Made')
+    active_run=fields.Boolean('Active')
+
+class server_config(models.Model):
+    _name = "server.config"
+
+    name=fields.Char('Server Name', size=64, required=True)
+    host=fields.Char('Host', size=32, required=True)
+    port=fields.Char('Port', size=32, required=True)
+    dbname=fields.Char('Database Name', size=32, required=True)
+    username=fields.Char('Username', size=32, required=True)
+    password=fields.Char('Password', size=32, required=True)
+    active=fields.Boolean('Active')
+
+class address_type(models.Model):
+    _name = 'address.type'
+    _description = 'Address Type'
+
+    name=fields.Char("Name", size=128 ,required=True ,index=True)
+    address_type_id=fields.Integer("IU Address Type ID", invisible=True)
+    company_id=fields.Many2one('res.company', 'Company', index=True,default=lambda self: self.env['res.company']._company_default_get('address.type'))
+
+class referral_type(models.Model):
+    _description = 'Record Different Refferal Types'
+    _name = "referral.type"
+
+    name=fields.Char("Group Name", size=64 ,required=True ,index=True)
+    referral_type_id=fields.Integer("IU Referral Type ID", invisible=True)
+    company_id=fields.Many2one('res.company', 'Company', index=True,default=lambda self: self.env['res.company']._company_default_get('referral.type'))
+
+class resource_resource(models.Model):
+    _inherit='resource.resource'
+
+    vendor_id=fields.Integer("IU Vender Id", invisible=True)
+
+
+class project(models.Model):
+    _name='project'
+
+    name=fields.Char('Name', size=256 ,required=True)
+    company_id=fields.Many2one('res.company', 'Company',default=lambda self: self.env['res.company']._company_default_get('project'))
+    partner_proj_ids=fields.Many2many('res.partner', 'partner_project_group_rel', 'partner_id', 'project_id','Partners')
+
+    @api.model
+    def create(self,vals):
+        if 'default_order_partner_id' in self._context:
+            ordering_partner = self._context.get('default_order_partner_id')
+            for row in vals.get('partner_proj_ids'):
+                if ordering_partner not in row:
+                    vals['partner_proj_ids'] = [(4, ordering_partner)]
+        # proj_srch = self.search([('name', '=', vals.get('name'))])
+        # if proj_srch:
+        #     raise UserError(_('Similar project name already exists.'))
+        res = super(project, self).create(vals)
+        return res
+
+    @api.multi
+    def write(self,vals):
+        if 'default_order_partner_id' in self._context:
+            order_partner = self._context.get('default_order_partner_id')
+            for row in vals.get('partner_proj_ids', []):
+                if order_partner not in row:
+                    vals['partner_proj_ids'] = [(4, order_partner)]
+        res = super(project, self).write(vals)
+        return res
+
+    @api.model
+    def name_search(self, name, args=None, operator='ilike', limit=100):
+        res = super(project, self).name_search(name, args, operator, limit)
+        if not args:
+            args = []
+        partner_cont_type = self.env.user.user_type
+        if partner_cont_type == 'contact' and self._context.get('default_order_partner_id'):
+            ids = self.search([('name', operator, name),
+                                         ('partner_proj_ids', '=', self._context['default_order_partner_id'])] + args,limit=limit)
+            return ids.name_get()
+        return res
+
+
+class customer_group(models.Model):
+    _description = 'Customer Group'
+    _name = "customer.group"
+
+    name=fields.Char("Group Name", size=64 ,required=True ,index=True)
+
+
+class language_group(models.Model):
+    _description = 'Record Different Language Group for Languages'
+    _name = "language.group"
+
+    name=fields.Char("Group Name", size=64 ,required=True ,index=True)
+    lang_group_id=fields.Integer("IU Lang Group ID", invisible=True)
+    company_id=fields.Many2one('res.company', 'Company', index=True,default=lambda self: self.env['res.company']._company_default_get('language.group'))
+
+
+class language(models.Model):
+    _description = 'Record Different Languages'
+    _name = "language"
+
+    @api.model
+    def default_get(self,fields):
+        ''' This function auto fill company_id related to interpreter '''
+        res = super(language, self).default_get(fields)
+        if self._context.get('company_id',False):
+            if 'company_id' in fields:
+                res.update({'company_id': self._context.get('company_id',False)})
+        return res
+
+    name=fields.Char("Name", size=64 ,required=True ,index=True)
+    lang_group=fields.Selection([('spanish_regular','Spanish Regular'),('spanish_licenced','Spanish Licenced'),
+                        ('spanish_certified','Spanish Certified'),('exotic_regular','Exotic Regular'),
+                        ('exotic_certified','Exotic Certified'),('exotic_middle','Exotic Middle'),
+                        ('exotic_high','Exotic High')],'Language Group')
+    is_certified_lang=fields.Boolean("Is Certified Lang")
+    language_code=fields.Char("Language Code", size=64)
+    language_id=fields.Integer("IU Language ID", invisible=True)
+    iscourt_certified_lang=fields.Boolean("Is Court Certified Lang")
+    company_id=fields.Many2one('res.company', 'Company', index=1,default=lambda self: self.env['res.company']._company_default_get('language'))
+    active_custom=fields.Boolean("Active")
+
+    @api.multi
+    def name_get(self):
+        res = []
+        for record in self:
+            name = record.name
+            if record.lang_group:
+                name = "%s [%s]" % (name, record.lang_group)
+#            if context.get('show_group') and record.lang_group:
+#                name = "%s [%s]" % (name, record.lang_group)
+            res.append((record.id, name))
+        return res
+    
+class interpreter_language(models.Model):
+    _description = 'Interpreter Language'
+    _name = "interpreter.language"
+    
+
+    name=fields.Many2one("language",'Language' , required="1")
+    sort_order=fields.Integer("Sort Order")
+    is_simultaneous=fields.Boolean("Is Simultaneous")
+    specialization=fields.Char("Specialization", size=64)
+    certification_code=fields.Char("Certification Code", size=40)
+    certification_level_id=fields.Many2one('certification.level',"Certification Level Id")
+    interpreter_id=fields.Many2one("res.partner","Interpreter Id",)
+    company_id= fields.Many2one(related='interpreter_id.company_id',store=True, string="Event State",readonly=True,)
+
+    
+class translator_language(models.Model):
+    _description = 'Translator Language'
+    _name = "translator.language"
+
+    name=fields.Many2one("language",'From Language')
+    to_lang_id=fields.Many2one("language",'To Language')
+    view_order=fields.Integer("View Order")
+    certification_id=fields.Many2one('translator.certification','Translator Certification')
+    do_poofing=fields.Boolean("Do Poofing")
+    amount_poofing_per_word=fields.Float("Amount Poofing Per Word")
+    max_amount_per_word=fields.Float("Max Amount Per Word")
+    min_amount_per_word=fields.Float("Min Amount Per Word")
+    translation_language_id=fields.Integer("IU Translation language Id", invisible=True)
+    translator_id=fields.Many2one("res.partner","Translator Id", domain=[('cust_type','in',('translator','interp_and_transl'))])
+    company_id=fields.Many2one(related='translator_id.company_id', store=True, string="Event State",readonly=True,)
+
+    # @api.multi
+    # def _check_language(self):
+    #     ''' validates From and To Language for Translator '''
+    #     for cur_obj in self:
+    #         if cur_obj.name and cur_obj.to_lang_id:
+    #             if cur_obj.name.id == cur_obj.to_lang_id.id:
+    #                 raise UserError('From and To Language can not be same .')
+    #     return True
+    #
+    # _constraints = [(_check_language, 'From and To Language can not be same.', [])
+    #                 ]
+
+class rate(models.Model):
+    _description = 'Record Different Rates for Interpreter'
+    _name = "rate"
+
+    name=fields.Char("Name", size=70 ,index=True,default='rate')
+    is_billing_rate=fields.Boolean("Is Billing Rate")
+    uom_id=fields.Many2one('product.uom',"UOM")
+    default_rate=fields.Float("Default Rate")
+    spanish_regular=fields.Float("Spanish Regular")
+    spanish_licenced=fields.Float("Spanish Licenced")
+    spanish_certified=fields.Float("Spanish Certified")
+    exotic_regular=fields.Float("Exotic Regular")
+    exotic_certified=fields.Float("Exotic Certified")
+    exotic_middle=fields.Float("Exotic Middle")
+    exotic_high=fields.Float("Exotic High")
+    rate_id=fields.Integer("IU Rate ID", invisible=True)
+    partner_id = fields.Many2one('res.partner', 'Customer')
+    company_id=fields.Many2one(related='partner_id.company_id', store=True, string="Company" ,default=lambda self: self.env['res.company']._company_default_get('rate'))
+    base_hour=fields.Selection([('1hour','1 Hour'),('2hour','2 Hour'),('3hour','3 Hour'),('1min','1 Min')],'Normal Base Hour')
+    inc_min=fields.Selection([('15min','15 Min'),('30min','30 Min'),('1min','1 Min')],'Normal Inc Min')
+    rate_type=fields.Selection([('normal','Legal'),('medical','Medical'),('deposition','Depositions'),('conf_call','Conf Call'),('travel','Travel'),('other','Other')],"Rate Type",
+                                  required=True)
+
+    @api.multi
+    def _check_rates(self):
+        ''' validates rates for negative values '''
+        for rate in self:
+            if rate.default_rate < 0.0:
+                raise UserError('Default Rate Can not be less than zero !')
+            elif rate.spanish_regular < 0.0:
+                raise UserError('Spanish Regular Rate Can not be less than zero !')
+            elif rate.spanish_licenced < 0.0:
+                raise UserError('Spanish Licenced Rate Can not be less than zero !')
+            elif rate.spanish_certified < 0.0:
+                raise UserError('Spanish Certified Rate Can not be less than zero !')
+            elif rate.exotic_regular < 0.0:
+                raise UserError('Exotic Regular Rate Can not be less than zero !')
+            elif rate.exotic_certified < 0.0:
+                raise UserError('Exotic Certified Rate Can not be less than zero !')
+            elif rate.exotic_middle < 0.0:
+                raise UserError('Exotic Middle Rate Can not be less than zero !')
+            elif rate.exotic_high < 0.0:
+                raise UserError('Exotic High Rate Can not be less than zero !')
+        return True
+
+    @api.multi
+    def _check_base_hr_min(self):
+        for rate in self:
+            if rate.rate_type != 'conf_call' and (rate.base_hour == '1min' or rate.inc_min == '1min'):
+                raise UserError('Base Hour or Increment Minutes cannot be 1 Min!')
+        return True
+
+    _constraints = [(_check_rates, '', []),
+                    (_check_base_hr_min, '', [])
+                    ]
+
+    _sql_constraints = [
+        ('rate_type_partner_id_uniq', 'unique(partner_id,rate_type)', 'You Can not enter multiple rates for same rate type !')
+        ]
+        
+class transporter_rate(models.Model):
+    _description = 'Record Different Rates for Transporters'
+    _name = "transporter.rate"
+
+    name=fields.Char("ST", size=70 ,index=True,default='/')
+    date=fields.Date('Date',default=time.strftime(DEFAULT_SERVER_DATE_FORMAT))
+    type=fields.Selection([('ambulatory','Ambulatory'),('wheelchair','Wheelchair'),('stretcher','Stretcher')],"Type", required=True)
+    rate=fields.Float("Rate/Mile $")
+    min_round_trip=fields.Float("Min Round Trip $")
+    equiv_min_miles=fields.Float("Equiv. Min Miles")
+    no_show=fields.Float("No Show $")
+    wait_time=fields.Float("Wait Time $")
+    pickup_fee=fields.Float("Pickup Fee $")
+    gratuity=fields.Float("Deduction %")
+    cancel_fee=fields.Float("Cancel Fee $")
+    after_hours=fields.Float("After Hours $")
+    comment=fields.Char("Comments", size=100)
+    transporter_id=fields.Many2one('res.partner','Transporter',required=True)
+    company_id=fields.Many2one(related='transporter_id.company_id', store=True, string="Event State" ,readonly=True,)
+
+    @api.multi
+    def _check_rates(self):
+        ''' validates rates for negative values '''
+        for rate in self:
+            if rate.rate < 0.0:
+                raise UserError('Rate/Miles Can not be less than zero !')
+            elif rate.min_round_trip < 0.0:
+                raise UserError('Min Round Trip Rate Can not be less than zero !')
+            elif rate.equiv_min_miles < 0.0:
+                raise UserError('Equiv Min Miles Can not be less than zero !')
+            elif rate.no_show < 0.0:
+                raise UserError('No Show Rate Can not be less than zero !')
+            elif rate.wait_time < 0.0:
+                raise UserError('Wait Time Rate Can not be less than zero !')
+            elif rate.pickup_fee < 0.0:
+                raise UserError('Pickup Fee Rate Can not be less than zero !')
+            elif rate.gratuity < 0.0:
+                raise UserError('Deduction Can not be less than zero !')
+            elif rate.cancel_fee < 0.0:
+                raise UserError('Cancel Fee Rate Can not be less than zero !')
+            elif rate.after_hours < 0.0:
+                raise UserError('After Hours Rate Can not be less than zero !')
+            if rate.gratuity > 100:
+                raise UserError('Deduction % Can not be greater than 100 % !')
+        return True
+
+    _constraints = [(_check_rates, '', ['rate']),
+                    ]
+    
+    _sql_constraints = [
+        ('transporter_rate_type_uniq','unique (transporter_id,type)', 'Rate Defined for Transporter, Should be unique.'),
+    ]
+
+class interpreter_rate(models.Model):
+    _description = 'Record Different Rates for Interpreter'
+    _name = "interpreter.rate"
+
+    name=fields.Char("Interpreter Rate", size=70 ,index=True,default='/')
+    rate_id=fields.Many2one('rate',"Rate Id")
+    interpreter_id=fields.Many2one('res.partner',"Interpreter Id")
+    default_rate= fields.Float("Default Rate")
+    spanish_regular=fields.Float("Spanish Regular")
+    spanish_licenced=fields.Float("Spanish Licenced")
+    spanish_certified=fields.Float("Spanish Certified")
+    exotic_regular=fields.Float("Exotic Regular")
+    exotic_certified=fields.Float("Exotic Certified")
+    exotic_middle=fields.Float("Exotic Middle")
+    exotic_high=fields.Float("Exotic High")
+    interpreter_rate_id=fields.Integer("IU Interpreter Rate ID", invisible=True)
+    company_id=fields.Many2one(related='interpreter_id.company_id',store=True, string="Event State" ,
+                 readonly=True,)
+
+
+class distribution(models.Model):
+    _description = 'Distributions for interpreters'
+    _name = "distribution"
+
+    name=fields.Char("Name", size=64 ,required=True ,index=True)
+    distribution_id=fields.Boolean("IU Distribution ID", invisible=True)
+    company_id=fields.Many2one('res.company', 'Company', index=True,default=lambda self: self.env['res.company']._company_default_get('distribution'))
+
+
+class software(models.Model):
+    _description = 'Record Different softwares'
+    _name = "software"
+
+    name=fields.Char("Name", size=70 ,required=True ,index=True)
+    software_id=fields.Integer("IU Software Id", invisible=True)
+    company_id=fields.Many2one('res.company', 'Company', index=1,default=lambda self: self.env['res.company']._company_default_get('software'))
+
+class affiliation(models.Model):
+    _description = 'Record Different Affiliation for Vendor'
+    _name = "affiliation"
+
+    name=fields.Char("Name", size=64 ,required=True ,index=True)
+    affiliation_id=fields.Integer("IU Affiliation Id", invisible=True)
+    company_id=fields.Many2one('res.company', 'Company', index=1,default=lambda self: self.env['res.company']._company_default_get('affiliation'))
+
+class translator_certification(models.Model):
+    ''' Record for certification '''
+    _description = 'Translator Certification'
+    _name = "translator.certification"
+
+    name=fields.Char("Name", size=64 ,required=True ,index=True)
+    translator_certification_id=fields.Integer("IU Translator Certification Id", invisible=True)
+    company_id=fields.Many2one('res.company', 'Company', index=1,default=lambda self: self.env['res.company']._company_default_get('translator.certification'))
+
+class cancelled_event(models.Model):
+    _description = 'Record Different Reasonf of event Cancelation'
+    _name = "cancelled.event"
+
+    name=fields.Char("Name", size=100 ,required=True ,index=True)
+    cancelled_event_id=fields.Integer("IU Cancelled Event Id", invisible=True)
+    company_id=fields.Many2one('res.company', 'Company', index=1,default=lambda self: self.env['res.company']._company_default_get('cancelled.event'))
+
+class subject_for_vendor(models.Model):
+    _description = 'Record Different subject For Vendor'
+    _name = "subject.for.vendor"
+
+    name=fields.Char("Name", size=100 ,required=True ,index=True)
+    subject_for_vendor_id=fields.Integer("IU Subject For Vendor Id", invisible=True)
+    company_id=fields.Many2one('res.company', 'Company', index=1,default=lambda self: self.env['res.company']._company_default_get('subject.for.vendor'))
+
+class rating(models.Model):
+    _description = 'Record Different Rating for interpreter'
+    _name = "rating"
+
+    name=fields.Char("Name", size=64 ,required=True ,index=True)
+    rating_id=fields.Integer("IU Rating Id", invisible=True)
+    company_id=fields.Many2one('res.company', 'Company', index=1,default=lambda self: self.env['res.company']._company_default_get('rating'))
+
+
+class zip_time_zone(models.Model):
+    _description = 'Record all zip codes for all states with the timezone'
+    _name = "zip.time.zone"
+
+    name=fields.Char("Zip Code", size=64 ,required=True ,index=True)
+    city=fields.Char("City", size=64, index=True)
+    state_code=fields.Char("State Code", size=16, index=True)
+    state_id=fields.Many2one("res.country.state", 'State', index=True)
+    time_zone=fields.Char("Time Zone" , size=32)
+    time_zone_code=fields.Char("Time Zone Code" , size=10)
+    latitude=fields.Float("Latitude",digits = (16,6))
+    longitude=fields.Float("Longitude", digits = (16,6))
+
+
+class zip_code(models.Model):
+    _description = 'Record Different Zip Codes  for vendor'
+    _name = "zip.code"
+
+    name=fields.Char("Zip Code", size=64 ,required=True ,index=True)
+    city=fields.Char("City", size=64, index=True)
+    state_id=fields.Many2one("res.country.state", 'State', index=True)
+    time_zone=fields.Char("Time Zone" , size=32)
+    latitude=fields.Float("Latitude",digits = (16,6))
+    longitude=fields.Float("Longitude", digits = (16,6))
+    latitude_rad=fields.Float("Latitude Rad", digits = (16,6))
+    longtitude_rad=fields.Float("Longtitude Rad",digits = (16,6) )
+    zip_code_id=fields.Integer("IU Zip Code Id" , size=32, invisible=True)
+    company_id=fields.Many2one('res.company', 'Company', index=1,default=lambda self: self.env['res.company']._company_default_get('zip.code'))
+
+    @api.onchange('state_id')
+    def onchange_state(self):
+        if self.state_id:
+            self.country_id = self.state_id.country_id.id
+        else:
+            self.country_id = False
+
+class meta_zone(models.Model):
+    _name='meta.zone'
+
+
+    @api.model
+    def default_get(self, fields):
+        ''' This function auto fill company_id related to Patient Or Doctor in location'''
+        res = super(meta_zone, self).default_get(fields)
+        if self._context.get('company_id', False):
+            if 'company_id' in fields:
+                res.update({'company_id': self._context.get('company_id', False)})
+        return res
+
+
+    name=fields.Char("Name", size=64 ,required=True ,index=True)
+    meta_zone_id=fields.Integer("IU Meta Zone Id", invisible=True)
+    zone_lines=fields.One2many('zone','meta_zone_id', 'Zone', )
+    company_id=fields.Many2one('res.company', 'Company', index=1,default=lambda self: self.env['res.company']._company_default_get('meta.zone'))
+
+    
+class zone(models.Model):
+    _description = 'Record Different Zones'
+    _name = "zone"
+
+    name=fields.Char("Name", size=64 ,required=True ,index=True)
+    meta_zone_id=fields.Many2one('meta.zone',"Meta Zone Id",  index=True)
+    zone_id=fields.Integer("IU Zone Id", invisible=True)
+    zip_code_ids=fields.Many2many('zip.code','zipcode_to_zone_rel','zone_id','zip_code_id','Zip Codes')
+    company_id=fields.Many2one('res.company', 'Company', index=1,default=lambda self: self.env['res.company']._company_default_get('zone'))
+
+    _sql_constraints = [
+        ('zone_company_id_uniq', 'unique (name, company_id)', 'This Zone Already Exist for this company!')
+    ]
+
+    @api.onchange
+    def onchange_company_id(self):
+        ''' Empty some fields on change of company in the Zone Form '''
+        self.zip_code_ids = False
+
+# class zipcode_to_zone_rel(models.Model):
+#     _description = 'Many2many Relation , Added company_id field'
+#     _name = "zipcode.to.zone.rel"
+#
+#     zone_id=fields.Many2one('zone', 'Zone')
+#     zip_code_id=fields.Many2one('zip.code', 'Zip Code')
+#     company_id=fields.Many2one(related='zone_id.company_id', store=True, string="Company" ,
+#              readonly=True,)
+#
+#     _sql_constraints = [
+#         ('zone_id_zip_code_id_company_id_uniq', 'unique (zone_id,zip_code_id,company_id)', 'The Zone  and Zip Code must be unique per company !')
+#     ]
+
+class zipcode_to_zone_rel_dummy(models.Model):
+    _description = 'Many2many Relation , Added company_id field'
+    _name = "zipcode.to.zone.rel.dummy"
+
+    zone_id=fields.Many2one('zone', 'Zone')
+    zip_code_id=fields.Many2one('zip.code', 'Zip Code')
+    company_id=fields.Many2one(related='zone_id.company_id', store=True, string="Company" ,readonly=True,)
+
+    _sql_constraints = [
+        ('zone_id_zip_code_id_company_id_uniq_dummy', 'unique (zone_id,zip_code_id,company_id)', 'The Zone  and Zip Code must be unique per company !')
+    ]
+
+class phone_type(models.Model):
+    _description = 'Record Different Phone Type'
+    _name = "phone.type"
+
+    name=fields.Char("Name", size=64 ,required=True ,index=True)
+    phone_type_id=fields.Integer("IU Phone Type Id", invisible=True)
+    company_id=fields.Many2one('res.company', 'Company', index=1,default=lambda self: self.env['res.company']._company_default_get('phone.type'))
+
+    
+class default_country(models.Model):
+    '''Default Country For Contact to convert phone  no according to the default country selected'''
+    _name = "default.country"
+
+    name=fields.Many2one("res.country","Country" , required=True)
+
+
+class credit_card_type(models.Model):
+    _description = 'Credit Card Type for Credit Card'
+    _name = "credit.card.type"
+
+    name=fields.Char("Credit Card", size=64, required=True)
+    label=fields.Char('Label' , size = 32)
+    credit_card_type_id=fields.Integer('IU Credit Card Type Id', invisible=True)
+    company_id=fields.Many2one('res.company', 'Company', index=1,default=lambda self: self.env['res.company']._company_default_get('credit.card.type'))
+
+class credit_card(models.Model):
+    _description = 'Credit Card for customer'
+    _name = "credit.card"
+
+    name=fields.Char("Name On Card", size=64)
+    credit_card_no=fields.Char('Credit Card No', size= 32)
+    expiration_date=fields.Date("Expiration date")
+    bill_no=fields.Char("Bill Nos", size=32)
+    bill_zip_code=fields.Char('Bill ZipCode', size=32)
+    active=fields.Boolean('Active')
+    extra_digits=fields.Char('Extra Digits', size=32)
+    customer_code=fields.Char('Customer Code', size=32)
+    credit_card_type_id=fields.Many2one('credit.card.type',"Credit Card Type", required=True)
+    credit_card_id=fields.Integer("IU Credit Card ID", invisible=True )
+    customer_id=fields.Many2one("res.partner","Customer Id",)
+    company_id=fields.Many2one('res.company', 'Company', index=1,default=lambda self: self.env['res.company']._company_default_get('credit.card'))
+
+class customer_type(models.Model):
+    _description = 'Customer Type for customer'
+    _name = "customer.type"
+
+    name=fields.Char("Customer Type", size=32)
+    company_id=fields.Many2one('res.company', 'Company', index=1,default=lambda self: self.env['res.company']._company_default_get('customer.type'))
+
+class fee_note_status(models.Model):
+    ''' Record for Fee Note_Status for Event'''
+    _name = "fee.note.status"
+
+    name=fields.Char("Name", size=64 ,required=True ,index=True)
+    fee_note_status_id=fields.Integer("Fee Note Status ID")
+    company_id=fields.Many2one('res.company', 'Company', index=1,default=lambda self: self.env['res.company']._company_default_get('fee.note.status'))
+
+
+class claimant_confirm_status(models.Model):
+    ''' Record for Cancel Claimant Confirm Status for Event'''
+    _name = "claimant.confirm.status"
+
+    name=fields.Char("Name", size=64 ,required=True ,index=True)
+    claimant_confirm_status_id=fields.Integer("Claimant Confirm Status ID")
+    company_id=fields.Many2one('res.company', 'Company', index=1,default=lambda self: self.env['res.company']._company_default_get('claimant.confirm.status'))
+
+
+
+class location_confirm_status(models.Model):
+    ''' Record for Cancel Location Confirm Status for Event'''
+    _name = "location.confirm.status"
+
+    name=fields.Char("Name", size=64 ,required=True ,index=True)
+    location_confirm_status_id=fields.Integer("Location Confirm Status ID")
+    company_id=fields.Many2one('res.company', 'Company', index=1,default=lambda self: self.env['res.company']._company_default_get('location.confirm.status'))
+
+class appointment_type_group(models.Model):
+    ''' Record for Cancel Appointment Type Group for Event'''
+    _name = "appointment.type.group"
+
+    name=fields.Char("Name", size=64 ,required=True)
+    appointment_type_group_id=fields.Integer("Appointment Type Group ID")
+    company_id=fields.Many2one('res.company', 'Company', index=1,default=lambda self: self.env['res.company']._company_default_get('appointment.type.group'))
+
+
+class appointment_type(models.Model):
+    ''' Record for Cancel Appointment Type for Event'''
+    _name = "appointment.type"
+
+    name=fields.Char("Name", size=64 ,required=True)
+    appointment_type_group_id=fields.Many2one('appointment.type.group',"Appointment Type Group ID")
+    appointment_type_id=fields.Integer("Appointment Type ID")
+    is_medical_legal=fields.Boolean("Is Medical Legal")
+    company_id=fields.Many2one('res.company', 'Company', index=1,default=lambda self: self.env['res.company']._company_default_get('appointment.type'))
+
+class cancel_reason(models.Model):
+    ''' Record for Cancel Reason for Event'''
+    _name = "cancel.reason"
+
+    name=fields.Char("Name", size=64 ,required=True ,index=True)
+    do_active=fields.Boolean('Active')
+    cancel_reason_id=fields.Integer("Cancel Reason ID")
+    company_id=fields.Many2one('res.company', 'Company', index=1,default=lambda self: self.env['res.company']._company_default_get('cancel.reason'))
+
+    
+    @api.model
+    def create(self,vals):
+        res = super(cancel_reason,self).create(vals)
+        if self._uid != SUPERUSER_ID:
+            raise UserError('Only admin has the access to create new cancel-reason')
+        else:
+            return res
+
+    @api.multi
+    def write(self,vals):
+        res = super(cancel_reason,self).write(vals)
+        if self._uid != SUPERUSER_ID:
+            raise UserError('Only admin has the access to edit cancel-reason')
+        else:
+            return res
+
+    @api.multi
+    def unlink(self):
+        res = super(cancel_reason,self).unlink()
+        if self._uid != SUPERUSER_ID:
+            raise UserError('Only admin has the access to delete cancel-reason')
+        else:
+            return res
+
+class certification_level(models.Model):
+    ''' Record for certification of certification level '''
+    _description = 'Certification Level'
+    _name = "certification.level"
+
+    name=fields.Char("Name", size=64 ,required=True ,index=True)
+    is_required_certification=fields.Boolean("Is Required Certification")
+    certification_level_id=fields.Integer("IU Certification Level ID", invisible=True)
+    active=fields.Boolean("Active")
+    company_id=fields.Many2one('res.company', 'Company', index=1,default=lambda self: self.env['res.company']._company_default_get('certification.level'))
+
+
+class vendor_type(models.Model):
+    _description = 'Vendor Type for interpreters, transporters and translators'
+    _name = "vendor.type"
+
+    name=fields.Char("Name", size=64 ,required=True ,index=True)
+    vendor_type_id=fields.Integer("IU Vendor Type ID", invisible=True)
+    company_id=fields.Many2one('res.company', 'Company', index=1,default=lambda self: self.env['res.company']._company_default_get('vendor.type'))
+
+
+class interpreter_service_provider(models.Model):
+    _name='interpreter.service.provider'
+
+    name=fields.Char('Id')
+    company_id=fields.Many2one('res.company','Company')
+    type=fields.Selection([('both','Both')],"Type")
+    dba=fields.Char('DBA')
+    first_name=fields.Char('Name')
+    middle_name=fields.Char('Middle Name')
+    last_name=fields.Char('Last Name')
+    gender=fields.Selection([('male','Male'),('female','Female')],'Gender')
+    street=fields.Char('Street', size=128)
+    street2=fields.Char('Street2', size=128)
+    zip=fields.Char('Zip',  size=24)
+    city1=fields.Char('City', size=128)
+    state_id=fields.Many2one("res.country.state", 'State',)
+    country_id=fields.Many2one('res.country', 'Country',)
+    latitude=fields.Float('Geo Latitude' , digits = (16,6))
+    longitude=fields.Float('Geo Longitude' , digits = (16,6))
+    is_internation=fields.Boolean('International Address')
+    medical=fields.Boolean('Medical')
+    legal=fields.Boolean('Legal')
+    consecutive=fields.Boolean('Consecutive')
+    simultaneous=fields.Boolean('Simultaneous')
+    voiceover=fields.Boolean('Voiceover')
+    resume_on_file=fields.Boolean('Resume On File')
+    contract_agreement=fields.Boolean('Contract Agreement')
+    rate_agreement=fields.Boolean('Rate Agreement')
+    wg_available=fields.Boolean('Wg Available')
+    nationwide=fields.Boolean('Nationwide')
+    active=fields.Boolean('Active')
+    qualified=fields.Boolean('Qualified')
+    certified=fields.Boolean('Certified')
+    check=fields.Boolean('Check')
+    credit_card=fields.Boolean('Credit Card')
+    paypal=fields.Boolean('Pay Pal')
+    western_union=fields.Boolean('Western Union')
+    fed_id=fields.Char('Fed Id#',size=64)
+    certification=fields.Char('Certification#',size=256)
+    certificate_exp_date=fields.Datetime('Certificate Exp Dt#')
+    coverage_counties=fields.Char('Coverage Countries')
+    coverage_area=fields.Char('Coverage Area')
+    languages=fields.Char('Languages')
+    payment_terms=fields.Many2one('account.payment.term', 'Payment Term')
+    notes=fields.Text('Notes')
+    notes1=fields.Text('Notes')
+    wc_exmpt=fields.Boolean('W/C Exempt')
+    wc_certificate=fields.Char('W/C Certificate')
+    negotiated_rate=fields.Text('Negotiated Rates')
+    date_modified=fields.Datetime('Date Modified')
+    modified_by=fields.Many2one('res.users','Modified By')
+
+
+
+

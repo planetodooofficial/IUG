@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record model="ir.ui.view" id="inherited_invoice_form">
+            <field name="name">inherited.invoice.form</field>
+            <field name="model">account.invoice</field>
+            <field name="inherit_id" ref="account.invoice_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='payment_term_id']" position="after">
+                    <field name="quick_id"/>
+                    <field name="in_qb"/>
+                </xpath>
+            </field>
+        </record>
+
+       <record model="ir.ui.view" id="inherited_view_event_user_tree">
+            <field name="name">event.user.tree</field>
+            <field name="model">event</field>
+            <field name="inherit_id" ref="bista_iugroup.view_event_user_tree"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='state']" position="after">
+                    <field name="check_no"/>
+                    <field name="ch_amount"/>
+                </xpath>
+            </field>
+        </record>
+
+
+        <record model="ir.ui.view" id="inherited_supplier_form">
+            <field name="name">inherited.supplier.form</field>
+            <field name="model">account.invoice</field>
+            <field name="inherit_id" ref="account.invoice_supplier_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='reference']" position="after">
+                    <field name="quick_id"/>
+                    <field name="in_qb"/>
+                </xpath>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="inherited_product_form">
+            <field name="name">inherited.product.form</field>
+            <field name="model">product.template</field>
+            <field name="inherit_id" ref="product.product_template_only_form_view"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='barcode']" position="after">
+                    <field name="quick_id"/>
+                    <field name="in_qb"/>
+                    <field name="for_qb"/>
+                </xpath>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="inherited_company_form">
+            <field name="name">inherited.company.form</field>
+            <field name="model">res.company</field>
+            <field name="inherit_id" ref="base.view_company_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='partner_id']" position="after">
+                    <field name="quick_id"/>
+                    <field name="quick_name"/>
+                    <field name="rf_token"/>
+                    <field name="in_qb"/>
+                </xpath>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="inherited_partner_form">
+            <field name="name">inherited.partner.form</field>
+            <field name="model">res.partner</field>
+            <field name="inherit_id" ref="base.view_partner_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='category_id']" position="after">
+                    <field name="quick_id" readonly="1"/>
+                    <field name="in_qb" readonly="1"/>
+                </xpath>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="inherited_account_form">
+            <field name="name">inherited.account.form</field>
+            <field name="model">account.account</field>
+            <field name="inherit_id" ref="account.view_account_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='company_id']" position="after">
+                    <field name="quick_id" readonly="1"/>
+                    <field name="in_qb" readonly="1"/>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="quick_configuration_view" model="ir.ui.view" >
+            <field name="name">quick.configuration.view.form</field>
+            <field name="model">quick.configuration</field>
+            <field name="arch" type="xml">
+                <form string="Purchase Order">
+                    <header>
+                        <button name="get_access_refresh_token" string="Get Access/Refresh Token" type="object" groups="base.group_no_one"/>
+                        <button name="import_customers_vendors" string="Import Customers/Vendors" type="object"/>
+                        <button name="export_customers_vendors" string="Export Customers/Vendors" type="object"/>
+                        <button name="export_accounts" string="Export Accounts" type="object" groups="base.group_no_one"/>
+                        <button name="map_accounts" string="Map Accounts" type="object" groups="base.group_no_one"/>
+                        <button name="export_invoices" string="Export Invoices" type="object"/>
+                        <button name="import_invoices" string="Import Invoices" type="object"/>
+                        <button name="import_bills" string="Import Bills" type="object"/>
+                        <button name="export_bills" string="Export Bills" type="object"/>
+                        <button name="get_products" string="Get Products" type="object" groups="base.group_no_one"/>
+                        <button name="test_anything" string="Test Anything" type="object" groups="base.group_no_one"/>
+                        <button name="delete_invoice" string="Delete Invoice" type="object"/>
+                        <button name="import_accounts" string="Import accounts and Map" type="object"/>
+                        <button name="update_customers_vendors" string="Update Customers/Vendors" type="object"/>
+                    </header>
+                    <group>
+                        <field name="production"/>
+                        <field name="clientkey"/>
+                        <field name="clientsecret" password="True"/>
+                    </group>
+                    <group>
+                        <group>
+                            <field name="from_range" />
+                            <field name="to_range" />
+                        </group>
+                    </group>
+                </form>
+            </field>
+        </record>
+
+        <record id="quick_configuration_tree_view" model="ir.ui.view">
+            <field name="name">quick.configuration.tree.view</field>
+            <field name="model">quick.configuration</field>
+            <field name="arch" type="xml">
+                <tree string="quick Configuration">
+                    <field name="clientkey"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="action_quick_configuration" model="ir.actions.act_window">
+            <field name="name">Quick Configuration</field>
+            <field name="res_model">quick.configuration</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+        <menuitem id="menu_quick_config_menu" name="Quickbook" parent="base.menu_administration" />
+        <menuitem id="menu_quick_config" name="Quick config" parent="menu_quick_config_menu" action="action_quick_configuration"/>
+    </data>
+</odoo>

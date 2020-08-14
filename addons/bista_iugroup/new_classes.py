@@ -1,0 +1,269 @@
+# -*- coding: utf-8 -*-
+##############################################################################
+#
+#    OpenERP, Open Source Business Applications
+#    Copyright (C) 2004-2012 OpenERP S.A. (<http://openerp.com>).
+#
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU Affero General Public License as
+#    published by the Free Software Foundation, either version 3 of the
+#    License, or (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU Affero General Public License for more details.
+#
+#    You should have received a copy of the GNU Affero General Public License
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+##############################################################################
+
+import logging
+_logger = logging.getLogger(__name__)
+import datetime
+import re
+from odoo import fields,models,api
+# from openerp.tools.translate import _
+# from openerp.addons.bss_phonenumbers.bss_phonumbers_fields import bss_phonenumbers_converter as phonumbers_converter #@UnresolvedImport
+# import phonenumbers
+
+class iu_contract(models.Model):
+    ''' Record for IU Contracts for contacts '''
+    _description = 'IU Contract'
+    _name = "iu.contract"
+
+    name=fields.Char("Name", size=64 ,required=True ,index=True)
+    start_date=fields.Date("Start Date")
+    end_date=fields.Date("End Date")
+    amount=fields.Float("Amount")
+    notes=fields.Text("Notes")
+    accumulator=fields.Char("Accumulator")
+    contract_id=fields.Integer("IU Contract Id")
+    company_id=fields.Many2one('res.company', 'Company', index=1,default=lambda self: self.env['res.company']._company_default_get('iu.contract'))
+
+class iu_message(models.Model):
+    ''' Record for IU Message for contacts '''
+    _description = 'IU Message'
+    _name = "iu.message"
+
+    name=fields.Char("Name", size=64 ,index=True)
+    entered_date=fields.Date("Entered Date")
+    delivered_date=fields.Date("Delivered Date")
+    contact_id=fields.Many2one('res.partner',"Contact Id")
+    interpreter_id=fields.Many2one('res.partner',"Vendor Id")
+    amount=fields.Float("Amount")
+    notes=fields.Text("Notes")
+    vendor_id=fields.Integer("IU Vendor Id")
+    is_alert=fields.Boolean("Is Alert")
+    entered_by_staff_id=fields.Many2one('hr.employee',"Entered By Staff Id")
+    delivered_by_staff_id=fields.Many2one('hr.employee',"Delivered By Staff Id")
+    message_id=fields.Integer("IU Message Id")
+    company_id=fields.Many2one('res.company', 'Company', index=1,default=lambda self: self.env['res.company']._company_default_get('iu.message'))
+
+class document_type(models.Model):
+    ''' Record for Different Document Types '''
+    _name = "document.type"
+
+    name=fields.Char("Name", size=64 ,index=True)
+    for_event=fields.Boolean("For Event")
+    for_vendor=fields.Boolean("For Vendor")
+    for_contact=fields.Boolean("For Contact")
+    has_template=fields.Boolean("Has Template")
+    prefix=fields.Char("Prefix", size=32)
+    template_master_path=fields.Char("Template Master Path", size=100)
+    template_body_path=fields.Char("Template Body Path", size=100)
+    doc_type_id=fields.Integer("IU Document Type Id")
+    template_id=fields.Many2one('mail.template','Template')
+    company_id=fields.Many2one('res.company', 'Company', index=1,default=lambda self: self.env['res.company']._company_default_get('document.type'))
+
+class document_status(models.Model):
+    ''' Record for Document Status '''
+    _description = 'Document Status'
+    _name = "document.status"
+
+    name=fields.Char("Name", size=64 ,index=True)
+    doc_status_id=fields.Integer("IU Document Status Id")
+    company_id=fields.Many2one('res.company', 'Company', index=1,default=lambda self: self.env['res.company']._company_default_get('document.status'))
+
+class document(models.Model):
+    ''' Record for Different Documents '''
+    _name = "document"
+
+    name=fields.Char("Name", size=70,index=True)
+    doc_sender_name=fields.Char("Document Sender Name", size=70)
+    sent_to_no=fields.Char("Sent To no" , size = 64)
+    sent_from_no=fields.Char("Sent From number", size = 64)
+    duration=fields.Char("Duration")
+    page_count=fields.Integer("Page Count")
+    doc_type_id=fields.Many2one('document.type','Document Type')
+    document_id=fields.Integer("IU Document Id")
+    status_id=fields.Many2one('document.status','Status')
+    platform_fax_id=fields.Char('IU Platform Fax Id', size=32)
+    ready_to_send=fields.Boolean("Ready To send")
+    log_text=fields.Text("Log Text")
+    company_id=fields.Many2one('res.company', 'Company', index=1,default=lambda self: self.env['res.company']._company_default_get('document'))
+
+
+class document_to_event(models.Model):
+    ''' Record for Document To Event '''
+    _description = 'Event Documents'
+    _name = "document.to.event"
+
+    name=fields.Char("Name", size=64 ,)
+    event_id=fields.Many2one('event',"Event")
+    document_id=fields.Many2one('document',"Document")
+    interpreter_id=fields.Many2one('res.partner','Interpreter')
+    vendor_id=fields.Integer("IU Vendor Id")
+    document_to_event_id=fields.Integer("IU Event Document Id")
+    company_id=fields.Many2one('res.company', 'Company', index=1,default=lambda self: self.env['res.company']._company_default_get('document.to.event'))
+
+class document_sender(models.Model):
+    ''' Record for Document Senders '''
+    _description = ' Documents Sender'
+    _name = "document.sender"
+
+    name=fields.Char("Name", size=64 )
+    location_id=fields.Many2one('location',"Location")
+    document_id=fields.Many2one('document',"Document")
+    contact_id=fields.Many2one('res.partner',"Contact")
+    doctor_id=fields.Many2one('doctor',"Doctor")
+    customer_id=fields.Many2one('res.partner',"Customer")
+    interpreter_id=fields.Many2one('res.partner','Interpreter')
+    vendor_id=fields.Integer("IU Vendor Id")
+    doc_sender_id=fields.Integer("IU Document Sender Id")
+    company_id=fields.Many2one('res.company', 'Company', index=1,default=lambda self: self.env['res.company']._company_default_get('document.sender'))
+
+class document_recipient(models.Model):
+    ''' Record for Document Recipients'''
+    _description = ' Documents Recipients'
+    _name = "document.recipient"
+
+    name=fields.Char("Reference", size=64 )
+    location_id=fields.Many2one('location',"Location")
+    document_id=fields.Many2one('document',"Document")
+    contact_id=fields.Many2one('res.partner',"Contact")
+    doctor_id=fields.Many2one('doctor',"Doctor")
+    customer_id=fields.Many2one('res.partner',"Customer")
+    interpreter_id=fields.Many2one('res.partner','Interpreter')
+    vendor_id=fields.Integer("IU Vendor Id")
+    sent_to_company=fields.Char("Sent To Company", size=70 )
+    sent_to_contact=fields.Char("Sent To Contact", size=70 )
+    doc_recipient_id=fields.Integer("IU Document Recipient Id")
+    company_id=fields.Many2one('res.company', 'Company', index=1,default=lambda self: self.env['res.company']._company_default_get('document.recipient'))
+
+
+class degree_subject(models.Model):
+    ''' Record for Degree Subject'''
+    _description = ' Degree Subject'
+    _name = "degree.subject"
+
+    name=fields.Char("Reference", size=64 )
+    degree_subject_id=fields.Integer("IU Degree Subject Id")
+    company_id=fields.Many2one('res.company', 'Company', index=1,default=lambda self: self.env['res.company']._company_default_get('degree.subject'))
+
+
+class degree_type(models.Model):
+    ''' Record for Degree Type'''
+    _description = ' Degree Type'
+    _name = "degree.type"
+
+    name=fields.Char("Reference", size=64 )
+    degree_type_id=fields.Integer("IU Degree Type Id")
+    company_id=fields.Many2one('res.company', 'Company', index=1,default=lambda self: self.env['res.company']._company_default_get('degree.type'))
+
+
+class interpreter_zip_code(models.Model):
+    ''' Record for Interpreter Zip Code '''
+    _description = 'Interpreter Zip Code'
+    _name = "interpreter.zip.code"
+
+    zip_code_id=fields.Many2one('zip.code','Zip Code Id')
+    is_live=fields.Boolean("Live")
+    interpreter_id=fields.Many2one('res.partner','Interpreter Id')
+    language_id=fields.Many2one('language',"Language Id")
+    certification_level_id=fields.Many2one('certification.level',"Certification Level Id")
+    company_id=fields.Many2one('res.company', 'Company', index=1,default=lambda self: self.env['res.company']._company_default_get('interpreter.zip.code'))
+
+class event_out_come(models.Model):
+    ''' Record for Event Out Come'''
+    _description = 'Event Out Come'
+    _name = "event.out.come"
+    _order="name"
+
+    name=fields.Char('Name',size = 64)
+    event_out_come_id=fields.Integer("IU Event Out Come Id")
+    company_id=fields.Many2one('res.company', 'Company', index=1,default=lambda self: self.env['res.company']._company_default_get('event.out.come'))
+
+    
+class billing_rule(models.Model):
+    ''' Record for Billing Rule '''
+    _description = 'Billing Rule'
+    _name = "billing.rule"
+
+    rule_id=fields.Integer('IU Rule Id')
+    is_billing_rule=fields.Boolean("Is Billing Rule")
+    value=fields.Char('Value',size = 32)
+    name=fields.Char('Name',size = 70)
+    company_id=fields.Many2one('res.company', 'Company', index=1,default=lambda self: self.env['res.company']._company_default_get('billing.rule'))
+
+
+class customer_billing_rate(models.Model):
+    ''' Record for Customer Billing Rate '''
+    _description = 'Customer Billing Rate'
+    _name = "customer.billing.rate"
+
+    rate_id=fields.Many2one('rate','Rate Id')
+    customer_id=fields.Many2one('res.partner','Customer Id')
+    default_rate=fields.Float("Default Rate")
+    spanish_regular=fields.Float("Spanish Regular")
+    spanish_licenced=fields.Float("Spanish Licenced")
+    spanish_certified=fields.Float("Spanish Certified")
+    exotic_regular=fields.Float("Exotic Regular")
+    exotic_certified=fields.Float("Exotic Certified")
+    exotic_middle=fields.Float("Exotic Middle")
+    exotic_high=fields.Float("Exotic High")
+    company_id=fields.Many2one('res.company', 'Company', index=1,default=lambda self: self.env['res.company']._company_default_get('customer.billing.rate'))
+
+
+class race(models.Model):
+    ''' Record for Race '''
+    _description = 'Race'
+    _name = "race"
+
+    name=fields.Char('Name', size=32)
+    race_id=fields.Integer('IU Race Id')
+    company_id=fields.Many2one('res.company', 'Company', index=1,default=lambda self: self.env['res.company']._company_default_get('race'))
+
+
+class audit(models.Model):
+    ''' Record for Audit '''
+    _description = 'Audit '
+    _name = "audit"
+
+    name=fields.Char('Code', size=64)
+    event_id=fields.Many2one('event','Event Id')
+    changed_date=fields.Date('Changed Date',)
+    old_date=fields.Date('Old Date',)
+    new_date=fields.Date('New Date',)
+    old_key=fields.Char('Old Key', size=64)
+    new_key=fields.Char('New Key', size=64)
+    note=fields.Text("Note")
+    changed_by_staff_id=fields.Many2one('hr.employee','Changed By Staff Id')
+    audit_id=fields.Integer('IU Audit Id')
+    company_id=fields.Many2one('res.company', 'Company', index=1,default=lambda self: self.env['res.company']._company_default_get('audit'))
+
+
+class blanket_audit(models.Model):
+    ''' Record for Blanket Audit '''
+    _description = 'Blanket Audit '
+    _name = "blanket.audit"
+
+    name=fields.Char('Code', size=64)
+    event_id=fields.Many2one('event','Event Id')
+    blanket_date=fields.Date('Blanket Date',)
+    changed_date=fields.Date('Changed Date',)
+    note=fields.Text("Note")
+    staff_id=fields.Many2one('hr.employee','Staff Id')
+    blanket_audit_id=fields.Integer("IU Blanket Audit Id")
+    company_id=fields.Many2one('res.company', 'Company', index=1,default=lambda self: self.env['res.company']._company_default_get('blanket.audit'))

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="account_paumnet_add_method_of_paynet" model="ir.ui.view">
+        <field name="name">account.paumnet.add.method.of.paynet</field>
+        <field name="model">account.payment</field>
+        <field name="inherit_id" ref="account.view_account_payment_form"/>
+        <field name="arch" type="xml">
+             <xpath expr="//group" position="after">
+                  <style>
+                     [data-id="original_amount"]{width:7%}
+                     [data-id="balance_amount"]{width:7%}
+                     [data-id="diff_amt"]{width:7%}
+                     [data-id="date"]{width:7%}
+                     [data-id="full_reconclle"]{width:7%}
+                     [data-id="allocation"]{width:7%}
+                     [data-id="account_id"]{width:22%}
+                 </style>
+                 <field name="line_ids" nolabel="1" attrs="{'readonly':[('state','!=','draft')]}">
+                        <tree editable="bottom">
+                             <field name="invoice_id"/>
+<!--                             <field name="reference"/>-->
+                             <field name="account_id" readonly="1"/>
+                             <field name="date" readonly="1"/>
+<!--                             <field name="due_date" />-->
+                             <field name="original_amount" readonly="1"/>
+                             <field name="balance_amount" readonly="1"/>
+                             <field name="full_reconclle" />
+                             <field name="allocation" sum="Total"/>
+                             <field name="diff_amt" readonly="1"/>
+<!--                             <field name="currency_id"/>-->
+                        </tree>
+                    </field>
+                 <group>
+                 <field name="payment_difference" string="Difference Amount"/>
+                 <field name="payment_difference_handling" required="1" attrs="{'invisible':[('payment_difference','=',0)],'readonly':[('state','not in',['draft'])]}"/>
+                 <field name="writeoff_account_id" attrs="{'invisible':['|', ('payment_difference_handling','!=','reconcile'), ('payment_difference','=',0)], 'required':[('payment_difference_handling','=','reconcile')],'readonly':[('state','not in',['draft'])]}"/>
+                 </group>
+            </xpath>
+               
+        </field>
+    </record>
+
+
+</odoo>

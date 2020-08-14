@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<openerp>
+    <data>
+         <!-- Attachment -->
+        
+        <record model="ir.ui.view" id="view_attachment_form_inherit">
+            <field name="model">ir.attachment</field>
+            <field eval="8" name="priority"/>
+            <field name="inherit_id" ref="base.view_attachment_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="/form/sheet/group/group/field[@name='datas']" position="after">
+                    <field name="document_type_id" options="{'limit': 7, 'create': false, 'create_edit': false}"
+                           domain="[('company_id','=',company_id)]"/>
+                </xpath>
+            </field>
+        </record>
+        
+    </data>
+</openerp>

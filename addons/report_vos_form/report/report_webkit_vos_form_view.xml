@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+        <report auto="False"
+                id="event_vos_form_iu"
+                model="event"
+                name="report_vos_form.report_vos_form_parent_template"
+                file="report_vos_form.report_vos_form_parent_template"
+                string="VOS Form"
+                report_type="qweb-pdf"
+                usage="default"
+                menu="True"/>
+    </data>
+</openerp>

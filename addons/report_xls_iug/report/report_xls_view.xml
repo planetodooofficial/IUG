@@ -1,0 +1,337 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <data>
+
+<!-- ++++++++++++ KAISER REPORT ++++++++++++++++++ -->
+    <record id="action_invoice_list_xls_kaiser" model="ir.actions.report.xml">
+      <field name="name">Kaiser_Permanente_2013_Unpaid_invs</field>
+      <field name="model">account.invoice</field>
+      <field name="type">ir.actions.report.xml</field>
+      <field name="report_name">account.invoice.xls.print.kaiser</field>
+      <field name="report_type">xls</field>
+<!--      <field name="group_id" ref="bista_iugroup.group_iu_admin"/>-->
+    </record>
+
+    <record model="ir.values" id="action_invoice_list_xls_values_kaiser">
+      <field name="name">Kaiser_Permanente_2013_Unpaid_invs</field>
+      <field name="key2">client_action_multi</field>
+      <field name="value" eval="'ir.actions.report.xml,' +str(ref('action_invoice_list_xls_kaiser'))" />
+      <field name="model">account.invoice</field>
+      <field name="res_id" ref="bista_iugroup.group_iu_admin"/>
+    </record>
+
+<!-- ++++++++++++ REPORT For Kaiser Compliance ++++++++++++++++++ -->
+    <record id="action_invoice_line_list_xls_kaiser_compliance" model="ir.actions.report.xml">
+      <field name="name">kaiser_compliance</field>
+      <field name="model">account.invoice.line</field>
+      <field name="type">ir.actions.report.xml</field>
+      <field name="report_name">account.invoice.line.xls.print.kaiser.compliance</field>
+      <field name="report_type">xls</field>
+      <field name="auto" eval="False"/>
+    </record>
+
+    <record model="ir.values" id="action_invoice_line_list_xls_values_kaiser_compliance">
+      <field name="name">kaiser_compliance</field>
+      <field name="key2">client_action_multi</field>
+      <field name="value" eval="'ir.actions.report.xml,' +str(ref('action_invoice_line_list_xls_kaiser_compliance'))" />
+      <field name="model">account.invoice.line</field>
+    </record>
+
+<!-- ++++++++++++ Kaiser cancelled event report   ++++++++++++++++++ -->
+    <record id="action_kaiser_cancel_event_xls" model="ir.actions.report.xml">
+      <field name="name">kaiser_cancel_event</field>
+      <field name="model">event</field>
+      <field name="type">ir.actions.report.xml</field>
+      <field name="report_name">action.kaiser.cancel.event.xls</field>
+      <field name="report_type">xls</field>
+      <field name="auto" eval="False"/>
+    </record>
+
+    <record model="ir.values" id="action_kaiser_cancel_event_xls_values">
+      <field name="name">kaiser_cancel_event</field>
+      <field name="key2">client_action_multi</field>
+      <field name="value" eval="'ir.actions.report.xml,' +str(ref('action_kaiser_cancel_event_xls'))" />
+      <field name="model">event</field>
+    </record>
+
+ <!--Sales Commission-->
+
+    <record id="action_invoice_list_xls_sales_commission" model="ir.actions.report.xml">
+      <field name="name">Sales_Commission</field>
+      <field name="model">account.invoice</field>
+      <field name="type">ir.actions.report.xml</field>
+      <field name="report_name">account.invoice.xls.print.sales.commission</field>
+      <field name="report_type">xls</field>
+      <field name="auto" eval="False"/>
+    </record>
+
+    <record model="ir.values" id="action_invoice_list_xls_values_sales_commission">
+      <field name="name">Sales Commission</field>
+      <field name="key2">client_action_multi</field>
+      <field name="value" eval="'ir.actions.report.xml,' +str(ref('action_invoice_list_xls_sales_commission'))" />
+      <field name="model">account.invoice</field>
+      <field name="res_id" ref="bista_iugroup.group_iu_admin"/>
+    </record>
+
+    <!--Hartford-->
+    <record id="action_invoice_list_xls_hartford" model="ir.actions.report.xml">
+      <field name="name">HartFord</field>
+      <field name="model">account.invoice.line</field>
+      <field name="type">ir.actions.report.xml</field>
+      <field name="report_name">account.invoice.line.xls.print.hartford</field>
+      <field name="report_type">xls</field>
+      <field name="auto" eval="False"/>
+
+    </record>
+
+    <record model="ir.values" id="action_invoice_list_xls_values_hartford">
+      <field name="name">HartFord</field>
+      <field name="key2">client_action_multi</field>
+      <field name="value" eval="'ir.actions.report.xml,' +str(ref('action_invoice_list_xls_hartford'))" />
+      <field name="model">account.invoice.line</field>
+    </record>
+
+    <!--fcci Translation-->
+    <record id="action_invoice_list_xls_fcci_translation" model="ir.actions.report.xml">
+      <field name="name">FCCI Translation</field>
+      <field name="model">account.invoice</field>
+      <field name="type">ir.actions.report.xml</field>
+      <field name="report_name">account.invoice.xls.print.fcci_translation</field>
+      <field name="report_type">xls</field>
+      <field name="auto" eval="False"/>
+    </record>
+
+    <record model="ir.values" id="action_invoice_list_xls_values_fcci_translation">
+      <field name="name">FCCI Translation</field>
+      <field name="key2">client_action_multi</field>
+      <field name="value" eval="'ir.actions.report.xml,' +str(ref('action_invoice_list_xls_fcci_translation'))" />
+      <field name="model">account.invoice</field>
+      <field name="res_id" ref="bista_iugroup.group_iu_admin"/>
+    </record>
+
+<!-- ++++++++++++ COBB DFCS REPORT ++++++++++++++++++ -->
+    <record id="action_invoice_list_xls_cobb" model="ir.actions.report.xml">
+      <field name="name">Cobb_DFCS_Interpreting</field>
+      <field name="model">account.invoice.line</field>
+      <field name="type">ir.actions.report.xml</field>
+      <field name="report_name">account.invoice.xls.print.cobb</field>
+      <field name="report_type">xls</field>
+      <field name="auto" eval="False"/>
+    </record>
+
+    <record model="ir.values" id="action_invoice_list_xls_values_cobb">
+      <field name="name">Cobb_DFCS_Interpreting</field>
+      <field name="key2">client_action_multi</field>
+      <field name="value" eval="'ir.actions.report.xml,' +str(ref('action_invoice_list_xls_cobb'))" />
+      <field name="model">account.invoice.line</field>
+    </record>
+
+<!-- ++++++++++++ COBB DFCS REPORT ++++++++++++++++++ -->
+    <record id="action_invoice_list_xls_cdcr" model="ir.actions.report.xml">
+      <field name="name">CDCR-California_Rehabilitation_Ctr_Interpreting</field>
+      <field name="model">account.invoice.line</field>
+      <field name="type">ir.actions.report.xml</field>
+      <field name="report_name">account.invoice.xls.print.cdcr</field>
+      <field name="report_type">xls</field>
+      <field name="auto" eval="False"/>
+    </record>
+
+    <record model="ir.values" id="action_invoice_list_xls_values_cdcr">
+      <field name="name">CDCR-California_Rehabilitation_Ctr_Interpreting</field>
+      <field name="key2">client_action_multi</field>
+      <field name="value" eval="'ir.actions.report.xml,' +str(ref('action_invoice_list_xls_cdcr'))" />
+      <field name="model">account.invoice.line</field>
+    </record>
+
+<!-- ++++++++++++ ADP TOTAL SOURCE REPORT ++++++++++++++++++ -->
+    <record id="action_invoice_list_xls_adp" model="ir.actions.report.xml">
+      <field name="name">ADP_Total_Source_-_West_Central_Reg_Interpreting</field>
+      <field name="model">account.invoice.line</field>
+      <field name="type">ir.actions.report.xml</field>
+      <field name="report_name">account.invoice.xls.print.adp</field>
+      <field name="report_type">xls</field>
+      <field name="auto" eval="False"/>
+    </record>
+
+    <record model="ir.values" id="action_invoice_list_xls_values_adp">
+      <field name="name">ADP_Total_Source_-_West_Central_Reg_Interpreting</field>
+      <field name="key2">client_action_multi</field>
+      <field name="value" eval="'ir.actions.report.xml,' +str(ref('action_invoice_list_xls_adp'))" />
+      <field name="model">account.invoice.line</field>
+    </record>
+
+<!-- ++++++++++++ CST REPORT For HEALTH AND HUMAN SERVICES++++++++++++++++++ -->
+    <record id="action_invoice_list_xls_cst_org" model="ir.actions.report.xml">
+      <field name="name">CstOrgReport</field>
+      <field name="model">account.invoice.line</field>
+      <field name="type">ir.actions.report.xml</field>
+      <field name="report_name">account.invoice.xls.print.cst.org</field>
+      <field name="report_type">xls</field>
+      <field name="auto" eval="False"/>
+    </record>
+
+    <record model="ir.values" id="action_invoice_list_xls_values_cst_org">
+      <field name="name">CstOrgReport</field>
+      <field name="key2">client_action_multi</field>
+      <field name="value" eval="'ir.actions.report.xml,' +str(ref('action_invoice_list_xls_cst_org'))" />
+      <field name="model">account.invoice.line</field>
+    </record>
+
+
+<!-- ++++++++++++ Trans REPORT+++++++++++++++++ -->
+    <record id="action_invoice_list_xls_trans_org" model="ir.actions.report.xml">
+      <field name="name">TransOrgReport</field>
+      <field name="model">account.invoice.line</field>
+      <field name="type">ir.actions.report.xml</field>
+      <field name="report_name">account.invoice.xls.print.trans.org</field>
+      <field name="report_type">xls</field>
+      <field name="auto" eval="False"/>
+    </record>
+
+    <record model="ir.values" id="action_invoice_list_xls_values_trans_org">
+      <field name="name">TransOrgReport</field>
+      <field name="key2">client_action_multi</field>
+      <field name="value" eval="'ir.actions.report.xml,' +str(ref('action_invoice_list_xls_trans_org'))" />
+      <field name="model">account.invoice.line</field>
+    </record>
+
+
+
+<!-- ++++++++++++ CST REPORT For HEALTH AND HUMAN SERVICES++++++++++++++++++ -->
+    <record id="action_invoice_list_xls_cst" model="ir.actions.report.xml">
+      <field name="name">CstReport</field>
+      <field name="model">account.invoice.line</field>
+      <field name="type">ir.actions.report.xml</field>
+      <field name="report_name">account.invoice.xls.print.cst</field>
+      <field name="report_type">xls</field>
+      <field name="auto" eval="False"/>
+    </record>
+
+    <record model="ir.values" id="action_invoice_list_xls_values_cst">
+      <field name="name">CstReport</field>
+      <field name="key2">client_action_multi</field>
+      <field name="value" eval="'ir.actions.report.xml,' +str(ref('action_invoice_list_xls_cst'))" />
+      <field name="model">account.invoice.line</field>
+    </record>
+
+<!-- ++++++++++++Trans REPORT ++++++++++++++++++ -->
+    <record id="action_invoice_list_xls_trans" model="ir.actions.report.xml">
+      <field name="name">TransReport</field>
+      <field name="model">account.invoice.line</field>
+      <field name="type">ir.actions.report.xml</field>
+      <field name="report_name">account.invoice.xls.print.trans</field>
+      <field name="report_type">xls</field>
+      <field name="auto" eval="False"/>
+    </record>
+
+    <record model="ir.values" id="action_invoice_list_xls_values_trans">
+      <field name="name">TransReport</field>
+      <field name="key2">client_action_multi</field>
+      <field name="value" eval="'ir.actions.report.xml,' +str(ref('action_invoice_list_xls_trans'))" />
+      <field name="model">account.invoice.line</field>
+    </record>
+
+<!-- ++++++++++++ REPORT For VDSS Division of Finance - Budget ++++++++++++++++++ -->
+    <record id="action_invoice_list_xls_vdss" model="ir.actions.report.xml">
+      <field name="name">VDSS_Division_of_Finance_Budget</field>
+      <field name="model">account.invoice.line</field>
+      <field name="type">ir.actions.report.xml</field>
+      <field name="report_name">account.invoice.xls.print.vdss</field>
+      <field name="report_type">xls</field>
+      <field name="auto" eval="False"/>
+    </record>
+
+    <record model="ir.values" id="action_invoice_list_xls_values_vdss">
+      <field name="name">VDSS_Division_of_Finance_Budget</field>
+      <field name="key2">client_action_multi</field>
+      <field name="value" eval="'ir.actions.report.xml,' +str(ref('action_invoice_list_xls_vdss'))" />
+      <field name="model">account.invoice.line</field>
+    </record>
+
+<!-- ++++++++++++ REPORT For John Muir ++++++++++++++++++ -->
+    <record id="action_invoice_list_xls_john_muir" model="ir.actions.report.xml">
+      <field name="name">John_Muir_Interpreting</field>
+      <field name="model">account.invoice.line</field>
+      <field name="type">ir.actions.report.xml</field>
+      <field name="report_name">account.invoice.xls.print.john.muir</field>
+      <field name="report_type">xls</field>
+      <field name="auto" eval="False"/>
+    </record>
+
+    <record model="ir.values" id="action_invoice_list_xls_values_john_muir">
+      <field name="name">John_Muir_Interpreting</field>
+      <field name="key2">client_action_multi</field>
+      <field name="value" eval="'ir.actions.report.xml,' +str(ref('action_invoice_list_xls_john_muir'))" />
+      <field name="model">account.invoice.line</field>
+    </record>
+
+<!-- ++++++++++++ REPORT For CalOptima ++++++++++++++++++ -->
+    <record id="action_invoice_list_xls_caloptima" model="ir.actions.report.xml">
+      <field name="name">CalOptima_Interpreting</field>
+      <field name="model">account.invoice.line</field>
+      <field name="type">ir.actions.report.xml</field>
+      <field name="report_name">account.invoice.xls.print.caloptima</field>
+      <field name="report_type">xls</field>
+      <field name="auto" eval="False"/>
+    </record>
+
+    <record model="ir.values" id="action_invoice_list_xls_values_caloptima">
+      <field name="name">CalOptima_Interpreting</field>
+      <field name="key2">client_action_multi</field>
+      <field name="value" eval="'ir.actions.report.xml,' +str(ref('action_invoice_list_xls_caloptima'))" />
+      <field name="model">account.invoice.line</field>
+    </record>
+
+<!-- ++++++++++++ REPORT For All Event Invoice Info ++++++++++++++++++ -->
+    <record id="action_invoice_line_list_xls_acd" model="ir.actions.report.xml">
+      <field name="name">All_Invoice_Info</field>
+      <field name="model">account.invoice.line</field>
+      <field name="type">ir.actions.report.xml</field>
+      <field name="report_name">account.invoice.line.xls.print.acd</field>
+      <field name="report_type">xls</field>
+      <field name="auto" eval="False"/>
+    </record>
+
+    <record model="ir.values" id="action_invoice_line_list_xls_values_acd">
+      <field name="name">All_Invoice_Info</field>
+      <field name="key2">client_action_multi</field>
+      <field name="value" eval="'ir.actions.report.xml,' +str(ref('action_invoice_line_list_xls_acd'))" />
+      <field name="model">account.invoice.line</field>
+    </record>
+
+<!-- ++++++++++++ REPORT For Invoice Profitability ++++++++++++++++++ -->
+    <record id="action_invoice_list_xls_invoice_profitability" model="ir.actions.report.xml">
+      <field name="name">Invoice_Profitability</field>
+      <field name="model">account.invoice.line</field>
+      <field name="type">ir.actions.report.xml</field>
+      <field name="report_name">account.invoice.xls.print.invoice.profitability</field>
+      <field name="report_type">xls</field>
+      <field name="auto" eval="False"/>
+    </record>
+
+    <record model="ir.values" id="action_invoice_list_xls_values_invoice_profitability">
+      <field name="name">Invoice_Profitability</field>
+      <field name="key2">client_action_multi</field>
+      <field name="value" eval="'ir.actions.report.xml,' +str(ref('action_invoice_list_xls_invoice_profitability'))" />
+      <field name="model">account.invoice.line</field>
+    </record>
+
+<!-- ++++++++++++ HIPAA Report++++++++++++++++++ -->
+    <record id="action_invoice_list_xls_hipaa" model="ir.actions.report.xml">
+      <field name="name">HipaaReport</field>
+      <field name="model">account.invoice.line</field>
+      <field name="type">ir.actions.report.xml</field>
+      <field name="report_name">account.invoice.xls.print.hipaa</field>
+      <field name="report_type">xls</field>
+      <field name="auto" eval="False"/>
+    </record>
+
+    <record model="ir.values" id="action_invoice_list_xls_values_hipaa">
+      <field name="name">HipaaReport</field>
+      <field name="key2">client_action_multi</field>
+      <field name="value" eval="'ir.actions.report.xml,' +str(ref('action_invoice_list_xls_hipaa'))" />
+      <field name="model">account.invoice.line</field>
+    </record>
+
+  </data>
+</odoo>

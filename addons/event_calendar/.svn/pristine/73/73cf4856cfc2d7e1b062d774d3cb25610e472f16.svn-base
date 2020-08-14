@@ -1,0 +1,4 @@
+"id","name","model_id:id","group_id:id","perm_read","perm_write","perm_create","perm_unlink"
+access_int_calendar_ip_user,calendar_ip_user,model_event_interpreter_calendar,bista_iugroup.group_iu_portal,1,0,1,0
+access_int_calendar_cs_user,calendar_cs_user,model_event_interpreter_calendar,bista_iugroup.group_iu_cust_service,1,1,1,0
+access_int_calendar_admin,calendar_admin_user,model_event_interpreter_calendar,bista_iugroup.group_record_manager,1,1,1,0

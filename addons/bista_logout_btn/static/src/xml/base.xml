@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates>
+<t t-extend="UserMenu">
+	<t t-jquery="li.o_user_menu" t-operation="replace">
+		<li class="o_user_menu">
+        <a class="dropdown-toggle" data-toggle="dropdown" aria-expanded="false" href="#">
+            <img class="img-circle oe_topbar_avatar" t-att-src="_s + '/web/static/src/img/user_menu_avatar.png'"/>
+            <span class="oe_topbar_name"/> <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu" role="menu">
+            <li><a href="#" data-menu="documentation">Documentation</a></li>
+            <li><a href="#" data-menu="support">Support</a></li>
+            <li class="divider"/>
+            <li><a href="#" data-menu="settings">Preferences</a></li>
+            <li><a href="#" data-menu="account">My Odoo.com account</a></li>
+        </ul>
+    	</li>
+		<li style="display:block">
+		<a href="#" class='logout_button' data-menu="logout" role="menu"><span class="oe_menu_text">
+			Log out
+		</span>
+		</a>
+		</li>
+    </t>    
+</t>
+</templates>

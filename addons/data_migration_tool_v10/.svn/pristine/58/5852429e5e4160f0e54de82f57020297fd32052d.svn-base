@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <record id="data_migration_wizard_form" model="ir.ui.view">
+            <field name="name">data.migration.wizard.form</field>
+            <field name="model">data.migration.wizard</field>
+            <field name="arch" type="xml">
+                <form string="Data Migration">
+                    <group>
+                        <field name="upload_file" />
+                    </group>
+                    <group>
+                        <field name="upload_error" filename="upload_error_file_name" readonly="1"/>
+                        <field name="upload_error_file_name" invisible="1"/>
+                    </group>
+                    <group string="Dumb Data Upload" >
+                        <group>
+
+                            <button name="import_rate" string="Upload Rate(1)" type="object" class="btn btn-danger(1)"/>
+                            <!--<button name="import_customers" string="Upload Customers" type="object" class="oe_highlight"/>-->
+                            <button name="import_zipcode" style="margin-bottom:10px;" string="Upload zip code(2)" type="object" class="btn btn-primary"/>
+                            <button name="import_iucontract" style="margin-bottom:10px;" string="Upload iu contract(3)" type="object" class="btn btn-secondary"/>
+                            <button name="import_appointment_type" style="margin-bottom:10px;" string="Upload Appointment Type(4)" type="object" class="btn btn-success"/>
+                            <button name="import_degree_subject" style="margin-bottom:10px;" string="Upload Degree Subject(5)" type="object" class="btn btn-danger"/>
+                            <button name="import_cancel_reason" style="margin-bottom:10px;" string="Upload Cancel Reasons(6)" type="object" class="btn btn-warning"/>
+                            <button name="import_certification_level" style="margin-bottom:10px;" string="Upload Certification Level" type="object" class="btn btn-primary"/>
+                            <button name="import_employee" style="margin-bottom:10px;" string="Upload Employees" type="object" class="btn btn-info"/>
+                        </group>
+
+                        <group>
+                            <button name="import_metazone" style="margin-bottom:10px;"  string="Upload meta zone(8)" type="object" class="btn btn-danger"/>
+                            <button name="import_zone" style="margin-bottom:10px;"  string="Upload zone(8.1)" type="object" class="btn btn-dark"/>
+                            <button name="import_degree_type" style="margin-bottom:10px;" string="Upload Degree Type(7)" type="object" class="btn btn-info"/>
+                            <button name="import_metazone" style="margin-bottom:10px;"  string="Upload meta zone &amp; zone(8)" type="object" class="btn btn-dark"/>
+                            <button name="import_chartofaccount" style="margin-bottom:10px;" string="Upload COA(9) " type="object" class="btn btn-secondary"/>
+                            <button name="import_journals" style="margin-bottom:10px;" string="Upload Journals(10)" type="object" class="btn btn-success"/>
+                            <button name="import_interpreter_zip_code" style="margin-bottom:10px;" string="Upload Interpreter zip code(11)" type="object" class="btn btn-danger"/>
+                            <button name="import_speciality" style="margin-bottom:10px;" string="Upload Speciality(12)" type="object" class="btn btn-info"/>
+                        </group>
+
+
+                    </group>
+                    <group string="Master Data Upload">
+                        <button name="import_language" style="margin-bottom:10px;" string="Upload Language" type="object" class="btn btn-success"/>
+                        <button name="import_doctor" string="Upload Doctor" type="object" class="btn btn-secondary"/>
+                        <button name="import_patient" string="Upload Patient" type="object" class="btn btn-info"/>
+                    </group>
+                    <footer>
+                        <button string="Cancel" class="oe_highlight" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+        <act_window id="data_migration_wizard_action"
+                    name="Data Migration Wizard"
+                    src_model="sale.order"
+                    res_model="data.migration.wizard"
+                    view_type="form" view_mode="form"
+                    key2="client_action_multi" target="new"/>
+
+        <menuitem id="data_migration_wizard_menu" action="data_migration_wizard_action" name="Data Migration Wizard"
+                  parent="migration_tool_base_menu" sequence="2"/>
+    </data>
+</odoo>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+<t t-extend="Pager">
+    <t t-jquery=".o_pager_value" t-operation="replace">
+        <t t-if="(widget.getParent() &amp;&amp; widget.getParent().ViewManager &amp;&amp; widget.getParent().ViewManager.active_view &amp;&amp; widget.getParent().ViewManager.active_view.type) === 'list'">
+            <a class="o_list_button_import_pdf"
+                        id="button_export_pdf"
+                        href="#" style="font-weight:bold">PDF</a>
+                        <label>or</label>
+            <a class="o_list_button_import_excel"
+                        id="button_export_excel"
+                        href="#" style="font-weight:bold">Excel</a>
+        </t>
+        <span class="o_pager_value"></span>
+    </t>
+</t>
+</templates>

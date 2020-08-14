@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <menuitem id="migration_tool_base_menu" name="Data Migration"  sequence="0" groups="base.group_no_one"/>
+    </data>
+</odoo>

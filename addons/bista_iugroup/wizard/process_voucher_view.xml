@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="process_voucher_wizard" model="ir.ui.view">
+            <field name="name">Process Voucher</field>
+            <field name="model">process.voucher</field>
+            <field name="arch" type="xml">
+                 <form string="Process Payment event" version="7.0">
+                    <footer>
+                        <button string="Unreconcile Payment" name="complete_unreconcile" type="object" class="oe_highlight"/>
+                        or
+                        <button string="Cancel" class="oe_link" special="cancel" />
+                    </footer>
+                </form>
+             </field>
+        </record>
+          
+        <record model="ir.actions.act_window" id="action_process_voucher">
+            <field name="name">Process Voucher</field>
+            <field name="res_model">process.voucher</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="process_voucher_wizard"/>
+            <field name="target">new</field>
+        </record>
+        
+        <act_window name="Unreconcile Voucher"
+            res_model="process.voucher"
+            src_model="account.voucher"
+            view_mode="form"
+            target="new"
+            key2="client_action_multi"
+            id="action_process_voucher_iu"/>
+     </data>
+</odoo>

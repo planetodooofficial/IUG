@@ -1,0 +1,30 @@
+<?xml version="1.0" ?>
+<odoo>
+
+    <!-- Mail template is done in a NOUPDATE block so users can freely customize/delete them -->
+
+        <record id="kaiser_email" model="mail.template">
+            <field name="name">Kaiser Event</field>
+            <field name="model_id" ref="bista_iugroup.model_event"/>
+            <field name="email_from" >donotreply@iugroup.com</field>
+            <field name="email_to" >${(object.partner_id.email)|safe}</field>
+            <field name="subject">Kaiser Event</field>
+            <field name="report_template" ref="report_vos_form.event_vos_form_iu"/>
+            <field name="report_name">${'Kaiser Event'}_${object.name or ''}</field>
+            <field name="body_html"><![CDATA[
+                <table align="left">
+                          <tr>
+                              <td align="right">Kaiser Permanente Verification of Service Form</td>
+                          <tr>
+                          <tr>
+                              <td align="right" >PFA</td>
+                          <tr>
+                          <tr>
+                              <td align="right"></td>
+                          <tr>
+              </table>
+                ]]>
+            </field>
+        </record>
+
+</odoo>

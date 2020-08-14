@@ -1,0 +1,197 @@
+import xlrd
+import base64
+from odoo.tools.translate import _
+from odoo import models, fields,api
+from odoo.tools import flatten
+from odoo.addons import decimal_precision as dp
+import logging
+logger = logging.getLogger('IUG')
+from odoo.exceptions import UserError
+
+class invoice_import_excel(models.TransientModel):
+    """ Import Account Invoice Excel sheet and pay Account invoices """
+    _name = "invoice.import.excel"
+    _description = "Import Order"
+
+    excel_file=fields.Binary('Excel file', required=True , filters='*.xls,*.xlsx')
+    state=fields.Selection([('init','init'),('done','done')], 'state', readonly=True,default='init')
+    check_number=fields.Char('Check Number', size=16)
+    amount=fields.Float('Amount', digits=dp.get_precision('Account'))
+    date_checkprint=fields.Date('Date',default=fields.Date.context_today)
+    journal_id=fields.Many2one('account.journal','Payment Method')
+    company_id=fields.Many2one('res.company', 'Company', required=True,default=lambda self: self.env['res.company']._company_default_get('invoice.import.excel'))
+    reference=fields.Char('Payment Ref', size=64)
+    file_name = fields.Char('Attachment Name', size=64)
+
+    @api.multi
+    def pay_invoices(self,inv_ids, invoice_amount):
+        ''' Function to create customer wise vouchers and pay them from xls '''
+        cust_inv, voucher_ids, check_count = {}, [], 0
+        invoice_obj = self.env['account.invoice']
+        account_voucher = self.env['account.payment']
+        move_obj = self.env['account.move.line']
+        partner_obj = self.env['res.partner']
+        period_obj = self.env['account.period']
+        customer_grouped, customer_invoice_grouped = [], [] 
+        for payment_obj in self:
+            journal = payment_obj.journal_id
+            company_id = payment_obj.company_id.id or False
+            reference = payment_obj.reference
+            period_ids = period_obj.find(payment_obj.date_checkprint)
+            self=self.with_context(company_id=company_id)
+            for invoice in invoice_obj.browse(inv_ids):
+                partner_id = partner_obj._find_accounting_partner(invoice.partner_id).id
+                if invoice.partner_id.id not in customer_grouped:
+                    customer_grouped.append(invoice.partner_id.id)
+                    customer_invoice_grouped.append(invoice.id)
+                if not cust_inv.get(invoice.partner_id.id):
+                    cust_inv[invoice.partner_id.id] = [invoice.id]
+                else:
+                    cust_inv[invoice.partner_id.id].append(invoice.id)
+            for cust, invoices in cust_inv.iteritems():
+                if not invoices or not cust:
+                    return
+                amount, move_lines= 0.0, []
+                self=self.with_context(move_line_ids=[])
+                for inv in invoice_obj.browse(invoices):
+                    amount += invoice_amount.get(inv.id) or 0.0
+                    if inv.move_id:
+                        for line in inv.move_id.line_id:
+                            move_lines.append(line.id)
+                self = self.with_context(move_line_ids=move_lines)
+                logger.info('Before onchange ....')
+                onchange_voucher_values = account_voucher.onchange_journal(cr, uid, [], journal.id, [], [], cust, payment_obj.date_checkprint, payment_obj.amount or 0.0, 'receipt',company_id, context=context)
+                logger.info('After onchange ....')
+                if onchange_voucher_values and onchange_voucher_values.get('value'):
+                    new_voucher_values = onchange_voucher_values.get('value')
+                    if new_voucher_values and new_voucher_values.get('account_id'):
+                        dr_lines, cr_lines= [], []
+#                            if new_voucher_values.get('line_dr_ids'):
+#                                line_dr_ids = new_voucher_values.get('line_dr_ids')
+#                                for line_dr_id in line_dr_ids:
+#    #                                        print "line_dr_id........",line_dr_id
+#                                    if line_dr_id.get('move_line_id', False) and line_dr_id.get('move_line_id') in move_lines:
+##                                        line_dr_id['reconcile'] = True
+#                                        line_dr_id['amount'] = line_dr_id.get('amount_unreconciled',0.0)
+#                                        dr_lines.append([0, False, line_dr_id])
+                        if new_voucher_values.get('line_cr_ids'):
+                            line_cr_ids = new_voucher_values.get('line_cr_ids')
+                            for line_cr_id in line_cr_ids:
+                                if line_cr_id.get('move_line_id'):
+                                    move_line = move_obj.browse(cr, uid, line_cr_id['move_line_id'])
+                                    if move_line.invoice:
+                                        if line_cr_id.get('amount_unreconciled', 0.0) < (invoice_amount.get(move_line.invoice.id) or 0.0):
+                                            line_cr_id['amount'] = line_cr_id['amount_unreconciled'] or 0.0
+                                        else:
+                                            line_cr_id['amount'] = invoice_amount.get(move_line.invoice.id) or 0.0
+                                cr_lines.append([0, False, line_cr_id])
+                        partner_id = partner_obj._find_accounting_partner(partner_obj.browse(cr, uid, cust)).id
+                        account_data = invoice_obj.get_accounts(cr, uid, partner_id, journal.id)
+                        vals = {
+                            'company_id': company_id,
+                            'journal_id': journal.id,
+                            'reference': '',
+                            'partner_id': partner_id,
+                            'amount': amount or 0.0,
+                            'type': 'receipt',
+                            'account_id': account_data['value']['account_id'],
+                            'date': payment_obj.date_checkprint,
+                            'line_cr_ids': cr_lines,
+                            'line_dr_ids': dr_lines,
+                            'payment_rate': new_voucher_values.get('payment_rate'),
+                            'pre_line': new_voucher_values.get('pre_line'),'currency_id':new_voucher_values.get('currency_id'),
+                            'currency_help_label': new_voucher_values.get('currency_help_label'),
+                            'paid_amount_in_company_currency': new_voucher_values.get('paid_amount_in_company_currency'),
+                            'period_id': period_ids and period_ids[0] or False,
+                            'reference':reference
+                        }
+                        if payment_obj.check_number:
+                            if check_count == 0:
+                                vals['check_number'] = payment_obj.check_number or ''
+                            else:
+                                vals['check_number'] = str(payment_obj.check_number) + '_' + str(check_count) or ''
+                        account_voucher_id = account_voucher.create(cr, uid, vals)
+                        logger.info('Voucher created : %d',account_voucher_id)
+                        voucher_ids.append(account_voucher_id)
+                        account_voucher.button_proforma_voucher(cr, uid, [account_voucher_id], context)
+#                            wf_service.trg_validate(uid, 'account.invoice', invoice_brw.id, 'confirm_paid', cr)
+                check_count += 1
+        return voucher_ids
+
+    @api.model
+    def get_test_file_path(self):
+        """Return the test file path"""
+        proxy = self.env['ir.config_parameter']
+        file_path = proxy.sudo().get_param('test_file_path')
+        if not file_path:
+            raise UserError(_('Please configure test_file_path as "/home/openerp/" in config parameters.'))
+        if file_path.endswith('/'):
+            file_path += 'test.xls'
+        else:
+            file_path += '/test.xls'
+        return file_path
+    
+#     def import_excel(self, cr, uid, ids, context):
+#         '''Code to import excel and generate a Voucher ,confirm the Voucher , and Validate that.'''
+#         data = self
+#         if not data.excel_file:
+#             raise UserError(_('Please select a Excel file'))
+#         if data.file_name:
+#             if not data.file_name.lower().endswith(('.xls', '.xlsx')):
+#                 raise UserError(_('Unsupported File Format.'))
+#         if not data.company_id:
+#             raise UserError(_('You must select Company First.'))
+#         file = base64.decodestring(data.excel_file)
+#         invoice_no, amount = 0, 1
+#         file_path = self.get_test_file_path()
+#         fp = open(file_path,'wb')
+#         fp.write(file)
+#         fp.close()
+#         book = xlrd.open_workbook(file_path)
+#         sh = book.sheet_by_index(0)
+# #        logger.info(' row count : %d',sh.nrows)
+# #        print "sh.nrows..........",sh.nrows
+#         inv_ids, total_amount, invoice_amount, inv_amount, invoice_num_list = [], 0.0, {}, {}, []
+#         for line in range (1, sh.nrows):
+#             try:
+#                 row = sh.row_values(line)
+# #                print "row............",row
+#                 if row != '':
+#                     if not row[invoice_no]:
+#                         continue
+#                     amt = row[amount] or 0.0
+#                     if amt < 0.0:
+#                         continue
+#                     total_amount += float(amt)
+#                     inv_no = str(row[invoice_no]).strip().split('.')[0]
+#                     if row[invoice_no] in inv_amount:
+#                         inv_amount[inv_no] += amt or 0.0
+#                     else:
+#                         inv_amount[inv_no] = amt or 0.0
+#                         invoice_num_list.append(inv_no)
+#             except Exception , e:
+#                 logger.info(' Exception : %s',e.args)
+#         if round(total_amount,6) != round(data.amount,6):
+#             raise UserError(_('Total Invoice amount and paid amount is mismatching!'))
+#         if invoice_num_list:
+#             cr.execute("select id, number from account_invoice where state = 'open' and company_id = %d and  number in %s"%(data.company_id.id, tuple(invoice_num_list)))
+#             result = cr.fetchall()
+#             if result:
+#                 for rs in result:
+#                     if len(rs) == 2:
+#                         inv_ids.append(rs[0])
+#                         if rs[0] in invoice_amount:
+#                             invoice_amount[rs[0]] += inv_amount[str(rs[1])] or 0.0
+#                         else:
+#                             invoice_amount[rs[0]] = inv_amount[str(rs[1])] or 0.0
+#
+# #        print "inv_ids.............",len(inv_ids)
+# #        inv_ids = list(set(flatten(inv_ids)))
+#         payment_ids = self.pay_invoices(list(set(flatten(inv_ids))), invoice_amount)
+#         result = self.pool.get('ir.model.data').get_object_reference(cr, uid, 'account_voucher', 'action_vendor_receipt')
+#         result = self.pool.get('ir.actions.act_window').read(cr, uid, [result and result[1] or False], context=context)[0]
+#         result['domain'] = "[('id','in',["+','.join(map(str, voucher_ids))+"])]"
+#         return result
+
+
+

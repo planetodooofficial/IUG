@@ -1,0 +1,282 @@
+
+from odoo.tools import flatten
+from odoo.tools.translate import _
+from odoo import fields, models,api
+from odoo.exceptions import UserError, RedirectWarning, ValidationError
+
+class account_check_print(models.TransientModel):
+    _name = 'account.check.print'
+
+    @api.multi
+    def _get_sequence(self,journal_id=False):
+        """ Generic Method to fetch ir.sequence from voucher journal.
+            also tolerate the no seuquence condition, if needed e.g. default_get """
+        journal_pool = self.env['account.journal']
+        sequence_id = False
+        journal_id = journal_pool.browse(journal_id)
+        if journal_id.check_sequence_id:
+            sequence_id = journal_id.check_sequence_id
+        else:
+            raise UserError(_("No check number sequence defined for the journal : %s")%(journal_id.name))
+        return sequence_id
+
+    # def _get_next_number(self, cr, uid, context=None):
+    #     num_next = False
+    #     if context == None: context = {}
+    #     if context.get('active_id') and context.get('active_model'):
+    #         sequence_id = self._get_sequence(cr, uid, context.get('active_id'), tolerate_noid=True, context=context)
+    #         num_next = self.pool.get('ir.sequence').read(cr, uid, sequence_id, ['number_next'])['number_next']
+    #     return num_next
+    
+    # def _update_sequence(self,new_value, sequence_id):
+    #     sequence_pool = self.pool.get('ir.sequence')
+    #     return sequence_pool.write(cr, uid, sequence_id, {'number_next': new_value})
+
+    @api.model
+    def _check_journal(self,checks):
+        journals = [check.journal_id.id for check in checks]
+        for check in checks:
+            if check.journal_id.type != "bank":
+                raise UserError(_("Cannot perform operation. Payment Journal type has to be Bank and Checks."))
+        if len(set(journals)) > 1:
+            raise UserError(_("You cannot batch-print checks from different journals in order to respect each journals sequence."))
+#        states = [check.state for check in checks]
+#        if "draft" in states:
+#            raise osv.except_osv(_("Warning"), _("You cannot print draft checks. You have to validate them first."))
+        return True
+
+    @api.model
+    def _get_journal(self):
+        invoice_pool = self.env['account.invoice']
+        journal_pool = self.env['account.journal']
+        if self._context.get('active_id', False):
+            inv_rec=invoice_pool.browse(self._context['active_id'])
+            currency_id = inv_rec.currency_id.id
+            company_id = inv_rec.company_id.id
+            journal_id = journal_pool.search([('type','=','bank'),('currency_id', '=', currency_id),('company_id','=',company_id)], limit=1).ids
+            return journal_id and journal_id[0] or False
+        if self._context.get('journal_id', False):
+            return self._context.get('journal_id')
+        if not self._context.get('journal_id', False) and self._context.get('search_default_journal_id', False):
+            return self._context.get('search_default_journal_id')
+
+        ttype = self._context.get('type', 'bank')
+        if ttype in ('payment', 'receipt'):
+            ttype = 'bank'
+        res=journal_pool.search([('type', '=', ttype)], limit=1).ids
+        return res and res[0] or False
+
+    check_number=fields.Integer('Next Check Number',help="The number of the next check number to be printed.")
+    journal_id=fields.Many2one('account.journal','Payment Method',default=_get_journal)
+    date_checkprint=fields.Date('Date',default=fields.Date.context_today)
+    check_grouping=fields.Selection([('group_supplier','Group by Supplier'),('dont_group','Dont Group')],'Group or not',required=True,default='group_supplier')
+    company_id=fields.Many2one('res.company','Company',default=lambda self: self.env['res.company']._company_default_get('account.check.print'))
+    force_number=fields.Boolean('Overwrite Check Numbers', help="If checked, it will reassign a new check number from given sequence to the check(s) even if check(s) already have a number.")
+    force_overwrite=fields.Boolean('Adjust Sequence', help="Use this if the default check number above is different than the next paper check number.\
+                                    \n- If checked, it will consider the check number above as the new default sequence.\
+                                    \n- Uncheck this if you are printing an exceptional batch.",default=True)
+
+    @api.onchange('journal_id')
+    def onchange_journal_id(self):
+        vals, sequence_id = {}, False
+        vals['value'] = {}
+        if not self.journal_id:
+            vals['value']['check_number'] = 0
+            return vals
+        if self.journal_id.check_sequence_id:
+            sequence_id = self.journal_id.check_sequence_id.id
+        else:
+            raise UserError(_("No check number sequence defined for the journal : %s")%(self.journal_id.name))
+        vals['value']['check_number'] = self.journal_id.check_sequence_id.number_next
+        return vals
+
+    @api.model
+    def default_get(self,fields):
+        res = super(account_check_print, self).default_get(fields)
+        invoice_obj = self.env['account.invoice']
+        for invoice_brw in invoice_obj.browse(self._context['active_ids']):
+            if invoice_brw.type == 'out_invoice':
+                raise UserError(_('You can only generate check for the Supplier Invoice.'))
+            if invoice_brw.state != 'open':
+                raise UserError(_('You can only pay and generate check for invoices which are in the open state.'))
+        return res
+
+    @api.multi
+    def get_sequence(self, payment_ids):
+        ''' Function to get the check sequence '''
+        voucher_pool = self.env['account.payment']
+        ir_sequence_obj = self.env['ir.sequence']
+        transient_record = self
+        new_value = transient_record.check_number
+        checks = voucher_pool.browse(payment_ids)
+        self._check_journal(checks)
+        sequence = self._get_sequence(transient_record.journal_id.id)
+        old_next_start = sequence.number_next
+        sequence.write({'number_next': new_value})
+        requence_rec=self.env['ir.sequence'].browse(sequence.id)
+        new_next_start ,increment =  requence_rec.number_next, requence_rec.number_increment
+        for check in checks:
+            new_value = sequence.next_by_id()
+            if check.check_number and not transient_record.force_number:
+                raise UserError(_("At least one of the checks in the batch already has a check number. If you want to overwrite their number in this batch-print, select the corresponding checkbox."))
+            else:
+                check.write({"check_number": new_value, "check_done": True})
+                new_next_start += increment
+        up_number = new_next_start if transient_record.force_overwrite else old_next_start
+        sequence.write({'number_next': up_number})
+        return True
+
+    @api.multi
+    def pay_print_check(self):
+        cust_inv, payment_ids = {}, []
+#        wf_service = netsvc.LocalService("workflow")
+        invoice_obj = self.env['account.invoice']
+        # account_voucher = self.pool.get('account.payment')
+        for check_print_obj in self:
+            if self._context.get('active_ids'):
+                seq_no, check_no, check_nos= check_print_obj.check_number, check_print_obj.check_number, []
+                supplier_grouped,supplier_invoice_grouped,previous_partner_id = [],[],{}
+                journal = check_print_obj.journal_id
+                company_id = check_print_obj.company_id.id or False
+                check_number = check_print_obj.check_number
+                self=self.with_context(company_id=company_id)
+                for invoice_brw in invoice_obj.browse(self._context['active_ids']):
+                    #Code to pass dictionary values for check print grouping
+                    if invoice_brw.partner_id.id not in supplier_grouped:
+                        supplier_grouped.append(invoice_brw.partner_id.id)
+                        supplier_invoice_grouped.append(invoice_brw.id)
+                    if not cust_inv.get(invoice_brw.partner_id.id):
+                        partner_list = []
+                        partner_list.append(invoice_brw.id)
+                        cust_inv[invoice_brw.partner_id.id] = partner_list
+                    else:
+                        cust_inv[invoice_brw.partner_id.id].append(invoice_brw.id)
+                # voucher_values = {
+                #     'close_after_process': True,
+                #     'invoice_type': 'in_invoice',
+                #     'type': 'payment',
+                # }
+                for cust, invoices in cust_inv.iteritems():
+#                    print "cust...invoices....",cust,invoices
+#                     part = self.env['res.partner'].browse(cust)
+                    # if invoices:
+                    #     invoice_browse = invoice_obj.browse(invoices[0])
+                    #     # voucher_values = {
+                    #     #     'payment_expected_currency': invoice_browse.currency_id.id,
+                    #     #     'default_reference': invoice_browse.name,
+                        #     'invoice_id': invoice_browse.id,
+                        # }
+                    # for inv in :
+                    #
+                    #     payment_id = inv.pay_supplier_invoice(journal.id,inv.residual)
+                    #     payment_ids.append(payment_id)
+
+                    payment_method_id = self.env['account.payment.method'].search([('name', '=', 'Check')], limit=1)
+                    if not payment_method_id:
+                        payment_method_id = self.env['account.payment.method'].search([], limit=1)
+                    pay_val = {
+                        'payment_type': 'outbound',
+                        'payment_date': check_print_obj.date_checkprint,
+                        'partner_type': 'supplier',
+                        'partner_id': cust,
+                        'journal_id': journal and journal.id or False,
+                        'payment_method_id': payment_method_id and payment_method_id.id or False,
+                        'state': 'draft',
+                        'amount': 2,
+                    }
+                    payment_id = self.env['account.payment'].create(pay_val)
+                    line_list = []
+                    paid_amt = 0
+                    inv_ids = []
+                    for inv_line in invoice_obj.browse(invoices):
+                        invoice = inv_line
+                        inv_ids.append(invoice.id)
+                        full_reco = True
+                        line_list.append((0, 0, {
+                            'invoice_id': invoice.id,
+                            'account_id': invoice.account_id and invoice.account_id.id or False,
+                            'date': invoice.date_invoice,
+                            'due_date': invoice.date_due,
+                            'original_amount': invoice.amount_total,
+                            'balance_amount': invoice.residual,
+                            'allocation': invoice.residual,
+                            'full_reconclle': full_reco,
+                            'account_payment_id': payment_id and payment_id.id or False,
+                            'check_number':check_number
+                        }))
+                        paid_amt += invoice.residual
+                    payment_id.write({
+                        'line_ids': line_list,
+                        'amount': paid_amt,
+                        'invoice_ids': [(6, 0, inv_ids)]
+                    })
+                    payment_id._onchange_amount()
+                    payment_id.post()
+                    payment_ids.append(payment_id.id)
+
+
+            print "voucher_ids print......",len(payment_ids)
+            self.get_sequence(payment_ids)
+#            cr.commit()
+            check_layout_report = {
+                'top' : 'l10n_us_check_printing.print_check_top',
+                'middle' : 'l10n_us_check_printing.print_check_middle',
+                'bottom' : 'l10n_us_check_printing.print_check_bottom',
+            }
+            check_layout = check_print_obj.company_id.us_check_layout
+            if check_layout==check_layout_report.get('top'):
+                report_name='l10n_us_check_printing.print_check_top'
+            elif check_layout ==check_layout_report.get('middle'):
+                report_name='l10n_us_check_printing.print_check_middle'
+            else:
+                report_name='l10n_us_check_printing.print_check_bottom'
+            if check_layout != 'custom':
+                report = self.env['ir.actions.report.xml'].search(
+                    [('report_name', '=', report_name)], limit=1)
+                context = dict(active_model='account.payment', active_ids=payment_ids)
+                return {
+                    'type': 'ir.actions.report.xml', 
+                    'report_name':report.report_name,
+                    'context':context,
+                    'nodestroy': True
+                }
+    
+#     def get_accounts_supplier(self, cr, uid, partner_id=False, journal_id=False, context=None):
+#         """price
+#         Returns a dict that contains new values and context
+#
+#         @param partner_id: latest value from user input for field partner_id
+#         @param args: other arguments
+#         @param context: context arguments, like lang, time zone
+#
+#         @return: Returns a dict which contains new values, and context
+#         """
+#         default = {
+#             'value':{},
+#         }
+#         if not partner_id or not journal_id:
+#             return default
+#
+#         partner_pool = self.pool.get('res.partner')
+#         journal_pool = self.pool.get('account.journal')
+#
+#         journal = journal_pool.browse(cr, uid, journal_id, context=context)
+#         partner = partner_pool.browse(cr, uid, partner_id, context=context)
+#         account_id = False
+#         tr_type = False
+#         if journal.type in ('sale','sale_refund'):
+#             account_id = partner.property_account_receivable.id
+#             tr_type = 'sale'
+#         elif journal.type in ('purchase', 'purchase_refund','expense'):
+#             account_id = partner.property_account_payable.id
+#             tr_type = 'purchase'
+#         else:
+#             account_id = journal.default_credit_account_id.id or journal.default_debit_account_id.id
+#             tr_type = 'receipt'
+#         tr_type = 'payment'
+#         default['value']['account_id'] = account_id
+#         default['value']['type'] = tr_type
+#
+#         return default
+#
+# account_check_print()

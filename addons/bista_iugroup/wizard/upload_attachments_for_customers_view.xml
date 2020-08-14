@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+        <record id="upload_attachments_for_customers_wizard" model="ir.ui.view">
+            <field name="name">Upload Attachments</field>
+            <field name="model">upload.attachment.wizard.for.customers</field>
+            <field name="arch" type="xml">
+                <form string="Upload Attachment">
+                    <group colspan="4" cols="4">
+                        <field name="datas" filename="name"/>
+                        <field name="name" invisible="1"/>
+                        <field name="company_id" invisible="1"/>
+                    </group>
+                    <style>
+                             .oe_form_binary_file_save_data{
+                                  display:none;
+                                }
+                        </style>
+                    <group colspan="4" cols="4">
+                            <separator string="Supported formats: .jpg, .tiff, .gif, .bmp, .png, .pdf"/>
+                    </group>
+                    <footer>
+                        <button type="object" string="Upload Attachments" class="oe_highlight" name="upload_attachment"/>
+                        or
+                        <button string="No" class="oe_highlight" special="cancel" />
+                    </footer>
+                </form>
+             </field>
+        </record>
+        
+        <record model="ir.actions.act_window" id="action_upload_attachments_for_customers">
+            <field name="name">Upload Attachments</field>
+            <field name="res_model">upload.attachment.wizard.for.customers</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="upload_attachments_for_customers_wizard"/>
+            <field name="target">new</field>
+        </record>
+     </data>
+</openerp>

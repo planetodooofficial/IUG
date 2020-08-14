@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+        
+        <report header="False" auto="False" id="account_invoices_custom_sd" model="account.invoice"
+                name="account.invoice.custom.sd" rml="bista_iugroup/report/account_print_custom_invoice.rml"
+                string="SD Invoice" />
+       <report header="False" auto="False" id="account_invoice_sd_header" model="account.invoice"
+                name="account.invoice.sd.header" rml="bista_iugroup/report/account_print_sd_header.rml"
+                string="SD Invoice with Header" />
+
+       <report header="False" auto="False" id="account_invoice_custom_asit" model="account.invoice"
+                name="account.invoice.custom.asit" rml="bista_iugroup/report/account_print_asit_invoice.rml"
+                string="ASIT Invoice" />
+
+       <report header="False" auto="False" id="account_invoice_asit_header" model="account.invoice"
+                name="account.invoice.asit.header" rml="bista_iugroup/report/account_print_asit_header.rml"
+                string="ASIT Invoice with Header" />
+
+        <report header="False" auto="False" id="account_invoices_custom_4" model="account.invoice"
+                name="account.invoice.custom_4" rml="bista_iugroup/report/account_print_custom_invoice_kr_1.rml"
+                string="Kaiser Invoice " />
+
+        <report header="False" auto="False" id="account_invoices_custom_3" model="account.invoice"
+                name="account.invoice.custom_3" rml="bista_iugroup/report/account_print_custom_invoice_kr_2.rml"
+                string="Kaiser Invoice With Header" />
+
+        <report header="False" auto="False" id="account_invoices_custom_43243" model="account.invoice"
+                name="account.invoice.custom" rml="bista_iugroup/report/account_print_custom_invoice.rml"
+                string="ACD Invoice" />
+
+        <report header="False" auto="False" id="account_invoices_custom_2" model="account.invoice"
+                name="account.invoice.custom_2" rml="bista_iugroup/report/account_print_custom_invoice_2.rml"
+                string="ACD Invoice With Header" />
+
+
+        <report header="False" auto="False" id="account_invoices_interpreter" model="account.invoice"
+                name="account.invoice.interpreter" rml="bista_iugroup/report/interpreter_invoice.rml"
+                string="A &amp; A Interpreter Invoice" />
+
+        <report header="False" auto="False" id="account_invoices_transporter" model="account.invoice"
+                name="account.invoice.transporter" rml="bista_iugroup/report/transporter_invoice.rml"
+                string="A &amp; A Transporter Invoice" />
+
+        <report header="False" auto="False" id="account_invoices_translator" model="account.invoice"
+                name="account.invoice.translator" rml="bista_iugroup/report/translator_invoice.rml"
+                string="A &amp; A Translator Invoice" />
+
+        <report header="False" auto="False" id="event_approval_report" model="event" name="event.approval.report"
+                rml="bista_iugroup/report/event_approval_report.rml" string="Event Approval Report" />
+
+        <report header="False" auto="False" id="event_completion_report" model="event"
+                name="event.completion.report" rml="bista_iugroup/report/event_completion_report.rml"
+                string="Event completion Report" />
+
+    </data>
+</openerp>

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+         <record id="view_open_map_form" model="ir.ui.view">
+             <field name="name">open.map.form</field>
+             <field name="model">open.map</field>
+             <field eval="8" name="priority"/>
+             <field name="arch" type="xml">
+                 <form string="Open Map" version="7.0">
+                     <header>
+                         <button string="Open Map" name="open_map_mine"  type="object" class="oe_highlight" invisible="1"/>
+                         <button string="Transporter Lookup" name="transporter_lookup"  type="object" class="oe_highlight" />
+                     </header>
+                     <sheet>
+                         <separator string="Enter City or Zipcode"/>
+                         <!--<div class="oe_list_content">-->
+                            <group>
+                                <group>
+                                    <field name="city"  />
+                                </group>
+                                <group >
+                                    <field name="zip"  />
+                                </group>
+                             </group>
+                       <!--</div>-->
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="action_open_map_form" model="ir.actions.act_window">
+            <field name="name">Open Map</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">open.map</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Click to add a Map .
+                </p><p>
+                    Odoo helps you easily track all activities related to
+                    a Default Country; discussions, history of Default Country, etc.
+                </p>
+            </field>
+        </record>
+        <menuitem id="menu_openmap" parent="menu_event_trans_config" action="action_open_map_form" sequence="2"/>
+
+    </data>
+</odoo>

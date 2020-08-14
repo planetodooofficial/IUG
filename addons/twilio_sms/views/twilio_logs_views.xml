@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<openerp>
+    <data>
+
+        <record id="twilio_error_logs_tree_view" model="ir.ui.view">
+            <field name="name">twilio.error.logs.tree.view</field>
+            <field name="model">twilio.error.logs</field>
+            <field name="arch" type="xml">
+                <tree string="Error Logs" create="false" edit="false">
+                    <field name="code"/>
+                    <field name="status"/>
+                    <field name="message"/>
+                    <field name="more_info"/>
+                </tree>
+            </field>
+        </record>
+
+
+        <record id= "twilio_error_logs_form_view" model="ir.ui.view">
+            <field name="name">twilio.error.logs.form.view</field>
+            <field name="model">twilio.error.logs</field>
+            <field name="arch" type="xml">
+                <form string="Error Logs" version="7.0" create="false" edit="false">
+                    <group>
+                        <field name="code"/>
+                        <field name="status"/>
+                        <field name="message"/>
+                        <field name="more_info"/>
+                    </group>
+                </form>
+            </field>
+        </record>
+
+
+        <record id="action_error_logs" model="ir.actions.act_window">
+            <field name="name">SMS Error Logs</field>
+            <field name="res_model">twilio.error.logs</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+        <!-- <menuitem id="menu_twilio_logs" name="Logs" parent="menu_twilio" sequence="70"/>
+        <menuitem action="action_error_logs" id="menu_action_error_logs" parent="menu_twilio_logs"
+            sequence="10"/> -->
+
+
+    </data>
+</openerp>

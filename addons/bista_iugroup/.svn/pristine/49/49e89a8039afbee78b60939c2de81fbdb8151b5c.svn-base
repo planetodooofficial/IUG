@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+        <record id="search_interpreters_wizard_form" model="ir.ui.view">
+            <field name="name">Search Interpreters</field>
+            <field name="model">search.interpreters.wizard</field>
+            <field name="arch" type="xml">
+                <form string="Search Interpreters" create="false" edit="true" save="false" version="7.0">
+                    <group>
+                        <group>
+                            <field name="zip" required="1"/>
+                            <field name="language_id"/>
+                        </group>
+                        <group>
+                            <field name="search_distance" required="1"/>
+                            <field name="is_simultaneous"/>
+                            <field name="label_flag" invisible="1"/>
+                            <field name="flag" invisible="1"/>
+                        </group>
+                        <button string="Search Interpreters" name="search_interpreters" type="object" class="oe_highlight" />
+                    </group>
+                    <footer>
+                        <div style="text-align:center;">
+                            <label string="No  Result  Found !!!" attrs="{'invisible':[('label_flag','=',False)]}"/>
+                        </div>
+                    </footer>
+                    <group>
+                    	<div class="adv_search">
+                            <style>
+                             .openerp .adv_search .oe_view_manager{
+                                  height:auto !important;
+                                }
+                        </style>
+                            <field name="result_set" widget="one2many_list" nolabel="1" attrs="{'invisible':[('flag','=',False)]}" readonly="0" options="{'reload_on_button': true}">
+                                <tree string="Interpreter Result" delete="false" create="false">
+                                    <field name="name"   readonly="1"/>
+                                    <field name="middle_name"   readonly="1"/>
+                                    <field name="last_name"   readonly="1"/>
+                                    <field name="phone"  readonly="1"/>
+                                    <field name="email"  readonly="1"/>
+                                    <field name="city"    readonly="1"/>
+                                    <field name="language_id" readonly="1"/>
+                                    <field name="medical_rate" readonly="1"/>
+                                    <field name="normal_rate" readonly="1"/>
+                                    <field name="deposition_rate" readonly="1"/>
+                                    <field name="conf_call_rate" readonly="1"/>
+                                    <field name="travel_rate" readonly="1"/>
+                                    <field name="other_rate" readonly="1"/>
+                                    <field name="interpreter_id" invisible="1"/>
+                                    <field name="distance" readonly="1"/>
+                                    <field name="is_interpretation_active" readonly="1"/>
+                                </tree>
+                            </field>
+                    	</div>
+                    </group>
+                </form>
+            </field>
+        </record>
+
+        <record model="ir.actions.act_window" id="action_search_interpreters_events_wizard">
+            <field name="name">Search Interpreters</field>
+            <field name="res_model">search.interpreters.wizard</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <!-- <field name="context">{"default_event_type": 'language',"event_type": 'language'}</field> -->
+            <field name="view_id" ref="search_interpreters_wizard_form"/>
+            <field name="target">current</field>
+        </record>
+
+        <menuitem id="menu_search_interpreters" parent="bista_iugroup.sub_menu_lang_event_custom"  action="action_search_interpreters_events_wizard"
+                 groups="bista_iugroup.group_record_manager,bista_iugroup.group_iu_cust_service,bista_iugroup.group_iu_recruiter" sequence="3"/>
+
+
+
+    </data>
+</openerp>

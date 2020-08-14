@@ -1,0 +1,92 @@
+<odoo>
+    <data>
+        <record model="ir.cron" id="import_customers_vendors">
+            <field name='name'>Import Customers/Vendors</field>
+            <field name='interval_number'>1</field>
+            <field name='interval_type'>days</field>
+            <field name="numbercall">-1</field>
+            <field name="active">False</field>
+            <field name="model">quick.configuration</field>
+            <field name="function">import_customers_vendors</field>
+            <field eval="" name="args"/>
+        </record>
+
+        <record model="ir.cron" id="export_customers_vendors">
+            <field name='name'>Export Customers/Vendors</field>
+            <field name='interval_number'>1</field>
+            <field name='interval_type'>hours</field>
+            <field name="numbercall">-1</field>
+            <field name="active">True</field>
+            <field name="model">quick.configuration</field>
+            <field name="function">export_customers_vendors</field>
+            <field eval="" name="args"/>
+        </record>
+
+        <record model="ir.cron" id="export_accounts">
+            <field name='name'>Export Accounts</field>
+            <field name='interval_number'>1</field>
+            <field name='interval_type'>days</field>
+            <field name="numbercall">-1</field>
+            <field name="active">False</field>
+            <field name="model">quick.configuration</field>
+            <field name="function">export_accounts</field>
+            <field eval="" name="args"/>
+        </record>
+
+        <record model="ir.cron" id="export_invoices">
+            <field name='name'>Export Invoices</field>
+            <field name='interval_number'>1</field>
+            <field name='interval_type'>hours</field>
+            <field name="numbercall">-1</field>
+            <field name="active">True</field>
+            <field name="model">quick.configuration</field>
+            <field name="function">export_invoices</field>
+            <field eval="" name="args"/>
+        </record>
+
+        <record model="ir.cron" id="update_export_invoices">
+            <field name='name'>Update Export Invoices</field>
+            <field name='interval_number'>50</field>
+            <field name='interval_type'>minutes</field>
+            <field name="numbercall">-1</field>
+            <field name="active">True</field>
+            <field name="model">quick.configuration</field>
+            <field name="function">update_export_invoices</field>
+            <field eval="" name="args"/>
+        </record>
+
+         <record model="ir.cron" id="export_bills">
+            <field name='name'>Export Bills</field>
+            <field name='interval_number'>1</field>
+            <field name='interval_type'>hours</field>
+            <field name="numbercall">-1</field>
+            <field name="active">True</field>
+            <field name="model">quick.configuration</field>
+            <field name="function">export_bills</field>
+            <field eval="" name="args"/>
+        </record>
+
+       <record model="ir.cron" id="update_export_bills">
+            <field name='name'>Update Export Bills</field>
+            <field name='interval_number'>50</field>
+            <field name='interval_type'>minutes</field>
+            <field name="numbercall">-1</field>
+            <field name="active">True</field>
+            <field name="model">quick.configuration</field>
+            <field name="function">update_export_bills</field>
+            <field eval="" name="args"/>
+        </record>
+
+
+        <record model="ir.cron" id="import_invoices">
+            <field name='name'>Import Invoices</field>
+            <field name='interval_number'>1</field>
+            <field name='interval_type'>days</field>
+            <field name="numbercall">-1</field>
+            <field name="active">False</field>
+            <field name="model">quick.configuration</field>
+            <field name="function">import_invoices</field>
+            <field eval="" name="args"/>
+        </record>
+    </data>
+</odoo>

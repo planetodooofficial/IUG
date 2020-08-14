@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data noupdate="0">
+        <record id="view_account_check_print" model="ir.ui.view">
+            <field name="name">account.check.print.form</field>
+            <field name="model">account.check.print</field>
+            <field name="arch" type="xml">
+                <form string="Check" version="7.0">
+                    <group colspan="4" cols="6">
+                        <group>
+                            <field name="date_checkprint" required="1"/>
+                            <field name="check_number" required="1" widget='char'/>
+                            <field name="check_grouping"/>
+                            <field name="force_number" />
+                        </group>
+                        <group>
+                            <field name="company_id" groups="base.group_multi_company" widget="selection"/>
+                            <field name="journal_id" domain="[('type','=','bank'),('company_id','=',company_id)]"
+                                   required="1" options="{'limit': 7, 'create': false, 'create_edit': false, 'no_open': True}"/>
+                            <field name="force_overwrite" />
+                        </group>
+                        <!-- ,('is_check','=',True) -->
+                    </group>
+                    <footer>
+                        <button name="pay_print_check" string="Pay/Print Check" type="object" class="oe_highlight" help = "To do full payment and also simultaneously print the check"/> or
+                        <button string="Cancel" class="oe_link" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <act_window id="action_account_check_print" multi="True" name="Pay/Print Check" res_model="account.check.print"
+                    src_model="account.invoice" view_mode="form" target="new" view_type="form" />
+
+    </data>
+</openerp>
